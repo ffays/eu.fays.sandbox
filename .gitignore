@@ -14,3 +14,5 @@ hs_err_pid*
 # Mac OS X Files
 .DS_Store
 /target/
+/build/
+/.gradle/
