@@ -1,4 +1,4 @@
-package interview;
+package eu.fays.sandbox.interview;
 
 import java.util.AbstractMap;
 import java.util.Collections;

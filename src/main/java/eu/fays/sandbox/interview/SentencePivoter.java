@@ -1,4 +1,4 @@
-package interview;
+package eu.fays.sandbox.interview;
 
 import java.util.Arrays;
 import java.util.LinkedList;

@@ -1,4 +1,4 @@
-package interview;
+package eu.fays.sandbox.interview;
 
 import static org.junit.Assert.assertEquals;
 
