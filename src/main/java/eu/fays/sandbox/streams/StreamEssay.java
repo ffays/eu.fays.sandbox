@@ -2,12 +2,18 @@ package eu.fays.sandbox.streams;
 
 import static java.nio.file.Files.walk;
 import static java.text.MessageFormat.format;
+import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+import static java.lang.String.join;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,7 +51,8 @@ public class StreamEssay {
 		LOGGER.info(format("booleanAll #1: {0}", booleanAll(new Boolean[] { true, true, true })));
 		LOGGER.info(format("booleanAll #2: {0}", booleanAll(new Boolean[] { false, true, false })));
 		LOGGER.info(format("enumToSetOfString: {0}", enumToSetOfString(Fruit.class)));
-		listFiles(new File("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles: {0}", f.getPath())));
+		listFiles(new File("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #1: {0}", f.getPath())));
+		listFiles(Paths.get("."), FileNameExtension.class).forEach(f -> LOGGER.info(format("listFiles #2: {0}", f.getPath())));
 	}
 
 	/**
@@ -57,6 +64,21 @@ public class StreamEssay {
 	 */
 	public static List<File> listFiles(final File root, final FilenameFilter filter) throws IOException {
 		return unmodifiableList((List<File>) walk(root.toPath()).filter(p -> filter.accept(p.toFile().getParentFile(), p.toFile().getName())).map(p -> p.toFile()).collect(toCollection(ArrayList::new)));
+	}
+
+	/**
+	 * Search all files under the given root directory matching the given file filter.
+	 * @param root the root directory
+	 * @param filter the file filter
+	 * @param <T> the enum's type
+	 * @return the list of file.
+	 * @throws IOException if an I/O error is thrown when accessing the starting file.
+	 */
+	public static <T extends Enum<T>> List<File> listFiles(final Path root, final Class<T> enumType) throws IOException {
+		final String syntaxAndPattern = format("glob:**.'{'{0}'}'", join(",", stream(enumType.getEnumConstants()).map(e -> e.name().toLowerCase()).collect(toList())));
+		final PathMatcher filter = root.getFileSystem().getPathMatcher(syntaxAndPattern);
+		final List<File> result = unmodifiableList((List<File>) walk(root).filter(filter::matches).map(p -> p.toFile()).collect(toCollection(ArrayList::new)));
+		return result;
 	}
 
 	/**
