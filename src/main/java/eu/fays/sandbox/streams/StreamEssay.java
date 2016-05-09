@@ -88,6 +88,6 @@ public class StreamEssay {
 	}
 
 	/** Standard logger */
-	private static final Logger LOGGER = Logger.getLogger(InternationalizationCheck.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(StreamEssay.class.getName());
 
 }
