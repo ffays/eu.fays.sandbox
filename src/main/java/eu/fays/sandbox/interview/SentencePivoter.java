@@ -66,6 +66,7 @@ import javax.swing.table.TableModel;
  * 
  * @author Fr&eacute;d&eacute;ric Fays
  */
+@SuppressWarnings("nls")
 public class SentencePivoter {
 
 	public static final String SENTENCE_1 = "This is the first sentence to print";

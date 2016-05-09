@@ -37,6 +37,7 @@ import java.util.stream.Stream;
  * 
  * @author Fr&eacute;d&eacute;ric Fays
  */
+@SuppressWarnings("nls")
 public class Fibonacci {
 
 	/**
