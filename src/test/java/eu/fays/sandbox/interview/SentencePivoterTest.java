@@ -17,7 +17,7 @@ public class SentencePivoterTest {
 	private String[] _sentences;
 	private String[] _expected;
 
-	@Parameters
+	@Parameters(name = "{index}: pivot2()")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				{ new String[0], new String[0] },

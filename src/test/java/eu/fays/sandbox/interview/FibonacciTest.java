@@ -24,7 +24,7 @@ public class FibonacciTest {
 		private int _n;
 		private List<Integer> _expected;
 
-		@Parameters
+		@Parameters(name = "fibonacci({0}}")
 		public static Collection<Object[]> data() {
 			return Arrays.asList(new Object[][] {
 					{ 1, Arrays.asList(new Integer[] { 1 }) },
@@ -63,7 +63,7 @@ public class FibonacciTest {
 		@Rule
 		public ExpectedException _thrown = ExpectedException.none();
 
-		@Parameters
+		@Parameters(name = "fibonacci({0}}")
 		public static Collection<Object[]> data() {
 			return Arrays.asList(new Object[][] {
 					{ -3 },
