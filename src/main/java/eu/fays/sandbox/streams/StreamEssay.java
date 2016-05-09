@@ -1,19 +1,23 @@
 package eu.fays.sandbox.streams;
 
+import static java.lang.String.join;
 import static java.nio.file.Files.walk;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
-import static java.lang.String.join;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import eu.fays.sandbox.iterators.Fruit;
 
@@ -53,6 +58,7 @@ public class StreamEssay {
 		LOGGER.info(format("enumToSetOfString: {0}", enumToSetOfString(Fruit.class)));
 		listFiles(new File("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #1: {0}", f.getPath())));
 		listFiles(Paths.get("."), FileNameExtension.class).forEach(f -> LOGGER.info(format("listFiles #2: {0}", f.getPath())));
+		listFiles(Paths.get("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #3: {0}", f.getPath())));
 	}
 
 	/**
@@ -63,7 +69,11 @@ public class StreamEssay {
 	 * @throws IOException if an I/O error is thrown when accessing the starting file.
 	 */
 	public static List<File> listFiles(final File root, final FilenameFilter filter) throws IOException {
-		return unmodifiableList((List<File>) walk(root.toPath()).filter(p -> filter.accept(p.toFile().getParentFile(), p.toFile().getName())).map(p -> p.toFile()).collect(toCollection(ArrayList::new)));
+		List<File> result = null;
+		try (final Stream<Path> stream = walk(root.toPath())) {
+			result = walk(root.toPath()).filter(p -> filter.accept(p.toFile().getParentFile(), p.toFile().getName())).map(p -> p.toFile()).collect(toCollection(ArrayList::new));
+		}
+		return unmodifiableList(result);
 	}
 
 	/**
@@ -75,10 +85,36 @@ public class StreamEssay {
 	 * @throws IOException if an I/O error is thrown when accessing the starting file.
 	 */
 	public static <T extends Enum<T>> List<File> listFiles(final Path root, final Class<T> enumType) throws IOException {
+		List<File> result = null;
 		final String syntaxAndPattern = format("glob:**.'{'{0}'}'", join(",", stream(enumType.getEnumConstants()).map(e -> e.name().toLowerCase()).collect(toList())));
 		final PathMatcher filter = root.getFileSystem().getPathMatcher(syntaxAndPattern);
-		final List<File> result = unmodifiableList((List<File>) walk(root).filter(filter::matches).map(p -> p.toFile()).collect(toCollection(ArrayList::new)));
-		return result;
+		try (final Stream<Path> stream = walk(root)) {
+			result = stream.filter(filter::matches).map(p -> p.toFile()).collect(toCollection(ArrayList::new));
+		}
+		return unmodifiableList(result);
+	}
+
+	/**
+	 * Search all files under the given root directory matching the given file filter.
+	 * @param root the root directory
+	 * @param filter the file filter
+	 * @return the list of file.
+	 * @throws IOException - if an I/O error is thrown by a visitor method
+	 */
+	private static List<File> listFiles(final Path root, final FilenameFilter filter) throws IOException {
+		final List<File> result = new ArrayList<>();
+		Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+			@Override
+			public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException {
+				final File file = path.toFile();
+				if (filter.accept(file.getParentFile(), file.getName())) {
+					result.add(file);
+				}
+				return FileVisitResult.CONTINUE;
+			}
+		});
+
+		return unmodifiableList(result);
 	}
 
 	/**
