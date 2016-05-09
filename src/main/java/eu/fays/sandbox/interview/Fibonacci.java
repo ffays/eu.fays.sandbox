@@ -14,7 +14,8 @@ import java.util.stream.Stream;
  * Write a method that produces Fibonacci sequence.<br>
  * Below the first 7th values.<br>
  * <br>
- * <table style="border-collapse:collapse">
+ * <table style="border-collapse:collapse" summary="Fibonacci example">
+ * <caption>&nbsp;</caption>
  * <tr>
  * <th style="border: 1px solid">1</th>
  * <th style="border: 1px solid">2</th>
@@ -80,8 +81,9 @@ public class Fibonacci {
 
 	/**
 	 * Another way to compute the Fibonacci sequence, using Java 8 functional aspects.
-	 * 
-	 * @see Fibonacci#fibonacci(int)
+	 *
+	 * @param n the length of the sequence to be computed. n must be strictly positive.
+	 * @return the Fibonacci sequence.
 	 */
 	public static List<Integer> fibonacci2(final int n) throws IllegalArgumentException {
 		if (n <= 0) {

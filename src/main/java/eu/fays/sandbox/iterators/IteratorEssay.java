@@ -22,7 +22,7 @@ public class IteratorEssay {
 	 * -ea -Djava.util.logging.config.file=logging.properties
 	 * </pre>
 	 * 
-	 * * @param args unused
+	 * @param args unused
 	 */
 	public static void main(String[] args) {
 		final List<Fruit> list = new ArrayList<>();

@@ -80,6 +80,7 @@ public class StreamEssay {
 	/**
 	 * Returns a immutable set of the given enum values's names.
 	 * @param enumType the class of the enum type
+	 * @param <T> the enum's type
 	 * @return the set of names.
 	 */
 	public static <T extends Enum<T>> Set<String> enumToSetOfString(Class<T> enumType) {

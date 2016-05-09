@@ -52,6 +52,7 @@ public class SecurityEssay {
 
 	/**
 	 * Sign given message with the given private key
+	 * @param message the message to be signed
 	 * @return the signature coded in base64
 	 * @throws Exception in case of unexpected error
 	 */

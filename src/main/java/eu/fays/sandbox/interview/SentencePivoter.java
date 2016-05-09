@@ -15,7 +15,8 @@ import javax.swing.table.TableModel;
  * <br>
  * Input sentences:<br>
  * <br>
- * <table style="margin-left: 2em">
+ * <table style="margin-left: 2em" summary="Input sentences">
+ * <caption>&nbsp;</caption>
  * <tr>
  * <td>
  * This is the first sentence to print<br>
@@ -27,7 +28,8 @@ import javax.swing.table.TableModel;
  * <br>
  * Expected output:<br>
  * <br>
- * <table style="margin-left: 2em">
+ * <table style="margin-left: 2em" summary="Expected output">
+ * <caption>&nbsp;</caption>
  * <tr>
  * <td>This</td>
  * <td>The</td>
@@ -40,7 +42,8 @@ import javax.swing.table.TableModel;
  * </tr>
  * <tr>
  * <td>the</td>
- * <td>phrase</td> <td&nbsp;</td>
+ * <td>phrase</td>
+ * <td>&nbsp;</td>
  * </tr>
  * <tr>
  * <td>first</td>

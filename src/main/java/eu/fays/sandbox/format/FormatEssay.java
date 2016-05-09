@@ -10,7 +10,7 @@ import java.util.Calendar;
 import java.util.logging.Logger;
 
 /**
- * A cheat sheet for {@link MessageFormat#format(String, Object...))}
+ * A cheat sheet for {@link MessageFormat#format(String, Object[])}
  * @author Fr&eacute;d&eacute;ric Fays
  */
 @SuppressWarnings("nls")

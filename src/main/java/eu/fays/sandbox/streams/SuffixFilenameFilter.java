@@ -35,6 +35,7 @@ public class SuffixFilenameFilter implements FilenameFilter {
 	 * Constructor
 	 * 
 	 * @param enumType type of the enumeration that contains the file name extensions
+	 * @param <T> the enum's type
 	 */
 	public <T extends Enum<T>> SuffixFilenameFilter(Class<T> enumType) {
 		this((Set<String>) stream(enumType.getEnumConstants()).map(v -> v.name()).collect(toCollection(LinkedHashSet::new)));
