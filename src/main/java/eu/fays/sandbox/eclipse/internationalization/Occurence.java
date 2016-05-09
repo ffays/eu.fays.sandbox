@@ -6,7 +6,7 @@ import java.text.MessageFormat;
 /**
  * An occurence of a sentence that needs to be equiped for the internationalization
  */
-public class Occurence implements Comparable<Occurence>{
+public class Occurence implements Comparable<Occurence> {
 	/** File containing the occurence */
 	final File FILE;
 	/** Line number within the file */
@@ -15,7 +15,7 @@ public class Occurence implements Comparable<Occurence>{
 	final int OFFSET;
 	/** Sentence to be localized */
 	final String SENTENCE;
-	
+
 	/**
 	 * Constructor
 	 * 
@@ -31,18 +31,17 @@ public class Occurence implements Comparable<Occurence>{
 		SENTENCE = sentence;
 	}
 
-
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if(obj == null || !(obj instanceof Occurence)) {
+		if (obj == null || !(obj instanceof Occurence)) {
 			return false;
 		}
-		
-		final Occurence o =  (Occurence) obj;
-		return FILE == o.FILE && LINE == o.LINE && OFFSET == o.OFFSET;		
+
+		final Occurence o = (Occurence) obj;
+		return FILE == o.FILE && LINE == o.LINE && OFFSET == o.OFFSET;
 	}
 
 	/**
@@ -50,7 +49,7 @@ public class Occurence implements Comparable<Occurence>{
 	 */
 	@Override
 	public int hashCode() {
-		return FILE.hashCode() + LINE * 3 + OFFSET * 7; 
+		return FILE.hashCode() + LINE * 3 + OFFSET * 7;
 	}
 
 	/**
@@ -58,11 +57,11 @@ public class Occurence implements Comparable<Occurence>{
 	 */
 	@Override
 	public int compareTo(final Occurence o) {
-		if(!FILE.equals(o.FILE)) {
+		if (!FILE.equals(o.FILE)) {
 			return FILE.compareTo(o.FILE);
-		} else if (LINE != o.LINE){
+		} else if (LINE != o.LINE) {
 			return Integer.compare(LINE, o.LINE);
-		} else if (OFFSET != o.OFFSET){
+		} else if (OFFSET != o.OFFSET) {
 			return Integer.compare(OFFSET, o.OFFSET);
 		}
 		return 0;
@@ -73,7 +72,7 @@ public class Occurence implements Comparable<Occurence>{
 	 */
 	@SuppressWarnings("nls")
 	@Override
-	public String toString() {		
+	public String toString() {
 		return MessageFormat.format("{0}:{1}:{2}:{3}", FILE.getName(), LINE, OFFSET, SENTENCE);
 	}
 }

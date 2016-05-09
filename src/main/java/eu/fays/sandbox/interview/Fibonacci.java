@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  * </tr>
  * </table>
  * 
- * @author Frederic Fays
+ * @author Fr&eacute;d&eacute;ric Fays
  */
 public class Fibonacci {
 

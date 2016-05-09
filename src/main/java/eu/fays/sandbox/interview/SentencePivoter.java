@@ -64,7 +64,7 @@ import javax.swing.table.TableModel;
  * </tr>
  * </table>
  * 
- * @author Frederic Fays
+ * @author Fr&eacute;d&eacute;ric Fays
  */
 public class SentencePivoter {
 

@@ -8,20 +8,33 @@ import java.util.logging.Logger;
 
 /**
  * Simple exercise on iterators
+ * 
+ * @author Fr&eacute;d&eacute;ric Fays
  */
 public class IteratorEssay {
 
+	/**
+	 * Main<br>
+	 * <br>
+	 * VM args :
+	 * 
+	 * <pre>
+	 * -ea -Djava.util.logging.config.file=logging.properties
+	 * </pre>
+	 * 
+	 * * @param args unused
+	 */
 	public static void main(String[] args) {
 		final List<Fruit> list = new ArrayList<>();
 		list.addAll(Arrays.asList(Fruit.values()));
 		final Iterator<Fruit> iterator = list.iterator();
-		while(iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			Fruit fruit = iterator.next();
-			if(fruit == Fruit.APPLE) {
+			if (fruit == Fruit.APPLE) {
 				iterator.remove();
 			}
 		}
-		
+
 		for (Fruit fruit : list) {
 			LOGGER.info(fruit.name());
 		}

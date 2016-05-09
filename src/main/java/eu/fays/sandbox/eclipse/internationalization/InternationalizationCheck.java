@@ -31,6 +31,8 @@ import java.util.logging.Logger;
  * <li>{@link InternationalizationCheck#COMMENT_SOURCE_FILES}
  * </ul>
  * Note: the parameters must be provided to the jvm as runtime properties, e.g. -DPACKAGE_FOLDER=. -DCOMMENT_SOURCE_FILES=false
+ * 
+ * @author Fr&eacute;d&eacute;ric Fays
  */
 @SuppressWarnings("nls")
 public class InternationalizationCheck {

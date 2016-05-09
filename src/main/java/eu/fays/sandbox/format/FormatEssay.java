@@ -10,20 +10,26 @@ import java.util.Calendar;
 import java.util.logging.Logger;
 
 /**
- * A cheat sheet for {@link MessageFormat#format(String, Object...))}<br>
- * <br>
- * VM args :
- * 
- * <pre>
- * -ea -Djava.util.logging.config.file=logging.properties
- * </pre>
+ * A cheat sheet for {@link MessageFormat#format(String, Object...))}
+ * @author Fr&eacute;d&eacute;ric Fays
  */
 @SuppressWarnings("nls")
 public class FormatEssay {
 
+	/**
+	 * Main<br>
+	 * <br>
+	 * VM args :
+	 * 
+	 * <pre>
+	 * -ea -Djava.util.logging.config.file=logging.properties
+	 * </pre>
+	 * 
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		LOGGER.info(format("Double   : {0,number,.00} (2 decimal places)", Math.PI));
-		LOGGER.info((new MessageFormat("Currency : {0,number,¤.00} (2 decimal places)", FRANCE)).format(new Object[] { new BigDecimal("9.9") }));
+		LOGGER.info((new MessageFormat("Currency : {0,number,ï¿½.00} (2 decimal places)", FRANCE)).format(new Object[] { new BigDecimal("9.9") }));
 
 		for (int i : new int[] { 1, 12, 123 }) {
 			// c.f. http://javarevisited.blogspot.be/2013/02/add-leading-zeros-to-integers-Java-String-left-padding-example-program.html
