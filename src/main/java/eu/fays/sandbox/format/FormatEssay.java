@@ -29,7 +29,7 @@ public class FormatEssay {
 	 */
 	public static void main(String[] args) {
 		LOGGER.info(format("Double   : {0,number,.00} (2 decimal places)", Math.PI));
-		LOGGER.info((new MessageFormat("Currency : {0,number,�.00} (2 decimal places)", FRANCE)).format(new Object[] { new BigDecimal("9.9") }));
+		LOGGER.info((new MessageFormat("Currency : {0,number,\u00A4.00} (2 decimal places)", FRANCE)).format(new Object[] { new BigDecimal("9.9") }));
 
 		for (int i : new int[] { 1, 12, 123 }) {
 			// c.f. http://javarevisited.blogspot.be/2013/02/add-leading-zeros-to-integers-Java-String-left-padding-example-program.html
