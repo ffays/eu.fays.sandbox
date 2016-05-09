@@ -15,6 +15,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Enclosed.class)
+@SuppressWarnings("nls")
 public class FibonacciTest {
 
 	@RunWith(Parameterized.class)
