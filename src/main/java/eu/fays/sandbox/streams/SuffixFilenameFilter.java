@@ -1,12 +1,13 @@
 package eu.fays.sandbox.streams;
 
+import static java.util.Arrays.stream;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toCollection;
+
 import java.io.File;
 import java.io.FilenameFilter;
-import static java.util.Arrays.stream;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import static java.util.stream.Collectors.toCollection;
 
 /**
  * A file filter based on a set of file name extensions
@@ -27,7 +28,7 @@ public class SuffixFilenameFilter implements FilenameFilter {
 		assert !extensions.isEmpty();
 		assert extensions.stream().map(v -> v != null && !v.isEmpty()).reduce(true, Boolean::logicalAnd);
 		//
-		_extensions = extensions;
+		_extensions = unmodifiableSet(extensions);
 	}
 
 	/**
@@ -36,7 +37,7 @@ public class SuffixFilenameFilter implements FilenameFilter {
 	 * @param enumType type of the enumeration that contains the file name extensions
 	 */
 	public <T extends Enum<T>> SuffixFilenameFilter(Class<T> enumType) {
-		this(Collections.unmodifiableSet(stream(enumType.getEnumConstants()).map(v -> v.name()).collect(toCollection(LinkedHashSet::new))));
+		this((Set<String>) stream(enumType.getEnumConstants()).map(v -> v.name()).collect(toCollection(LinkedHashSet::new)));
 	}
 
 	/**

@@ -56,7 +56,7 @@ public class InternationalizationCheck {
 		assert PACKAGE_FOLDER.toFile().canRead();
 		//
 		// Build list of files to be processed
-		final List<File> fileList = unmodifiableList(Files.list(PACKAGE_FOLDER).map(p -> p.toFile()).filter(f -> f.isFile() && f.getName().endsWith(".java")).collect(toCollection(ArrayList::new)));
+		final List<File> fileList = unmodifiableList((List<File>) Files.list(PACKAGE_FOLDER).map(p -> p.toFile()).filter(f -> f.isFile() && f.getName().endsWith(".java")).collect(toCollection(ArrayList::new)));
 
 		// Pass 1 : identify sentences to be localized
 		final List<Occurence> occurenceList = new ArrayList<>();

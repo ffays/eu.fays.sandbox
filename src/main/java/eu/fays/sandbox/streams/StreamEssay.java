@@ -56,7 +56,7 @@ public class StreamEssay {
 	 * @throws IOException if an I/O error is thrown when accessing the starting file.
 	 */
 	public static List<File> listFiles(final File root, final FilenameFilter filter) throws IOException {
-		return unmodifiableList(walk(root.toPath()).filter(p -> filter.accept(p.toFile().getParentFile(), p.toFile().getName())).map(p -> p.toFile()).collect(toCollection(ArrayList::new)));
+		return unmodifiableList((List<File>) walk(root.toPath()).filter(p -> filter.accept(p.toFile().getParentFile(), p.toFile().getName())).map(p -> p.toFile()).collect(toCollection(ArrayList::new)));
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class StreamEssay {
 	 * @return the set of names.
 	 */
 	public static <T extends Enum<T>> Set<String> enumToSetOfString(Class<T> enumType) {
-		return Collections.unmodifiableSet(Arrays.stream(enumType.getEnumConstants()).map(v -> v.name()).collect(Collectors.toCollection(LinkedHashSet::new)));
+		return Collections.unmodifiableSet((Set<String>) Arrays.stream(enumType.getEnumConstants()).map(v -> v.name()).collect(Collectors.toCollection(LinkedHashSet::new)));
 	}
 
 	/** Standard logger */
