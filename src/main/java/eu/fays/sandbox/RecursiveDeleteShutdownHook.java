@@ -14,12 +14,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 /**
  * A shutdown hook to tidy-up generated temporary files in case of abrupt program termination (i.e. due to an uncaught exception)
  */
-public interface RecursiveDeleteOnShutdownHook {
+public interface RecursiveDeleteShutdownHook {
 	/**
 	 * When the JVM stops, Performs a recursive deletion of the given directory.
 	 * @param path the directory to be deleted when the JVM stops
 	 */
-	default void register(final Path path) {
+	default void addRecursiveDeleteShutdownHook(final Path path) {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@SuppressWarnings("nls")
 			@Override
