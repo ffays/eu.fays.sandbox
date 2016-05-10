@@ -6,7 +6,7 @@ import java.text.MessageFormat;
 /**
  * An occurence of a sentence that needs to be equiped for the internationalization
  */
-public class Occurence implements Comparable<Occurence> {
+public final class Occurence implements Comparable<Occurence> {
 	/** File containing the occurence */
 	final File FILE;
 	/** Line number within the file */
@@ -24,7 +24,7 @@ public class Occurence implements Comparable<Occurence> {
 	 * @param offset Character offset within the line
 	 * @param sentence Sentence to be localized
 	 */
-	public Occurence(File file, int line, int offset, String sentence) {
+	public Occurence(final File file, final int line, final int offset, final String sentence) {
 		FILE = file;
 		LINE = line;
 		OFFSET = offset;
@@ -35,7 +35,7 @@ public class Occurence implements Comparable<Occurence> {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj == null || !(obj instanceof Occurence)) {
 			return false;
 		}
