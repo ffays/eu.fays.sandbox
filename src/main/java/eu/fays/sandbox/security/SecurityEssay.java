@@ -20,13 +20,18 @@ import java.util.logging.Logger;
 public class SecurityEssay {
 
 	/**
-	 * Main
-	 * 
+	 * Main<br>
+	 * <br>
+	 * Parameters:
+	 * <ul>
+	 * <li>message: a message to be signed
+	 * </ul>
+	 * Note: the parameters must be provided to the jvm as runtime properties, e.g. -Dmessage="Hello World!"
 	 * @param args unused
 	 * @throws Exception in case of unexpected error
 	 */
 	public static void main(String[] args) throws Exception {
-		final String message = "Open Sesame";
+		final String message = System.getProperty("message", "Open Sesame");
 		final String signatureInBase64 = sign(message);
 
 		// Read the public key from a key store

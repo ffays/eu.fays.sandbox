@@ -79,7 +79,7 @@ public class StreamEssay {
 	/**
 	 * Search all files under the given root directory matching the given file filter.
 	 * @param root the root directory
-	 * @param filter the file filter
+	 * @param enumType the enum's type
 	 * @param <T> the enum's type
 	 * @return the list of file.
 	 * @throws IOException if an I/O error is thrown when accessing the starting file.

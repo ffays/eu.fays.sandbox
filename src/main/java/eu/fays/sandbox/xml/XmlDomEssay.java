@@ -28,14 +28,21 @@ import org.w3c.dom.Node;
 public class XmlDomEssay {
 
 	/**
-	 * Main
+	 * Main<br>
+	 * <br>
+	 * Parameters:
+	 * <ul>
+	 * <li>file: an XML File
+	 * </ul>
+	 * Note: the parameters must be provided to the jvm as runtime properties, e.g. -Dfile="books.xml"
 	 * @param args unused
 	 * @throws Exception in case of unexpected error.
 	 */
 	public static void main(String[] args) throws Exception {
+		final String fileName = System.getProperty("file", "books.xml");
 		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder db = dbf.newDocumentBuilder();
-		final Document dom = db.parse(new File("books.xml"));
+		final Document dom = db.parse(new File(fileName));
 
 		final Stack<Node> stack = new Stack<>();
 
@@ -77,8 +84,8 @@ public class XmlDomEssay {
 
 	/**
 	 * Computes the path of the given element
-	 * @param node
-	 * @return
+	 * @param element the given element
+	 * @return the path
 	 */
 	public static final String computePath(final Element element) {
 		//
