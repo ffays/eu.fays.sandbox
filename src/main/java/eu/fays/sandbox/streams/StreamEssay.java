@@ -1,32 +1,19 @@
 package eu.fays.sandbox.streams;
 
-import static java.lang.String.join;
-import static java.nio.file.Files.walk;
 import static java.text.MessageFormat.format;
-import static java.util.Arrays.stream;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
+import java.math.BigDecimal;
+
+import static java.util.Arrays.stream;
+
 import java.util.Arrays;
+import static java.util.Arrays.asList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import eu.fays.sandbox.iterators.Fruit;
 
@@ -56,65 +43,8 @@ public class StreamEssay {
 		LOGGER.info(format("booleanAll #1: {0}", booleanAll(new Boolean[] { true, true, true })));
 		LOGGER.info(format("booleanAll #2: {0}", booleanAll(new Boolean[] { false, true, false })));
 		LOGGER.info(format("enumToSetOfString: {0}", enumToSetOfString(Fruit.class)));
-		listFiles(new File("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #1: {0}", f.getPath())));
-		listFiles(Paths.get("."), FileNameExtension.class).forEach(f -> LOGGER.info(format("listFiles #2: {0}", f.getPath())));
-		listFiles(Paths.get("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #3: {0}", f.getPath())));
-	}
-
-	/**
-	 * Search all files under the given root directory matching the given file filter.
-	 * @param root the root directory
-	 * @param filter the file filter
-	 * @return the list of file.
-	 * @throws IOException if an I/O error is thrown when accessing the starting file.
-	 */
-	public static List<File> listFiles(final File root, final FilenameFilter filter) throws IOException {
-		List<File> result = null;
-		try (final Stream<Path> stream = walk(root.toPath())) {
-			result = walk(root.toPath()).filter(p -> filter.accept(p.toFile().getParentFile(), p.toFile().getName())).map(p -> p.toFile()).collect(toCollection(ArrayList::new));
-		}
-		return unmodifiableList(result);
-	}
-
-	/**
-	 * Search all files under the given root directory matching the given file filter.
-	 * @param root the root directory
-	 * @param enumType the enum's type
-	 * @param <T> the enum's type
-	 * @return the list of file.
-	 * @throws IOException if an I/O error is thrown when accessing the starting file.
-	 */
-	public static <T extends Enum<T>> List<File> listFiles(final Path root, final Class<T> enumType) throws IOException {
-		List<File> result = null;
-		final String syntaxAndPattern = format("glob:**.'{'{0}'}'", join(",", stream(enumType.getEnumConstants()).map(e -> e.name().toLowerCase()).collect(toList())));
-		final PathMatcher filter = root.getFileSystem().getPathMatcher(syntaxAndPattern);
-		try (final Stream<Path> stream = walk(root)) {
-			result = stream.filter(filter::matches).map(p -> p.toFile()).collect(toCollection(ArrayList::new));
-		}
-		return unmodifiableList(result);
-	}
-
-	/**
-	 * Search all files under the given root directory matching the given file filter.
-	 * @param root the root directory
-	 * @param filter the file filter
-	 * @return the list of file.
-	 * @throws IOException - if an I/O error is thrown by a visitor method
-	 */
-	private static List<File> listFiles(final Path root, final FilenameFilter filter) throws IOException {
-		final List<File> result = new ArrayList<>();
-		Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(final Path path, final BasicFileAttributes attrs) throws IOException {
-				final File file = path.toFile();
-				if (filter.accept(file.getParentFile(), file.getName())) {
-					result.add(file);
-				}
-				return FileVisitResult.CONTINUE;
-			}
-		});
-
-		return unmodifiableList(result);
+		LOGGER.info(format("intArrayToBigDecimalArray: {0}", asList(intArrayToBigDecimalArray(new int[] { 2, 5, 8, 13, 40 }))).toString());
+		IntStream.range(0, 3).forEach(n -> LOGGER.info("IntStream: #" + n));
 	}
 
 	/**
@@ -143,6 +73,15 @@ public class StreamEssay {
 	 */
 	public static <T extends Enum<T>> Set<String> enumToSetOfString(Class<T> enumType) {
 		return Collections.unmodifiableSet((Set<String>) Arrays.stream(enumType.getEnumConstants()).map(v -> v.name()).collect(Collectors.toCollection(LinkedHashSet::new)));
+	}
+
+	/**
+	 * Converts the given array of integers into an array of {@link BigDecimal}
+	 * @param numbers the given array of numbers
+	 * @return the array of {@link BigDecimal}
+	 */
+	public static BigDecimal[] intArrayToBigDecimalArray(int[] numbers) {
+		return stream(numbers).mapToObj(x -> new BigDecimal(Integer.toString(x))).toArray(BigDecimal[]::new);
 	}
 
 	/** Standard logger */

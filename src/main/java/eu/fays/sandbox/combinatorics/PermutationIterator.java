@@ -1,13 +1,12 @@
 package eu.fays.sandbox.combinatorics;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 
 /**
  * Sources:<br>
  * <ul>
  * <li><a href="http://stackoverflow.com/questions/2000048/stepping-through-all-permutations-one-swap-at-a-time/11916946#11916946">Stepping through all permutations one swap at a time</a>
- * <li><a href="https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm#Even.27s_speedup">Steinhaus–Johnson–Trotter algorithm</a>
+ * <li><a href="https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm#Even.27s_speedup">Steinhausï¿½Johnsonï¿½Trotter algorithm</a>
  * </ul>
  */
 public class PermutationIterator implements Iterator<int[]> {
@@ -121,8 +120,6 @@ public class PermutationIterator implements Iterator<int[]> {
 	 * @param argv only first argument will be used
 	 */
 	public static void main(String argv[]) {
-		final BigDecimal[] values = { new BigDecimal("2"), new BigDecimal("5"), new BigDecimal("8"), new BigDecimal("13"), new BigDecimal("40") };
-		final BigDecimal objective = new BigDecimal("3");
 		String s = argv[0];
 		for (Iterator<int[]> it = new PermutationIterator(s.length()); it.hasNext();) {
 			print(s, it.next());
