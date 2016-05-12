@@ -3,6 +3,7 @@ package eu.fays.sandbox.combinatorics;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -67,12 +68,27 @@ public class PermutationIterator implements Iterator<int[]> {
 		throw new UnsupportedOperationException();
 	}
 
-	public Stream<int[]> stream() {
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED), false);
+	/**
+	 * Converts this iterator into a stream
+	 * @param parallel if {@code true} then the returned stream is a parallel stream; if {@code false} the returned stream is a sequential stream.
+	 * @return the stream
+	 */
+	public Stream<int[]> permutationStream(final boolean parallel) {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED), parallel);
 	}
 
 	/**
-	 * @return
+	 * Factory method : provides a new stream of permutations
+	 * @param size number of elements
+	 * @param parallel if {@code true} then the returned stream is a parallel stream; if {@code false} the returned stream is a sequential stream.
+	 * @return the new stream
+	 */
+	public static Stream<int[]> permutationStream(final int size, final boolean parallel) {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new PermutationIterator(size), Spliterator.ORDERED), parallel);
+	}
+
+	/**
+	 * @return next permutation
 	 */
 	private int[] makeNext() {
 		if (_next != null)
@@ -120,9 +136,6 @@ public class PermutationIterator implements Iterator<int[]> {
 		arr[j] = v;
 	}
 
-	// -----------------------------------------------------------------
-	// Testing code:
-
 	/**
 	 * Main
 	 * @param argv only first argument will be used
@@ -130,18 +143,15 @@ public class PermutationIterator implements Iterator<int[]> {
 	public static void main(String argv[]) {
 		String s = argv[0];
 		for (Iterator<int[]> it = new PermutationIterator(s.length()); it.hasNext();) {
-			print(s, it.next());
+			final int[] perm = it.next();
+			final StringBuilder builder = new StringBuilder(s.length());
+			for (int j = 0; j < perm.length; j++) {
+				builder.append(s.charAt(perm[j]));
+				LOGGER.info(builder.toString());
+			}
 		}
 	}
 
-	/**
-	 * Applies the permutation on the given string then print it
-	 * @param s the given string
-	 * @param perm the permutation indexes
-	 */
-	protected static void print(String s, int[] perm) {
-		for (int j = 0; j < perm.length; j++)
-			System.out.print(s.charAt(perm[j]));
-		System.out.println();
-	}
+	/** Standard logger */
+	private static final Logger LOGGER = Logger.getLogger(PermutationIterator.class.getName());
 }

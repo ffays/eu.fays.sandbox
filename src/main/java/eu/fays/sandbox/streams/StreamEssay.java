@@ -92,6 +92,7 @@ public class StreamEssay {
 	 * <br>
 	 * Source: <a href="http://stackoverflow.com/questions/24511052/how-to-convert-an-iterator-to-a-stream">How to convert an iterator to a stream?</a>
 	 * @param iterator the given iterator
+	 * @param <T> the type of both the given iterator and the resulting stream
 	 * @return the stream
 	 */
 	public static <T> Stream<T> iteratorToStream1(final Iterator<T> iterator) {
@@ -103,6 +104,7 @@ public class StreamEssay {
 	 * <br>
 	 * Source: <a href="http://stackoverflow.com/questions/24511052/how-to-convert-an-iterator-to-a-stream">How to convert an iterator to a stream?</a>
 	 * @param iterator the given iterator
+	 * @param <T> the type of both the given iterator and the resulting stream
 	 * @return the stream
 	 */
 	public static <T> Stream<T> iteratorToStream2(final Iterator<T> iterator) {
