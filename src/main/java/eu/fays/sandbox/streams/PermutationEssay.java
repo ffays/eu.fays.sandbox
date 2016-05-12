@@ -144,6 +144,8 @@ public class PermutationEssay {
 	}
 
 	/**
+	 * Cartesian product of two streams.<br>
+	 * Stream of Stream to Stream.<br>
 	 * c.f. <a href="http://stackoverflow.com/questions/25412377/why-cant-stream-of-streams-be-reduced-un-parallel-stream-has-already-been-o">Why can't stream of streams be reduced un parallel ? / stream has already been
 	 * operated upon or closed</a>
 	 */
