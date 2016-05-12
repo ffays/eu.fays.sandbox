@@ -53,7 +53,7 @@ public class PermutationEssay {
 	/**
 	 * Using the given numbers, combine all of them with basic arithmetic operations (i.e. +,-,*,/) to obtain the given goal.
 	 * @param goal the result of the equation
-	 * @param numbers the give numbers.
+	 * @param numbers the given numbers.
 	 * @return the list of solution meeting the goal.
 	 */
 	public static List<Solution> computeSolution1(final int goal, final int[] numbers) {
@@ -92,7 +92,7 @@ public class PermutationEssay {
 	/**
 	 * Using the given numbers, combine all of them with basic arithmetic operations (i.e. +,-,*,/) to obtain the given expected result of the equation.
 	 * @param expected the expected result of the equation
-	 * @param numbers the give numbers.
+	 * @param numbers the given numbers.
 	 * @return the list of solution meeting the goal.
 	 */
 	public static List<Solution> computeSolution2(final int expected, final int[] numbers) {
@@ -122,7 +122,7 @@ public class PermutationEssay {
 	/**
 	 * Using the given numbers, combine all of them with basic arithmetic operations (i.e. +,-,*,/) to obtain the given expected result of the equation.
 	 * @param expected the expected result of the equation
-	 * @param numbers the give numbers.
+	 * @param numbers the given numbers.
 	 * @return the list of solution meeting the goal.
 	 */
 	public static List<Solution> computeSolution3(final int expected, final int[] numbers) {
