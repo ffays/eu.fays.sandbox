@@ -33,6 +33,15 @@ public class Solution {
 	}
 
 	/**
+	 * Compares the result of the computation with the given number
+	 * @param x the number
+	 * @return either true or false
+	 */
+	public boolean equalsTo(int x) {
+		return x == compute();
+	}
+	
+	/**
 	 * Computes the solution
 	 * @param operations sequence of operations applied on the given numbers
 	 * @param numbers the given numbers

@@ -1,6 +1,8 @@
 package eu.fays.sandbox.streams;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 @SuppressWarnings("nls")
 public enum Operation {
@@ -32,9 +34,13 @@ public enum Operation {
 		case MULTIPLY:
 			return a * b;
 		case DIVIDE:
-			return (a % b) == 0 ? a / b : Integer.MAX_VALUE;
+			return b != 0 && (a % b) == 0 ? a / b : Integer.MAX_VALUE;
 		}
 		return Integer.MAX_VALUE;
+	}
+
+	public static Stream<Operation> stream() {
+		return Arrays.stream(values());
 	}
 
 	/** Display label */

@@ -1,6 +1,10 @@
 package eu.fays.sandbox.combinatorics;
 
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Sources:<br>
@@ -61,6 +65,10 @@ public class PermutationIterator implements Iterator<int[]> {
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
+	}
+
+	public Stream<int[]> stream() {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED), false);
 	}
 
 	/**

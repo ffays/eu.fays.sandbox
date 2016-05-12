@@ -1,19 +1,22 @@
 package eu.fays.sandbox.streams;
 
 import static java.text.MessageFormat.format;
-
-import java.math.BigDecimal;
-
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
-import static java.util.Arrays.asList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import eu.fays.sandbox.iterators.Fruit;
 
@@ -82,6 +85,30 @@ public class StreamEssay {
 	 */
 	public static BigDecimal[] intArrayToBigDecimalArray(int[] numbers) {
 		return stream(numbers).mapToObj(x -> new BigDecimal(Integer.toString(x))).toArray(BigDecimal[]::new);
+	}
+
+	/**
+	 * Converts the given iterator into a stream<br>
+	 * <br>
+	 * Source: <a href="http://stackoverflow.com/questions/24511052/how-to-convert-an-iterator-to-a-stream">How to convert an iterator to a stream?</a>
+	 * @param iterator the given iterator
+	 * @return the stream
+	 */
+	public static <T> Stream<T> iteratorToStream1(final Iterator<T> iterator) {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+	}
+
+	/**
+	 * Converts the given iterator into a stream<br>
+	 * <br>
+	 * Source: <a href="http://stackoverflow.com/questions/24511052/how-to-convert-an-iterator-to-a-stream">How to convert an iterator to a stream?</a>
+	 * @param iterator the given iterator
+	 * @return the stream
+	 */
+	public static <T> Stream<T> iteratorToStream2(final Iterator<T> iterator) {
+		final Iterable<T> iterable = () -> iterator;
+		final Stream<T> result = StreamSupport.stream(iterable.spliterator(), false);
+		return result;
 	}
 
 	/** Standard logger */
