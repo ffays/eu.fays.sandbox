@@ -48,7 +48,8 @@ public class PermutationEssay {
 		LOGGER.info(format("Duration #3: {0} ms", duration()));
 		computeSolution4(goal, numbers);
 		LOGGER.info(format("Duration #4: {0} ms", duration()));
-
+		computeSolution5(goal, numbers);
+		LOGGER.info(format("Duration #5: {0} ms", duration()));
 
 	}
 
@@ -168,6 +169,32 @@ public class PermutationEssay {
 		/** @formatter:on */
 		return unmodifiableList(result);
 	}
+
+	/**
+	 * Using the given numbers, combine all of them with basic arithmetic operations (i.e. +,-,*,/) to obtain the given expected result of the equation.
+	 * @param expected the expected result of the equation
+	 * @param numbers the given numbers.
+	 * @return the list of solution meeting the goal.
+	 */
+	public static List<Solution> computeSolution5(final int expected, final int[] numbers) {
+		/** @formatter:off */
+		final List<Solution> result = operationStream()
+			.map(o1 -> operationStream()
+				.map(o2 -> operationStream()
+					.map(o3 -> operationStream()
+						.map(o4 -> permutationStream(numbers.length, true)
+							.map(i -> new Solution(new Operation[] { o1, o2, o3, o4 }, new int[] { numbers[i[0]], numbers[i[1]], numbers[i[2]], numbers[i[3]], numbers[i[4]] }))))))
+								.flatMap(Function.identity())
+									.flatMap(Function.identity())
+										.flatMap(Function.identity())
+											.flatMap(Function.identity())
+												.parallel()
+													.filter(sol -> sol.equalsTo(expected))
+														.collect(toList());
+		/** @formatter:on */
+		return unmodifiableList(result);
+	}
+
 	/**
 	 * Cartesian product of two streams.<br>
 	 * Stream of Stream to Stream.<br>
