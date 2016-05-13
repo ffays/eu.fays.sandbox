@@ -44,6 +44,12 @@ public class FormatEssay {
 		LOGGER.info(format("Date     : {0,date,yyyy-MM-dd}", Calendar.getInstance().getTime()));
 		LOGGER.info(format("Time     : {0,date,HH:mm:ss}", Calendar.getInstance().getTime()));
 		LOGGER.info(format("Date #2  : {0,date,dd-MMM-yyyy}", Calendar.getInstance().getTime()));
+		LOGGER.info(format("Integer#2:{0,number,00}", -1));
+		LOGGER.info(format("Integer#3:{0,number,00}", 1));
+		LOGGER.info(String.format("Integer#4:%02d", -1));
+		LOGGER.info(String.format("Integer#5:%02d", 1));
+		LOGGER.info(format("Integer#6:''{0,number,#;(#)}''", -1));
+		LOGGER.info(format("Integer#7:''{0,number,#;(#)}''", 1));
 	}
 
 	/** Standard logger */
