@@ -27,7 +27,14 @@ import eu.fays.sandbox.combinatorics.PermutationIterator;
 public class PermutationEssay {
 
 	/**
-	 * Main
+	 * Main<br>
+	 * <br>
+	 * VM args :
+	 * 
+	 * <pre>
+	 * -ea -Djava.util.logging.config.file=logging.properties
+	 * </pre>
+	 * 
 	 * @param args unused
 	 */
 	public static void main(String[] args) {
