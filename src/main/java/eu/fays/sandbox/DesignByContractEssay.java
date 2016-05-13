@@ -3,6 +3,7 @@ package eu.fays.sandbox;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.stream.Stream;
 
@@ -45,6 +46,8 @@ public class DesignByContractEssay {
 		assert !dateString.isEmpty();
 		// Could we do the next pre-condition using an in-line java.util.function.Predicate<T>?
 		assert Stream.of(dateString).map(s -> { try { _dateFormat.parse(s); return true; } catch (Exception e) {}; return false; }).findFirst().orElse(false);
+		// Yet another way
+		assert Collections.singleton(dateString).stream().reduce(false, (a, s) -> { try { _dateFormat.parse(s); return true; } catch (Exception e) {}; return false; }, (a, s) -> null);
 		/* @formatter:on */
 
 		Date result = null;
