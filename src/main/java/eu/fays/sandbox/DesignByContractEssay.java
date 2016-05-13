@@ -1,10 +1,14 @@
 package eu.fays.sandbox;
 
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
@@ -15,14 +19,34 @@ import java.util.stream.Stream;
 public class DesignByContractEssay {
 
 	/**
-	 * Main
+	 * Main<br>
+	 * <br>
+	 * VM args :
+	 * 
+	 * <pre>
+	 * -ea -Djava.util.logging.config.file=logging.properties
+	 * </pre>
+	 * 
 	 * @param args unused
 	 */
 	public static void main(String[] args) {
-		final DateFormat format = new SimpleDateFormat("yyyyMMdd");
-		final DesignByContractEssay essay = new DesignByContractEssay(format);
-		essay.parseDate("19700101");
-		essay.parseDate("xxxx");
+		final String validInput = "19700101";
+		final String invalidInput = "xxxx";
+		try {
+			LOGGER.info(MessageFormat.format("{0,number}", parseInt(validInput)));
+			DesignByContractEssay.parseInt(invalidInput);
+		} catch (AssertionError e) {
+			LOGGER.log(Level.SEVERE, e.getClass().getSimpleName(), e);
+		}
+
+		try {
+			final DateFormat format = new SimpleDateFormat("yyyyMMdd");
+			final DesignByContractEssay essay = new DesignByContractEssay(format);
+			LOGGER.info(MessageFormat.format("{0,date,yyyy-MM-dd}", essay.parseDate(validInput)));
+			essay.parseDate(invalidInput);
+		} catch (AssertionError e) {
+			LOGGER.log(Level.SEVERE, e.getClass().getSimpleName(), e);			
+		}
 	}
 
 	/**
@@ -34,20 +58,40 @@ public class DesignByContractEssay {
 	}
 
 	/**
+	 * Parse the given string
+	 * @param intString the string representation of an integer
+	 * @return the integer value
+	 */
+	public static int parseInt(final String intString) {
+		// Pre-conditions
+		/* @formatter:off */
+		assert intString != null;
+		assert !intString.isEmpty();
+		
+		// Could we do the next pre-condition using an in-line java.util.function.Predicate<T>?
+		// 1st way:
+		assert Optional.of(intString).filter(s -> { try { Integer.parseInt(intString); return true; } catch (NumberFormatException e) {}; return false; }).isPresent();
+		// 2nd way:
+		assert Stream.of(intString).map(s -> { try { Integer.parseInt(intString); return true; } catch (NumberFormatException e) {}; return false; }).findFirst().orElse(false);
+		// 3rd way:
+		assert Collections.singleton(intString).stream().reduce(false, (a, s) -> { try { Integer.parseInt(intString); return true; } catch (NumberFormatException e) {}; return false; }, (a, s) -> null);
+		/* @formatter:on */
+
+		return Integer.parseInt(intString);
+
+	}
+
+	/**
 	 * Parse the given date
 	 * @param dateString the given date
 	 * @return the date
 	 */
 	public Date parseDate(final String dateString) {
-
 		// Pre-conditions
 		/* @formatter:off */
 		assert dateString != null;
 		assert !dateString.isEmpty();
-		// Could we do the next pre-condition using an in-line java.util.function.Predicate<T>?
-		assert Stream.of(dateString).map(s -> { try { _dateFormat.parse(s); return true; } catch (Exception e) {}; return false; }).findFirst().orElse(false);
-		// Yet another way
-		assert Collections.singleton(dateString).stream().reduce(false, (a, s) -> { try { _dateFormat.parse(s); return true; } catch (Exception e) {}; return false; }, (a, s) -> null);
+		assert Optional.of(dateString).filter(s -> { try { _dateFormat.parse(s); return true; } catch (Exception e) {}; return false; }).isPresent();
 		/* @formatter:on */
 
 		Date result = null;
@@ -66,4 +110,7 @@ public class DesignByContractEssay {
 
 	/** A date format */
 	private final DateFormat _dateFormat;
+
+	/** Standard logger */
+	private static final Logger LOGGER = Logger.getLogger(DesignByContractEssay.class.getName());
 }
