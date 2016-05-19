@@ -10,3 +10,22 @@ repositories {
 dependencies {
 	testCompile 'junit:junit:4.12'
 }
+
+task printDeps {
+	group 'essay'
+	doLast {
+		println "Dependencies:"
+		configurations.lib_sources.each { println it }
+	}
+}
+
+task artifacts {
+	group = "essay"
+	description = "Displays the artifacts associated with each configuration of " + project
+	doFirst {
+		configurations.findAll().each { config ->
+		println "${config}:"
+		config.each { file -> println "" + file}
+		println ' '
+	}
+}
