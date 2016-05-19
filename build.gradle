@@ -13,9 +13,10 @@ dependencies {
 
 task printDeps {
 	group 'essay'
+	description = "Displays the libraries associated to 'testCompile'"
 	doLast {
 		println "Dependencies:"
-		configurations.lib_sources.each { println it }
+		configurations.testCompile.each { println it }
 	}
 }
 
