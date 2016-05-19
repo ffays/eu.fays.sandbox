@@ -24,8 +24,9 @@ task artifacts {
 	description = "Displays the artifacts associated with each configuration of " + project
 	doFirst {
 		configurations.findAll().each { config ->
-		println "${config}:"
-		config.each { file -> println "" + file}
-		println ' '
+			println "${config}:"
+			config.each { file -> println "" + file}
+			println ' '
+		}
 	}
 }
