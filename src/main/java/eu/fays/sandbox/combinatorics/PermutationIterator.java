@@ -13,6 +13,8 @@ import java.util.stream.StreamSupport;
  * <li><a href="http://stackoverflow.com/questions/2000048/stepping-through-all-permutations-one-swap-at-a-time/11916946#11916946">Stepping through all permutations one swap at a time</a>
  * <li><a href="https://en.wikipedia.org/wiki/Steinhaus%E2%80%93Johnson%E2%80%93Trotter_algorithm#Even.27s_speedup">Steinhaus�Johnson�Trotter algorithm</a>
  * </ul>
+ * <strong>Strong advice</strong>: do not use this class! It is far more wise to rely on a well-tested library such as <a href="http://commons.apache.org/proper/commons-math/">The Apache Commons Mathematics Library</a>, and to use the class
+ * <a href="http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/util/CombinatoricsUtils.html">CombinatoricsUtils</a>
  */
 public class PermutationIterator implements Iterator<int[]> {
 	private int[] _next = null;
