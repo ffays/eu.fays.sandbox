@@ -48,6 +48,16 @@ public class StreamEssay {
 		LOGGER.info(format("enumToSetOfString: {0}", enumToSetOfString(Fruit.class)));
 		LOGGER.info(format("intArrayToBigDecimalArray: {0}", asList(intArrayToBigDecimalArray(new int[] { 2, 5, 8, 13, 40 }))).toString());
 		IntStream.range(0, 3).forEach(n -> LOGGER.info("IntStream: #" + n));
+		LOGGER.info(format("areAllValuesIntegers #1.1: {0}", areAllValuesIntegers1(new double[] { 1d, 2d, 3d })));
+		LOGGER.info(format("areAllValuesIntegers #2.1: {0}", areAllValuesIntegers1(new double[] { 1d, Math.PI, Math.E })));
+		LOGGER.info(format("areAllValuesIntegers #3.1: {0}", areAllValuesIntegers1(new double[] { 1d, Double.NaN })));
+		LOGGER.info(format("areAllValuesIntegers #4.1: {0}", areAllValuesIntegers1(new double[] { 1d, Double.POSITIVE_INFINITY })));
+		LOGGER.info(format("areAllValuesIntegers #5.1: {0}", areAllValuesIntegers1(new double[] { 1d, 3.14d })));
+		LOGGER.info(format("areAllValuesIntegers #1.2: {0}", areAllValuesIntegers2(new double[] { 1d, 2d, 3d })));
+		LOGGER.info(format("areAllValuesIntegers #2.2: {0}", areAllValuesIntegers2(new double[] { 1d, Math.PI, Math.E })));
+		LOGGER.info(format("areAllValuesIntegers #3.2: {0}", areAllValuesIntegers2(new double[] { 1d, Double.NaN })));
+		LOGGER.info(format("areAllValuesIntegers #4.2: {0}", areAllValuesIntegers2(new double[] { 1d, Double.POSITIVE_INFINITY })));
+		LOGGER.info(format("areAllValuesIntegers #5.2: {0}", areAllValuesIntegers2(new double[] { 1d, 3.14d })));
 	}
 
 	/**
@@ -111,6 +121,26 @@ public class StreamEssay {
 		final Iterable<T> iterable = () -> iterator;
 		final Stream<T> result = StreamSupport.stream(iterable.spliterator(), false);
 		return result;
+	}
+
+	/**
+	 * Tells if all given values are integer values.<br>
+	 * Source: <a href="http://stackoverflow.com/questions/9898512/how-to-test-if-a-double-is-an-integer">Stackoverflow - How to test if a double is an integer</a>
+	 * @param values the values
+	 * @return either true or false.
+	 */
+	public static boolean areAllValuesIntegers1(final double[] values) {
+		return Arrays.stream(values).mapToObj(v -> new Double(v)).reduce(true, (a, v) -> a && (v == Math.floor(v)) && Double.isFinite(v), (a, v) -> null);
+	}
+
+	/**
+	 * Tells if all given values are integer values.<br>
+	 * Source: <a href="http://stackoverflow.com/questions/9898512/how-to-test-if-a-double-is-an-integer">Stackoverflow - How to test if a double is an integer</a>
+	 * @param values the values
+	 * @return either true or false.
+	 */
+	public static boolean areAllValuesIntegers2(final double[] values) {
+		return Arrays.stream(values).mapToObj(v -> new Double(v)).reduce(true, (a, v) -> a && ((v % 1) == 0), (a, v) -> null);
 	}
 
 	/** Standard logger */
