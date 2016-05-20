@@ -48,16 +48,16 @@ public class StreamEssay {
 		LOGGER.info(format("enumToSetOfString: {0}", enumToSetOfString(Fruit.class)));
 		LOGGER.info(format("intArrayToBigDecimalArray: {0}", asList(intArrayToBigDecimalArray(new int[] { 2, 5, 8, 13, 40 }))).toString());
 		IntStream.range(0, 3).forEach(n -> LOGGER.info("IntStream: #" + n));
-		LOGGER.info(format("areAllValuesIntegers #1.1: {0}", areAllValuesIntegers1(new double[] { 1d, 2d, 3d })));
-		LOGGER.info(format("areAllValuesIntegers #2.1: {0}", areAllValuesIntegers1(new double[] { 1d, Math.PI, Math.E })));
-		LOGGER.info(format("areAllValuesIntegers #3.1: {0}", areAllValuesIntegers1(new double[] { 1d, Double.NaN })));
-		LOGGER.info(format("areAllValuesIntegers #4.1: {0}", areAllValuesIntegers1(new double[] { 1d, Double.POSITIVE_INFINITY })));
-		LOGGER.info(format("areAllValuesIntegers #5.1: {0}", areAllValuesIntegers1(new double[] { 1d, 3.14d })));
-		LOGGER.info(format("areAllValuesIntegers #1.2: {0}", areAllValuesIntegers2(new double[] { 1d, 2d, 3d })));
-		LOGGER.info(format("areAllValuesIntegers #2.2: {0}", areAllValuesIntegers2(new double[] { 1d, Math.PI, Math.E })));
-		LOGGER.info(format("areAllValuesIntegers #3.2: {0}", areAllValuesIntegers2(new double[] { 1d, Double.NaN })));
-		LOGGER.info(format("areAllValuesIntegers #4.2: {0}", areAllValuesIntegers2(new double[] { 1d, Double.POSITIVE_INFINITY })));
-		LOGGER.info(format("areAllValuesIntegers #5.2: {0}", areAllValuesIntegers2(new double[] { 1d, 3.14d })));
+		LOGGER.info(format("areAllValuesIntegers1 #1: {0}", areAllValuesIntegers1(new double[] { 1d, 2d, 3d })));
+		LOGGER.info(format("areAllValuesIntegers1 #2: {0}", areAllValuesIntegers1(new double[] { 1d, Math.PI, Math.E })));
+		LOGGER.info(format("areAllValuesIntegers1 #3: {0}", areAllValuesIntegers1(new double[] { 1d, Double.NaN })));
+		LOGGER.info(format("areAllValuesIntegers1 #4: {0}", areAllValuesIntegers1(new double[] { 1d, Double.POSITIVE_INFINITY })));
+		LOGGER.info(format("areAllValuesIntegers1 #5: {0}", areAllValuesIntegers1(new double[] { 1d, 3.14d })));
+		LOGGER.info(format("areAllValuesIntegers2 #1: {0}", areAllValuesIntegers2(new double[] { 1d, 2d, 3d })));
+		LOGGER.info(format("areAllValuesIntegers2 #2: {0}", areAllValuesIntegers2(new double[] { 1d, Math.PI, Math.E })));
+		LOGGER.info(format("areAllValuesIntegers2 #3: {0}", areAllValuesIntegers2(new double[] { 1d, Double.NaN })));
+		LOGGER.info(format("areAllValuesIntegers2 #4: {0}", areAllValuesIntegers2(new double[] { 1d, Double.POSITIVE_INFINITY })));
+		LOGGER.info(format("areAllValuesIntegers2 #5: {0}", areAllValuesIntegers2(new double[] { 1d, 3.14d })));
 	}
 
 	/**
