@@ -58,6 +58,7 @@ public class StreamEssay {
 		LOGGER.info(format("areAllValuesIntegers2 #3: {0}", areAllValuesIntegers2(new double[] { 1d, Double.NaN })));
 		LOGGER.info(format("areAllValuesIntegers2 #4: {0}", areAllValuesIntegers2(new double[] { 1d, Double.POSITIVE_INFINITY })));
 		LOGGER.info(format("areAllValuesIntegers2 #5: {0}", areAllValuesIntegers2(new double[] { 1d, 3.14d })));
+		LOGGER.info(format("enumLookup              : {0}", enumLookup(Fruit.class, Fruit.APPLE)));
 	}
 
 	/**
@@ -86,6 +87,17 @@ public class StreamEssay {
 	 */
 	public static <T extends Enum<T>> Set<String> enumToSetOfString(Class<T> enumType) {
 		return Collections.unmodifiableSet((Set<String>) Arrays.stream(enumType.getEnumConstants()).map(v -> v.name()).collect(Collectors.toCollection(LinkedHashSet::new)));
+	}
+
+	/**
+	 * Lookup for the given enumeration value into the values of give enumeration type and returns its index.
+	 * @param enumType the type of the enumeration
+	 * @param enumValue the value to search for.
+	 * @return the index within the enumeration.
+	 */
+	public static <T extends Enum<T>> int enumLookup(Class<T> enumType, T enumValue) {
+		T[] values = enumType.getEnumConstants();
+		return IntStream.range(0, values.length).reduce(-1, (a, v) -> values[v] == enumValue ? v : a);
 	}
 
 	/**
