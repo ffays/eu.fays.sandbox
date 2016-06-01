@@ -50,6 +50,7 @@ public class FormatEssay {
 		LOGGER.info(String.format("Integer#5:%02d", 1));
 		LOGGER.info(format("Integer#6:''{0,number,#;(#)}''", -1));
 		LOGGER.info(format("Integer#7:''{0,number,#;(#)}''", 1));
+		LOGGER.info(format("Integer#8:''{0,number,0}''", 1 << 16));
 	}
 
 	/** Standard logger */
