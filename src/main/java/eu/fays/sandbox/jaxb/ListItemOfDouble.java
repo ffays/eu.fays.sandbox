@@ -8,8 +8,23 @@ import javax.xml.bind.annotation.XmlValue;
  * List Item of double
  * @author Frederic Fays
  */
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.NONE)
 public class ListItemOfDouble {
+
+	/**
+	 * Constructor
+	 */
+	public ListItemOfDouble() {
+		this(0d);
+	}
+
+	/**
+	 * Constructor
+	 * @param li value of the list item
+	 */
+	public ListItemOfDouble(double li) {
+		_li = li;
+	}
 
 	/**
 	 * Returns the value
@@ -28,18 +43,31 @@ public class ListItemOfDouble {
 	}
 
 	/**
-	 * Constructor
+	 * @see java.lang.Object#hashCode()
 	 */
-	public ListItemOfDouble() {
-		this(0d);
+	@Override
+	public int hashCode() {
+		return new Double(_li).hashCode();
 	}
 
 	/**
-	 * Constructor
-	 * @param li value of the list item
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public ListItemOfDouble(double li) {
-		_li = li;
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj == null || !(obj instanceof ListItemOfDouble)) {
+			return false;
+		}
+		final ListItemOfDouble o = (ListItemOfDouble) obj;
+		return ((Double) getLi()).equals((Double) o.getLi());
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return Double.toString(_li);
 	}
 
 	/** list item's value */

@@ -16,6 +16,25 @@ import javax.xml.bind.annotation.XmlValue;
 public class ListItem<T> {
 
 	/**
+	 * Constructor
+	 */
+	public ListItem() {
+		try {
+			_li = newLi();
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+
+		}
+	}
+
+	/**
+	 * Constructor
+	 * @param li value of the list item
+	 */
+	public ListItem(T li) {
+		_li = li;
+	}
+
+	/**
 	 * Returns the value
 	 * @return the value
 	 */
@@ -48,22 +67,33 @@ public class ListItem<T> {
 	}
 
 	/**
-	 * Constructor
+	 * @see java.lang.Object#hashCode()
 	 */
-	public ListItem() {
-		try {
-			_li = newLi();
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-
-		}
+	@Override
+	public int hashCode() {
+		return getLi().hashCode();
 	}
 
 	/**
-	 * Constructor
-	 * @param li value of the list item
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public ListItem(T li) {
-		_li = li;
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj == null || !(getClass().isInstance(obj))) {
+			return false;
+		}
+
+		@SuppressWarnings("unchecked")
+		final ListItem<T> o = (ListItem<T>) obj;
+		return getLi().equals(o.getLi());
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return getLi().toString();
 	}
 
 	/** list item's value */
