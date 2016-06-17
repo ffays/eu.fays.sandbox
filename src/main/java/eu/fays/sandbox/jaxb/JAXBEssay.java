@@ -9,14 +9,21 @@ import java.util.GregorianCalendar;
 
 import eu.fays.sandbox.iterators.Fruit;
 
+/**
+ * An essay on JAXB unmarshalling and unmarshalling
+ * @author Frederic Fays
+ */
 @SuppressWarnings("nls")
-public class XmlEssay {
+public class JAXBEssay {
 
-	public static final double PHI = (1d + sqrt(5d)) / 2d;
-
+	/**
+	 * Main
+	 * @param args unused
+	 * @throws Exception in case of unexpected error
+	 */
 	public static void main(String[] args) throws Exception {
 		{
-			final File file = new File("output/data.xml");
+			final File file = new File("output/my_data_empty.xml");
 			final MyData myOutputData = new MyData();
 			myOutputData.marshal(file);
 			final MyData myInputData = MyData.unmarshal(file);
@@ -24,15 +31,19 @@ public class XmlEssay {
 		}
 
 		{
-			final File file = new File("output/data2.xml");
+			final File file = new File("output/my_data_with_values.xml");
 			final MyData myOutputData = new MyData(false, 1, new GregorianCalendar(), new GregorianCalendar(), Fruit.ORANGE);
 			myOutputData.addNumber(PHI);
 			myOutputData.addNumber(E);
 			myOutputData.addNumber(PI);
 			myOutputData.marshal(file);
+			final MyData myInputData = MyData.unmarshal(file);
+			assert myInputData.equals(myOutputData);
 		}
 
 	}
 
-	
+	/** The golden ratio */
+	public static final double PHI = (1d + sqrt(5d)) / 2d;
+
 }
