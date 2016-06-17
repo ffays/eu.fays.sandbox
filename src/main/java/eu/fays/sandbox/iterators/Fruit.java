@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 public enum Fruit {
 	ORANGE, BANANA, APPLE, MANGO, APRICOT;
 
+	/** Default value */
+	public static final Fruit DEFAULT = APPLE;
+	
 	/**
 	 * Returns its ordinal number (starting from zero)
 	 * @return its ordinal number
