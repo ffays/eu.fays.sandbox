@@ -1,7 +1,12 @@
 package eu.fays.sandbox.jaxb;
 
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -148,7 +153,7 @@ public class MyData {
 	}
 
 	public void setMyTimeStamp(final GregorianCalendar myTimeStamp) {
-		this.myTimeStamp = myTimeStamp;
+		this.myTimeStamp = (GregorianCalendar) myTimeStamp.clone();
 		if (!this.myTimeStamp.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
 			this.myTimeStamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 		}
@@ -162,10 +167,14 @@ public class MyData {
 	}
 
 	public void setMyDate(final GregorianCalendar myDate) {
-		this.myDate = myDate;
-		if (!this.myDate.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
-			this.myDate.setTimeZone(TimeZone.getTimeZone("UTC"));
-		}
+		//
+		assert myDate != null;
+		//
+
+		GregorianCalendar c0 = (GregorianCalendar) myDate.clone();
+		GregorianCalendar c = defaultGregorianCalendar();
+		Arrays.stream(new int[] { YEAR, MONTH, DAY_OF_MONTH }).forEach(f -> c.set(f, c0.get(f)));
+		this.myDate = c;
 	}
 
 	public Fruit getMyFruit() {
