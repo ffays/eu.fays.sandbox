@@ -2,6 +2,7 @@ package eu.fays.sandbox.jaxb;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +14,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,19 +35,21 @@ import eu.fays.sandbox.iterators.Fruit;
  * <ul>
  * <li><a href="http://lists.xml.org/archives/xml-dev/200902/msg00060.html">A bad idea to use the XML Schema list type?</a>
  * <li><a href="http://stackoverflow.com/questions/13568543/how-do-you-specify-the-date-format-used-when-jaxb-marshals-xsddatetime">How do you specify the date format used when JAXB marshals xsd:dateTime?</a>
+ * <li><a href="http://blog.bdoughan.com/2011/06/using-jaxbs-xmlaccessortype-to.html">Using JAXB's @XmlAccessorType to Configure Field or Property Access</a>
  * </ul>
  * 
  * @author Frederic Fays
  */
 @SuppressWarnings("nls")
 @XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = { "myDate", "myTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList" })
 public class MyData {
 	/**
 	 * Constructor with default values
 	 */
 	public MyData() {
-		this(true, 0, defaultGregorianCalendar(), defaultGregorianCalendar(), Fruit.DEFAULT);
+
 	}
 
 	/**
@@ -60,7 +65,7 @@ public class MyData {
 		setMyTimeStamp(myTimeStamp);
 		setMyDate(myDate);
 		setMyFruit(myFruit);
-		_myNumberList = new ArrayList<>();
+		this.myNumberList = new ArrayList<>();
 	}
 
 	/**
@@ -112,65 +117,82 @@ public class MyData {
 	}
 
 	public boolean isMyBoolean() {
-		return _myBoolean;
+		if (myBoolean == null) {
+			return false;
+		}
+		return myBoolean;
 	}
 
 	public void setMyBoolean(final boolean myBoolean) {
-		_myBoolean = myBoolean;
+		this.myBoolean = myBoolean;
 	}
 
 	public int getMyInteger() {
-		return _myInteger;
+		if (myInteger == null) {
+			return 0;
+		}
+		return myInteger;
 	}
 
 	public void setMyInteger(final int myInteger) {
-		_myInteger = myInteger;
+		this.myInteger = myInteger;
 	}
 
 	public GregorianCalendar getMyTimeStamp() {
-		return _myTimeStamp;
+		if (myTimeStamp == null) {
+			return defaultGregorianCalendar();
+		}
+		return myTimeStamp;
 	}
 
-	public void setMyTimeStamp(GregorianCalendar myTimeStamp) {
-		_myTimeStamp = myTimeStamp;
-		if (!_myTimeStamp.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
-			_myTimeStamp.setTimeZone(TimeZone.getTimeZone("UTC"));
+	public void setMyTimeStamp(final GregorianCalendar myTimeStamp) {
+		this.myTimeStamp = myTimeStamp;
+		if (!this.myTimeStamp.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
+			this.myTimeStamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 		}
 	}
 
-	@XmlElement(name = "myDate")
-	@XmlJavaTypeAdapter(XMLDateAdapter.class)
 	public GregorianCalendar getMyDate() {
-		return _myDate;
+		if (myDate == null) {
+			return defaultGregorianCalendar();
+		}
+		return myDate;
 	}
 
 	public void setMyDate(final GregorianCalendar myDate) {
-		_myDate = myDate;
-		if (!_myDate.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
-			_myDate.setTimeZone(TimeZone.getTimeZone("UTC"));
+		this.myDate = myDate;
+		if (!this.myDate.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
+			this.myDate.setTimeZone(TimeZone.getTimeZone("UTC"));
 		}
 	}
 
 	public Fruit getMyFruit() {
-		return _myFruit;
+		if (myFruit == null) {
+			return Fruit.DEFAULT;
+		}
+		return myFruit;
 	}
 
 	public void setMyFruit(final Fruit myFruit) {
-		_myFruit = myFruit;
+		this.myFruit = myFruit;
 	}
 
-	@XmlElementWrapper
-	@XmlElement(name = "li")
 	public List<ListItemOfDouble> getMyNumberList() {
-		return _myNumberList;
+		if (myNumberList == null) {
+			return Collections.emptyList();
+		}
+		return Collections.unmodifiableList(myNumberList);
 	}
 
 	public void setMyNumberList(final List<ListItemOfDouble> myNumberList) {
-		_myNumberList = myNumberList;
+		this.myNumberList = myNumberList;
 	}
 
 	public void addNumber(final double myDouble) {
-		_myNumberList.add(new ListItemOfDouble(myDouble));
+		if (myNumberList == null) {
+			myNumberList = new ArrayList<>();
+		}
+		myNumberList.add(new ListItemOfDouble(myDouble));
 	}
 
 	/**
@@ -226,20 +248,28 @@ public class MyData {
 	private static final File XML_SCHEMA_FILE = new File("xml/MyData.xsd");
 
 	/** A date */
-	private GregorianCalendar _myDate;
+	@XmlElement
+	@XmlJavaTypeAdapter(XMLDateAdapter.class)
+	private GregorianCalendar myDate = null;
 
 	/** A time stamp */
-	private GregorianCalendar _myTimeStamp;
+	@XmlElement
+	private GregorianCalendar myTimeStamp = null;
 
 	/** A boolean */
-	private boolean _myBoolean;
+	@XmlElement
+	private Boolean myBoolean = null;
 
 	/** An integer */
-	private int _myInteger;
+	@XmlElement
+	private Integer myInteger = null;
 
 	/** A fruit */
-	private Fruit _myFruit;
+	@XmlElement
+	private Fruit myFruit = null;
 
 	/** A list of numbers */
-	private List<ListItemOfDouble> _myNumberList;
+	@XmlElementWrapper
+	@XmlElement(name = "li")
+	private List<ListItemOfDouble> myNumberList = null;
 }
