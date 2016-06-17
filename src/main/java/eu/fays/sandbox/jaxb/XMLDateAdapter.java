@@ -22,9 +22,9 @@ public class XMLDateAdapter extends XmlAdapter<String, GregorianCalendar> {
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
 	/** ISO8601 date format */
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+	private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 	static {
-		DATE_FORMAT.setTimeZone(UTC);
+		ISO8601_DATE_FORMAT.setTimeZone(UTC);
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class XMLDateAdapter extends XmlAdapter<String, GregorianCalendar> {
 	 */
 	@Override
 	public String marshal(final GregorianCalendar v) throws Exception {
-		return DATE_FORMAT.format(v.getTime());
+		return ISO8601_DATE_FORMAT.format(v.getTime());
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class XMLDateAdapter extends XmlAdapter<String, GregorianCalendar> {
 	public GregorianCalendar unmarshal(final String v) throws Exception {
 		GregorianCalendar result = new GregorianCalendar();
 		result.setTimeZone(UTC);
-		result.setTime(DATE_FORMAT.parse(v));
+		result.setTime(ISO8601_DATE_FORMAT.parse(v));
 		return result;
 	}
 
@@ -53,7 +53,7 @@ public class XMLDateAdapter extends XmlAdapter<String, GregorianCalendar> {
 	 */
 	public static XMLGregorianCalendar toXMLDate(final GregorianCalendar v) {
 		try {
-			return DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd").format(v.getTime()));
+			return DatatypeFactory.newInstance().newXMLGregorianCalendar(ISO8601_DATE_FORMAT.format(v.getTime()));
 		} catch (DatatypeConfigurationException e) {
 			throw new RuntimeException(e);
 		}
