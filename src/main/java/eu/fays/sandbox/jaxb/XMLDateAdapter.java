@@ -18,8 +18,14 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @SuppressWarnings("nls")
 public class XMLDateAdapter extends XmlAdapter<String, GregorianCalendar> {
 
+	/** UTC time zone */
+	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+
 	/** ISO8601 date format */
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+	static {
+		DATE_FORMAT.setTimeZone(UTC);
+	}
 
 	/**
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
@@ -35,7 +41,7 @@ public class XMLDateAdapter extends XmlAdapter<String, GregorianCalendar> {
 	@Override
 	public GregorianCalendar unmarshal(final String v) throws Exception {
 		GregorianCalendar result = new GregorianCalendar();
-		result.setTimeZone(TimeZone.getTimeZone("UTC"));
+		result.setTimeZone(UTC);
 		result.setTime(DATE_FORMAT.parse(v));
 		return result;
 	}
