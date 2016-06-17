@@ -35,6 +35,8 @@ import eu.fays.sandbox.iterators.Fruit;
  * <ul>
  * <li><a href="http://lists.xml.org/archives/xml-dev/200902/msg00060.html">A bad idea to use the XML Schema list type?</a>
  * <li><a href="http://stackoverflow.com/questions/13568543/how-do-you-specify-the-date-format-used-when-jaxb-marshals-xsddatetime">How do you specify the date format used when JAXB marshals xsd:dateTime?</a>
+ * <li><a href="http://stackoverflow.com/questions/28340772/prevent-writing-default-attribute-values-jaxb">Prevent writing default attribute values JAXB</a>
+ * <li><a href="http://stackoverflow.com/questions/8885011/jaxb-avoid-saving-default-values">JAXB Avoid saving default values</a>
  * <li><a href="http://blog.bdoughan.com/2011/06/using-jaxbs-xmlaccessortype-to.html">Using JAXB's @XmlAccessorType to Configure Field or Property Access</a>
  * </ul>
  * 
