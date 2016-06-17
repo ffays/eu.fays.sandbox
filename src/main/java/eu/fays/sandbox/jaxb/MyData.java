@@ -80,7 +80,7 @@ public class MyData {
 	 * @return the default Gregorian calendar.
 	 */
 	private static final GregorianCalendar defaultGregorianCalendar() {
-		GregorianCalendar result = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		GregorianCalendar result = new GregorianCalendar(UTC);
 		result.setTimeInMillis(0L);
 		return result;
 	}
@@ -153,10 +153,10 @@ public class MyData {
 	}
 
 	public void setMyTimeStamp(final GregorianCalendar myTimeStamp) {
-		this.myTimeStamp = (GregorianCalendar) myTimeStamp.clone();
-		if (!this.myTimeStamp.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
-			this.myTimeStamp.setTimeZone(TimeZone.getTimeZone("UTC"));
-		}
+		// To prevent side effects, the given GregorianCalendar argument must be cloned first!
+		GregorianCalendar c = (GregorianCalendar) myTimeStamp.clone();
+		c.setTimeZone(UTC);
+		this.myTimeStamp = c;
 	}
 
 	public GregorianCalendar getMyDate() {
@@ -171,8 +171,11 @@ public class MyData {
 		assert myDate != null;
 		//
 
+		// To prevent side effects, the given GregorianCalendar argument must be cloned first!
 		GregorianCalendar c0 = (GregorianCalendar) myDate.clone();
+		c0.setTimeZone(UTC);
 		GregorianCalendar c = defaultGregorianCalendar();
+		// Keep only the date parts.
 		Arrays.stream(new int[] { YEAR, MONTH, DAY_OF_MONTH }).forEach(f -> c.set(f, c0.get(f)));
 		this.myDate = c;
 	}
@@ -196,11 +199,13 @@ public class MyData {
 	}
 
 	public void setMyNumberList(final List<ListItemOfDouble> myNumberList) {
-		this.myNumberList = myNumberList;
+		// To prevent side effects, the given List must be cloned
+		this.myNumberList = new ArrayList<>(myNumberList);
 	}
 
 	public void addNumber(final double myDouble) {
 		if (myNumberList == null) {
+			// Lazy initialization
 			myNumberList = new ArrayList<>();
 		}
 		myNumberList.add(new ListItemOfDouble(myDouble));
@@ -254,6 +259,9 @@ public class MyData {
 		return result;
 
 	}
+
+	/** UTC time zone */
+	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
 	/** The XML schema file to validate this class */
 	private static final File XML_SCHEMA_FILE = new File("xml/MyData.xsd");
