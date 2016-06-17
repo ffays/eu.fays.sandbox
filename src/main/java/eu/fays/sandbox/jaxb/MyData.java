@@ -16,7 +16,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.util.ValidationEventCollector;
@@ -39,7 +38,7 @@ import eu.fays.sandbox.iterators.Fruit;
  */
 @SuppressWarnings("nls")
 @XmlRootElement
-@XmlType // (propOrder = { "myDate", "myTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList" })
+@XmlType(propOrder = { "myDate", "myTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList" })
 public class MyData {
 	/**
 	 * Constructor with default values
@@ -91,7 +90,7 @@ public class MyData {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		if (obj == null || !(obj instanceof MyData)) {
 			return false;
 		}
@@ -99,11 +98,12 @@ public class MyData {
 
 		boolean result = true;
 		try {
+			result &= o.getMyDate().compareTo(getMyDate()) == 0; // equals() does not work for GregorianCalendar
+			result &= o.getMyTimeStamp().compareTo(getMyTimeStamp()) == 0;
 			result &= o.isMyBoolean() == isMyBoolean();
 			result &= o.getMyInteger() == getMyInteger();
-			result &= o.getMyTimeStamp().compareTo(getMyTimeStamp()) == 0;
-			result &= o.getMyDate().compareTo(getMyDate()) == 0;
 			result &= o.getMyFruit() == getMyFruit();
+			result &= o.getMyNumberList().equals(getMyNumberList());
 		} catch (NullPointerException e) {
 			result = false;
 		}
@@ -115,7 +115,7 @@ public class MyData {
 		return _myBoolean;
 	}
 
-	public void setMyBoolean(boolean myBoolean) {
+	public void setMyBoolean(final boolean myBoolean) {
 		_myBoolean = myBoolean;
 	}
 
@@ -123,7 +123,7 @@ public class MyData {
 		return _myInteger;
 	}
 
-	public void setMyInteger(int myInteger) {
+	public void setMyInteger(final int myInteger) {
 		_myInteger = myInteger;
 	}
 
@@ -138,14 +138,13 @@ public class MyData {
 		}
 	}
 
-	
-	@XmlElement(name = "myDate") 
+	@XmlElement(name = "myDate")
 	@XmlJavaTypeAdapter(XMLDateAdapter.class)
-	public GregorianCalendar getMyDate()  {
+	public GregorianCalendar getMyDate() {
 		return _myDate;
 	}
 
-	public void setMyDate(GregorianCalendar myDate) {
+	public void setMyDate(final GregorianCalendar myDate) {
 		_myDate = myDate;
 		if (!_myDate.getTimeZone().equals(TimeZone.getTimeZone("UTC"))) {
 			_myDate.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -156,7 +155,7 @@ public class MyData {
 		return _myFruit;
 	}
 
-	public void setMyFruit(Fruit myFruit) {
+	public void setMyFruit(final Fruit myFruit) {
 		_myFruit = myFruit;
 	}
 
@@ -166,7 +165,7 @@ public class MyData {
 		return _myNumberList;
 	}
 
-	public void setMyNumberList(List<ListItemOfDouble> myNumberList) {
+	public void setMyNumberList(final List<ListItemOfDouble> myNumberList) {
 		_myNumberList = myNumberList;
 	}
 
