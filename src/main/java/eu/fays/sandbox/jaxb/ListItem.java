@@ -14,18 +14,29 @@ import javax.xml.bind.annotation.XmlValue;
 public abstract class ListItem<T> {
 
 	/**
+	 * Constructor
+	 */
+	public ListItem() {
+		try {
+			_li = getParameterizedType().newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Constructor
+	 * @param li value of the list item
+	 */
+	public ListItem(T li) {
+		_li = li;
+	}
+
+	/**
 	 * Returns the value
 	 * @return the value
 	 */
 	public T getLi() {
-		if (_li == null) {
-			try {
-				_li = getParameterizedType().newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
 		return _li;
 	}
 
