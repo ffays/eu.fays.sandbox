@@ -123,6 +123,10 @@ public class MyData {
 		return result;
 	}
 
+	/**
+	 * Returns the boolean's value
+	 * @return either true or false
+	 */
 	public boolean isMyBoolean() {
 		if (myBoolean == null) {
 			return false;
@@ -130,10 +134,18 @@ public class MyData {
 		return myBoolean;
 	}
 
+	/**
+	 * Sets the boolean value
+	 * @param myBoolean the value to be set
+	 */
 	public void setMyBoolean(final boolean myBoolean) {
 		this.myBoolean = myBoolean;
 	}
 
+	/**
+	 * Returns the integer value
+	 * @return the integer value
+	 */
 	public int getMyInteger() {
 		if (myInteger == null) {
 			return 0;
@@ -141,6 +153,10 @@ public class MyData {
 		return myInteger;
 	}
 
+	/**
+	 * Sets the integer value
+	 * @param myInteger the integer to be set
+	 */
 	public void setMyInteger(final int myInteger) {
 		this.myInteger = myInteger;
 	}
@@ -203,6 +219,10 @@ public class MyData {
 		this.myNumberList = new ArrayList<>(myNumberList);
 	}
 
+	/**
+	 * Appends the given number to the end of this list
+	 * @param myDouble the number to be appended
+	 */
 	public void addNumber(final double myDouble) {
 		if (myNumberList == null) {
 			// Lazy initialization
