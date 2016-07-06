@@ -1,8 +1,12 @@
 package eu.fays.sandbox.jaxb;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
+import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
+import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
+import static javax.xml.bind.Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -243,8 +246,8 @@ public class MyData {
 
 		final JAXBContext context = JAXBContext.newInstance(getClass());
 		final Marshaller marshaller = context.createMarshaller();
-		marshaller.setProperty("jaxb.formatted.output", Boolean.TRUE);
-		marshaller.setProperty("jaxb.noNamespaceSchemaLocation", "../" + XML_SCHEMA_FILE.getPath());
+		marshaller.setProperty(JAXB_FORMATTED_OUTPUT, TRUE);
+		marshaller.setProperty(JAXB_NO_NAMESPACE_SCHEMA_LOCATION, "../" + XML_SCHEMA_FILE.getPath().replace(System.getProperty("file.separator"), "/"));
 		marshaller.marshal(this, file);
 	}
 
@@ -263,7 +266,7 @@ public class MyData {
 		//
 
 		final JAXBContext context = JAXBContext.newInstance(MyData.class);
-		final SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		final SchemaFactory factory = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
 		final Schema schema = factory.newSchema(XML_SCHEMA_FILE);
 
 		final Unmarshaller unmarshaller = context.createUnmarshaller();
