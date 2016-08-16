@@ -2,6 +2,7 @@ package eu.fays.sandbox.filesystem;
 
 import static java.util.Collections.unmodifiableMap;
 
+import java.text.MessageFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("nls")
 public class SubstitueNTFSReservedCharactersEssay {
 
 	public static void main(String[] args) {
@@ -16,6 +18,7 @@ public class SubstitueNTFSReservedCharactersEssay {
 		final String y = a2b(x);
 		final String z = b2a(y);
 
+		A2B.entrySet().stream().forEach(e -> LOGGER.info(MessageFormat.format("''{0}'' -> ''{1}''", e.getKey(), e.getValue())));
 		LOGGER.info(new Boolean(x.equals(y)).toString()); // false
 		LOGGER.info(new Boolean(y.equals(z)).toString()); // false
 		LOGGER.info(new Boolean(x.equals(z)).toString()); // true
@@ -44,18 +47,19 @@ public class SubstitueNTFSReservedCharactersEssay {
 	@SuppressWarnings("serial")
 	private static final Map<Character, Character> A2B = unmodifiableMap(new LinkedHashMap<Character, Character>() {
 		{
-			put('"', (char) 0xa8 /* 'Â¨' */);
-			put('*', (char) 0xa4 /* 'Â¤' */);
-			put('/', (char) 0xf8 /* 'Ã¸' */);
-			put(':', (char) 0xf7 /* 'Ã·' */);
-			put('<', (char) 0xab /* 'Â«' */);
-			put('>', (char) 0xbb /* 'Â»' */);
-			put('?', (char) 0xbf /* 'Â¿' */);
-			put('\\', (char) 0xff /* 'Ã¿' */);
-			put('|', (char) 0xa6 /* 'Â¦' */);
+			put('"', (char) 0xa8 /* '¨' */);
+			put('*', (char) 0xa4 /* '¤' */);
+			put('/', (char) 0xf8 /* 'ø' */);
+			put(':', (char) 0xf7 /* '÷' */);
+			put('<', (char) 0xab /* '«' */);
+			put('>', (char) 0xbb /* '»' */);
+			put('?', (char) 0xbf /* '¿' */);
+			put('\\', (char) 0xff /* 'ÿ' */);
+			put('|', (char) 0xa6 /* '¦' */);
 		}
 	});
 
+	@SuppressWarnings("unused")
 	private static final Map<Character, Character> B2A = unmodifiableMap(A2B.entrySet().stream().collect(Collectors.toMap(Entry::getValue, Entry::getKey, (k, v) -> null, LinkedHashMap::new)));
 
 	private static final Logger LOGGER = Logger.getLogger(SubstitueNTFSReservedCharactersEssay.class.getName());
