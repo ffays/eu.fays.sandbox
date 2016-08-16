@@ -47,15 +47,16 @@ public class SubstitueNTFSReservedCharactersEssay {
 	@SuppressWarnings("serial")
 	private static final Map<Character, Character> A2B = unmodifiableMap(new LinkedHashMap<Character, Character>() {
 		{
-			put('"', (char) 0xa8 /* '¨' */);
-			put('*', (char) 0xa4 /* '¤' */);
-			put('/', (char) 0xf8 /* 'ø' */);
-			put(':', (char) 0xf7 /* '÷' */);
-			put('<', (char) 0xab /* '«' */);
-			put('>', (char) 0xbb /* '»' */);
-			put('?', (char) 0xbf /* '¿' */);
-			put('\\', (char) 0xff /* 'ÿ' */);
-			put('|', (char) 0xa6 /* '¦' */);
+			// http://www.utf8-chartable.de/unicode-utf8-table.pl
+			put('"', (char) 0xa8 /* '¨' - DIAERESIS */);
+			put('*', (char) 0xa4 /* '¤' - CURRENCY SIGN */);
+			put('/', (char) 0xf8 /* 'ø' - LATIN SMALL LETTER O WITH STROKE */);
+			put(':', (char) 0xf7 /* '÷' - DIVISION SIGN */);
+			put('<', (char) 0xab /* '«' - LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */);
+			put('>', (char) 0xbb /* '»' - RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */);
+			put('?', (char) 0xbf /* '¿' - INVERTED QUESTION MARK */);
+			put('\\', (char) 0xd7 /* 'ÿ' - LATIN SMALL LETTER Y WITH DIAERESIS */);
+			put('|', (char) 0xa6 /* '¦' - BROKEN BAR */);
 		}
 	});
 
