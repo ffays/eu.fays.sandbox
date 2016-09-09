@@ -102,7 +102,7 @@ public class ReadRSAKey {
 	 */
 	public static void printPublicKeyInfo(final RSAPublicKey publicKey) {
 		System.out.println("RSA Private CRT Key");
-		System.out.println("\t        modulus: " + printHexBinary(publicKey.getModulus().toByteArray()).toLowerCase());
+		System.out.println("\t         modulus: " + printHexBinary(publicKey.getModulus().toByteArray()).toLowerCase());
 		System.out.println("\t public exponent: " + printHexBinary(publicKey.getPublicExponent().toByteArray()).toLowerCase());
 	}
 }
