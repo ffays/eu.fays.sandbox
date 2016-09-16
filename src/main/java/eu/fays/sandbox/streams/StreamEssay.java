@@ -9,9 +9,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -59,6 +62,13 @@ public class StreamEssay {
 		LOGGER.info(format("areAllValuesIntegers2 #4: {0}", areAllValuesIntegers2(new double[] { 1d, Double.POSITIVE_INFINITY })));
 		LOGGER.info(format("areAllValuesIntegers2 #5: {0}", areAllValuesIntegers2(new double[] { 1d, 3.14d })));
 		LOGGER.info(format("enumLookup              : {0}", enumLookup(Fruit.class, Fruit.APPLE)));
+
+		{
+			final Set<UUID> set = IntStream.range(0, 5).mapToObj(i -> UUID.randomUUID()).collect(Collectors.toSet());
+			final Map<String, UUID> map = setToMap(set);
+			map.entrySet().forEach(e -> LOGGER.info(format("setToMap: \"{0}\" : {1}", e.getKey(), e.getValue())));
+		}
+
 	}
 
 	/**
@@ -153,6 +163,15 @@ public class StreamEssay {
 	 */
 	public static boolean areAllValuesIntegers2(final double[] values) {
 		return Arrays.stream(values).mapToObj(v -> new Double(v)).reduce(true, (a, v) -> a && ((v % 1) == 0), (a, v) -> null);
+	}
+
+	/**
+	 * Creates a dictionary from a given list of objects
+	 * @param set the set of objects
+	 * @return the dictionary
+	 */
+	public static Map<String, UUID> setToMap(final Set<UUID> set) {
+		return set.stream().collect(Collectors.toMap(UUID::toString, Function.identity()));
 	}
 
 	/** Standard logger */
