@@ -39,6 +39,10 @@ public class MySubData {
 
 	@XmlID
 	@XmlAttribute
-	private String myId = "id-" + UUID.randomUUID().toString();
+	// IDREF is of type NCName
+	// NCName definition: https://www.w3.org/TR/1999/WD-xmlschema-2-19990924/#NCName
+	// Name definition : https://www.w3.org/TR/REC-xml/#d0e804
+	// U+01C0 : LATIN LETTER DENTAL - http://www.fileformat.info/info/unicode/char/01c0/index.htm
+	private String myId = "id:u01C0" + UUID.randomUUID().toString();
 
 }
