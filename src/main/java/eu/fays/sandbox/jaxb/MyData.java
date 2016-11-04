@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -53,7 +54,7 @@ import eu.fays.sandbox.iterators.Fruit;
 @SuppressWarnings("nls")
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = { "myDate", "myTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList" })
+@XmlType(propOrder = { "myDate", "myTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList", "mySubDataList", "mySubDataRefs" })
 public class MyData {
 	/**
 	 * Constructor with default values
@@ -76,6 +77,7 @@ public class MyData {
 		setMyDate(myDate);
 		setMyFruit(myFruit);
 		this.myNumberList = new ArrayList<>();
+		this.mySubDataList = new ArrayList<>();
 	}
 
 	/**
@@ -234,6 +236,57 @@ public class MyData {
 		myNumberList.add(new ListItemOfDouble(myDouble));
 	}
 
+	public List<MySubData> getMySubDataList() {
+		if (mySubDataList == null) {
+			return Collections.emptyList();
+		}
+		return Collections.unmodifiableList(mySubDataList);
+	}
+
+	public void setMySubDataList(final List<MySubData> mySubDataList) {
+		// To prevent side effects, the given List must be cloned
+		this.mySubDataList = new ArrayList<>(mySubDataList);
+	}
+
+	/**
+	 * Appends the given sub data to the end of this list
+	 * @param mySubData the sub data to be appended
+	 */
+	public void addSubData(final MySubData mySubData) {
+		if (mySubDataList == null) {
+			// Lazy initialization
+			mySubDataList = new ArrayList<>();
+		}
+		mySubDataList.add(mySubData);
+	}
+
+	public List<MySubData> getMySubDataRefs() {
+		if (mySubDataRefs == null) {
+			return Collections.emptyList();
+		}
+		return Collections.unmodifiableList(mySubDataRefs);
+	}
+
+	public void setMySubDataRefs(final List<MySubData> mySubDataRefs) {
+		// To prevent side effects, the given List must be cloned
+		this.mySubDataRefs = new ArrayList<>(mySubDataRefs);
+	}
+
+	/**
+	 * Appends the given sub data to the end of this list
+	 * @param mySubData the sub data to be appended
+	 */
+	public void addSubDataRef(final MySubData mySubData) {
+		//
+		assert getMySubDataList().contains(mySubData);
+		//
+		if (mySubDataRefs == null) {
+			// Lazy initialization
+			mySubDataRefs = new ArrayList<>();
+		}
+		mySubDataRefs.add(mySubData);
+	}
+
 	/**
 	 * Marshal to XML this instance into the given output file
 	 * @param file the output file
@@ -314,4 +367,16 @@ public class MyData {
 	@XmlElementWrapper
 	@XmlElement(name = "li")
 	private List<ListItemOfDouble> myNumberList = null;
+
+	/** A list of sub data */
+	@XmlElementWrapper
+	@XmlElement(name = "mySubData")
+	private List<MySubData> mySubDataList = null;
+
+	/** A list of references to sub data */
+	@XmlIDREF
+	@XmlElementWrapper
+	@XmlElement(name = "mySubDataRef")
+	private List<MySubData> mySubDataRefs = null;
+
 }

@@ -9,7 +9,30 @@
 			<xs:element name="myInteger" type="xs:integer" minOccurs="0" />
 			<xs:element name="myFruit" type="EnumOfFruit" minOccurs="0" />
 			<xs:element name="myNumberList" type="ListOfDouble" minOccurs="0" maxOccurs="1" />
+			<xs:element name="mySubDataList" type="ListOfSubData" minOccurs="0" maxOccurs="1" />
+			<xs:element name="mySubDataRefs" type="ListOfSubDataRef" minOccurs="0" maxOccurs="1" />
 		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="ListOfDouble">
+		<xs:sequence>
+			<xs:element name="li" type="xs:double" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfSubData">
+		<xs:sequence>
+			<xs:element name="mySubData" type="SubData" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ListOfSubDataRef">
+		<xs:sequence>
+			<xs:element name="mySubDataRef" type="xs:IDREF" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SubData">
+		<xs:sequence>
+			<xs:element name="myCity" type="EnumOfCity" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+		<xs:attribute name="myId" type="xs:ID" />
 	</xs:complexType>
 	<xs:simpleType name="EnumOfFruit">
 		<xs:restriction base="xs:string">
@@ -20,9 +43,14 @@
 			<xs:enumeration value="ABRICOT" />
 		</xs:restriction>
 	</xs:simpleType>
-	<xs:complexType name="ListOfDouble">
-		<xs:sequence>
-			<xs:element name="li" type="xs:double" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
+	<xs:simpleType name="EnumOfCity">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="AMSTERDAM" />
+			<xs:enumeration value="BERLIN" />
+			<xs:enumeration value="BRUSSELS" />
+			<xs:enumeration value="LONDON" />
+			<xs:enumeration value="PARIS" />
+		</xs:restriction>
+	</xs:simpleType>		
+	
 </xs:schema>

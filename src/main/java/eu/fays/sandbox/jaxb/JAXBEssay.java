@@ -36,6 +36,11 @@ public class JAXBEssay {
 			myOutputData.addNumber(PHI);
 			myOutputData.addNumber(E);
 			myOutputData.addNumber(PI);
+			myOutputData.addSubData(new MySubData(City.BRUSSELS));
+			myOutputData.addSubData(new MySubData(City.BERLIN));
+			myOutputData.addSubData(new MySubData(City.PARIS));
+			myOutputData.addSubDataRef(myOutputData.getMySubDataList().get(0));
+			myOutputData.addSubDataRef(myOutputData.getMySubDataList().get(1));
 			myOutputData.marshal(file);
 			final MyData myInputData = MyData.unmarshal(file);
 			assert myInputData.equals(myOutputData);
