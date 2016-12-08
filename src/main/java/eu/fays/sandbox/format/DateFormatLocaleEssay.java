@@ -56,7 +56,7 @@ public class DateFormatLocaleEssay {
 			final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT);
 			final String formatted = formatter.format(now);
 			System.out.println(formatted);
-			final LocalDateTime localDateTime = LocalDateTime.parse(formatted, formatter); // 9:00 AM
+			final LocalDateTime localDateTime = LocalDateTime.parse(formatted, formatter);
 			System.out.println();
 		}
 
