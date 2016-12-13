@@ -44,7 +44,7 @@ class Triplet<T extends Comparable<T>, U extends Comparable<U>, V extends Compar
 	@Override
 	public int hashCode() {
 		final Comparable<?>[] k = new Comparable[] { t, u, v };
-		return IntStream.of(k.length).reduce(0, (a, i) -> a += k[i].hashCode() * PRIME[i]);
+		return IntStream.range(0, k.length).reduce(0, (a, i) -> a += k[i].hashCode() * PRIME[i]);
 	}
 
 	/**
