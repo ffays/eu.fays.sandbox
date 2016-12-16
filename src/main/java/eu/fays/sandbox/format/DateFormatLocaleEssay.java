@@ -74,6 +74,21 @@ public class DateFormatLocaleEssay {
 			System.out.println(localPattern);
 			System.out.println();
 		}
+		
+		// Date (and Time)
+		{
+			final Date now = Calendar.getInstance().getTime();
+			System.out.println(now.getClass().getSimpleName());
+			final DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
+			final String formatted = formatter.format(now);
+			System.out.println(formatted);
+
+			final String pattern = ((SimpleDateFormat) formatter).toPattern();
+			final String localPattern = ((SimpleDateFormat) formatter).toLocalizedPattern();
+			System.out.println(pattern);
+			System.out.println(localPattern);
+			System.out.println();
+		}
 
 		// Decimal separator
 		{
