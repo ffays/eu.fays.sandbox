@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -103,7 +104,7 @@ public class DateFormatLocaleEssay {
 
 		// DMY or MDY?
 		{
-			final Instant instant = Instant.parse("2001-12-31T00:00:00Z"); //$NON-NLS-1$
+			final Instant instant = Instant.parse("2001-12-31T00:00:00Z");
 			System.out.println(instant.getClass().getSimpleName());
 			final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT);
 			final String formatted = formatter.format(instant.atOffset(ZoneOffset.UTC));
@@ -116,8 +117,7 @@ public class DateFormatLocaleEssay {
 		// Locales
 		{
 			System.out.println(Locale.class.getSimpleName());
-			// Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
-
+			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
 		}
 	}
 
