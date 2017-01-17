@@ -7,9 +7,12 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.time.zone.ZoneRules;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,6 +42,18 @@ public class DateFormatLocaleEssay {
 	 */
 	@SuppressWarnings({ "nls", "unused" })
 	static public void main(String[] args) {
+		// Zones
+		{
+			System.out.println(ZoneId.class.getSimpleName());
+			ZoneId.getAvailableZoneIds().stream().map(z -> z.toString()).sorted().forEach(z -> System.out.println(z));
+			System.out.println();
+		}
+		// Locales
+		{
+			System.out.println(Locale.class.getSimpleName());
+			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
+			System.out.println();
+		}
 
 		// LocalDate
 		{
@@ -114,10 +129,22 @@ public class DateFormatLocaleEssay {
 			System.out.println();
 		}
 
-		// Locales
+		// DST
 		{
-			System.out.println(Locale.class.getSimpleName());
-			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
+			ZoneId zoneId = ZoneId.systemDefault();
+			// ZoneId zoneId = ZoneId.of("Europe/Brussels");
+			ZoneRules zoneRules = zoneId.getRules();
+			ZonedDateTime timeStamp0 = LocalDateTime.of(2017, 3, 20, 10, 28, 38).atZone(zoneId);
+			ZonedDateTime timeStamp1 = LocalDateTime.of(2017, 6, 21, 4, 24, 9).atZone(zoneId);
+			ZonedDateTime timeStamp2 = LocalDateTime.of(2017, 9, 22, 20, 1, 48).atZone(zoneId);
+			ZonedDateTime timeStamp3 = LocalDateTime.of(2017, 12, 21, 16, 27, 57).atZone(zoneId);
+			// ZonedDateTime timeStamp = ZonedDateTime.now(zoneId);
+			System.out.println(zoneId);
+			System.out.println("timeStamp: " + timeStamp0.toString() + " / isDst: " + zoneRules.isDaylightSavings(timeStamp0.toInstant()));
+			System.out.println("timeStamp: " + timeStamp1.toString() + " / isDst: " + zoneRules.isDaylightSavings(timeStamp1.toInstant()));
+			System.out.println("timeStamp: " + timeStamp2.toString() + " / isDst: " + zoneRules.isDaylightSavings(timeStamp2.toInstant()));
+			System.out.println("timeStamp: " + timeStamp3.toString() + " / isDst: " + zoneRules.isDaylightSavings(timeStamp3.toInstant()));
+			System.out.println();
 		}
 	}
 
