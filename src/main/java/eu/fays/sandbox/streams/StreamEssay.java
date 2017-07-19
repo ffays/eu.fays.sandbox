@@ -7,6 +7,7 @@ import static java.util.Arrays.stream;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -67,6 +68,21 @@ public class StreamEssay {
 			final Set<UUID> set = IntStream.range(0, 5).mapToObj(i -> UUID.randomUUID()).collect(Collectors.toSet());
 			final Map<String, UUID> map = setToMap(set);
 			map.entrySet().forEach(e -> LOGGER.info(format("setToMap: \"{0}\" : {1}", e.getKey(), e.getValue())));
+		}
+
+		{
+			final Map<KeyValue<Integer, Integer>, KeyValue<Integer, Integer>> map = new HashMap<>();
+			KeyValue<Integer, Integer> kv11 = new KeyValue<>(1, 1);
+			KeyValue<Integer, Integer> kv12 = new KeyValue<>(1, 2);
+			KeyValue<Integer, Integer> kv13 = new KeyValue<>(1, 3);
+			KeyValue<Integer, Integer> kv22 = new KeyValue<>(2, 2);
+			KeyValue<Integer, Integer> kv21 = new KeyValue<>(2, 1);
+
+			LOGGER.info(format("addIfAbsent({0}) : {1}", kv11, addIfAbsent(map, kv11)));
+			LOGGER.info(format("addIfAbsent({0}) : {1}", kv12, addIfAbsent(map, kv12)));
+			LOGGER.info(format("addIfAbsent({0}) : {1}", kv13, addIfAbsent(map, kv13)));
+			LOGGER.info(format("addIfAbsent({0}) : {1}", kv22, addIfAbsent(map, kv22)));
+			LOGGER.info(format("addIfAbsent({0}) : {1}", kv21, addIfAbsent(map, kv21)));
 		}
 
 	}
@@ -172,6 +188,16 @@ public class StreamEssay {
 	 */
 	public static Map<String, UUID> setToMap(final Set<UUID> set) {
 		return set.stream().collect(Collectors.toMap(UUID::toString, Function.identity()));
+	}
+
+	/**
+	 * Adds the given integer to the map as both key an value if there is no
+	 * @param map
+	 * @param i
+	 * @return
+	 */
+	public static KeyValue<Integer, Integer> addIfAbsent(final Map<KeyValue<Integer, Integer>, KeyValue<Integer, Integer>> map, final KeyValue<Integer, Integer> kv) {
+		return map.computeIfAbsent(kv, Function.identity());
 	}
 
 	/** Standard logger */
