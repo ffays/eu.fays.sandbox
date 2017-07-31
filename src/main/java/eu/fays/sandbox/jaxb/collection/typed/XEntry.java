@@ -8,23 +8,26 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
 
 @XmlAccessorType(XmlAccessType.NONE)
-public final class XIntegerEntry implements Entry<String, Integer> {
+public class XEntry implements Entry<String, String> {
 	@XmlAttribute
 	public String key;
+	@XmlAttribute
+	public String type;
 	@XmlValue
-	public Integer value;
+	public String value;
 
-	public XIntegerEntry() {
+	public XEntry() {
 
 	}
 
-	public XIntegerEntry(final String key, final Integer value) {
+	public XEntry(final String key, final Object value) {
 		//
 		assert key != null;
 		assert !key.isEmpty();
 		//
 		this.key = key;
-		this.value = value;
+		this.value = value == null ? null : value.toString();
+		this.type = value == null ? null : value.getClass().getSimpleName();
 	}
 
 	@Override
@@ -33,12 +36,16 @@ public final class XIntegerEntry implements Entry<String, Integer> {
 	}
 
 	@Override
-	public Integer getValue() {
+	public String getValue() {
 		return value;
 	}
 
+	public String getType() {
+		return type;
+	}
+
 	@Override
-	public Integer setValue(final Integer value) {
+	public String setValue(final String value) {
 		throw new UnsupportedOperationException();
 	}
 }

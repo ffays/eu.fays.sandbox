@@ -10,9 +10,13 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlAccessorType(XmlAccessType.NONE)
 public final class XStringEntry implements Entry<String, String> {
 	@XmlAttribute
-	public final String key;
+	public String key;
 	@XmlValue
-	public final String value;
+	public String value;
+
+	public XStringEntry() {
+
+	}
 
 	public XStringEntry(final String key, final String value) {
 		//
