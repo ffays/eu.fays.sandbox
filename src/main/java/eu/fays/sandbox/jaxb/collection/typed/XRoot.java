@@ -4,6 +4,7 @@ import static java.lang.Boolean.TRUE;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
@@ -12,6 +13,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -27,6 +29,13 @@ public class XRoot {
 	@XmlElement
 	@XmlJavaTypeAdapter(XStringMapAdapter.class)
 	public Map<String, String> stringDictionary;
+	
+	
+	@XmlElementWrapper(name = "stringDictionaries")
+	@XmlElement(name = "dictionary")
+	@XmlJavaTypeAdapter(XStringMapAdapter.class)
+	public List<Map<String, String>> stringDictionaries;
+	
 	/**
 	 * Marshal to XML this instance into the given output file
 	 * @param file the output file

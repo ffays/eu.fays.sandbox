@@ -14,16 +14,6 @@ public enum Fruit {
 	public static final Fruit DEFAULT = APPLE;
 	
 	/**
-	 * Returns its ordinal number (starting from zero)
-	 * @return its ordinal number
-	 */
-	public int getIndex() {
-		int result = values().length;
-		while (values()[--result] != this);
-		return result;
-	}
-
-	/**
 	 * Returns all enumeration elements as a new stream
 	 * @return the new stream
 	 */
