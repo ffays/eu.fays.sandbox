@@ -1,6 +1,7 @@
 package eu.fays.sandbox.optimization;
 
 import static java.text.MessageFormat.format;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,19 +15,26 @@ public class OptimizationEssay {
 
 		final int N = 1 << 20;
 		final Random random = new Random(0);
-		Long[] n = new Long[N];
-		final List<Long> l = Arrays.asList(n);
+		long[] n = new long[N];
 		long expected = 0L;
 
 		// Random number generation
 		{
-			for (int i = 0, v; i < N; i++) {
-				v = random.nextInt();
-				expected += (long) v;
-				n[i] = new Long(v);
+			for (int i = 0; i < N; i++) {
+				n[i] = random.nextInt();
+				expected += n[i];
 			}
 		}
+		final List<Long> l = Arrays.stream(n).mapToObj(i -> Long.valueOf(i)).collect(toList());
 
+		// #0 : array -> stream -> reduce
+		{
+			final long t0 = System.nanoTime();
+			final long sum = Arrays.stream(n).sum();
+			result.put(System.nanoTime() - t0, 0);
+			assert sum == expected;
+		}
+		
 		// #1 : array -> stream -> reduce
 		{
 			final long t0 = System.nanoTime();
@@ -38,7 +46,7 @@ public class OptimizationEssay {
 		// #2 : list -> stream -> reduce
 		{
 			final long t0 = System.nanoTime();
-			long sum = l.stream().reduce(0L, (a, v) -> a + v);
+			final long sum = l.stream().reduce(0L, (a, v) -> a + v);
 			result.put(System.nanoTime() - t0, 2);
 			assert sum == expected;
 		}
@@ -46,7 +54,7 @@ public class OptimizationEssay {
 		// #3 : list -> parallel stream -> reduce
 		{
 			final long t0 = System.nanoTime();
-			long sum = l.stream().parallel().reduce(0L, (a, v) -> a + v);
+			final long sum = l.stream().parallel().reduce(0L, (a, v) -> a + v);
 			result.put(System.nanoTime() - t0, 3);
 			assert sum == expected;
 		}
@@ -88,7 +96,7 @@ public class OptimizationEssay {
 		{
 			final long t0 = System.nanoTime();
 			long sum = 0L;
-			for (long v : l) {
+			for (Long v : l) {
 				sum += v;
 			}
 			result.put(System.nanoTime() - t0, 7);
