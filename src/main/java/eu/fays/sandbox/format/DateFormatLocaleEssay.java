@@ -1,5 +1,7 @@
 package eu.fays.sandbox.format;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Lists all available locales for date format<br>
@@ -117,6 +120,12 @@ public class DateFormatLocaleEssay {
 			System.out.println();
 		}
 
+		// Platform decimal separator
+		{
+			System.out.println(MessageFormat.format("Platform decimal separator: \u00AB{0}\u00BB", platformDecimalSeparator()));
+			System.out.println();
+		}
+
 		// DMY or MDY?
 		{
 			final Instant instant = Instant.parse("2001-12-31T00:00:00Z");
@@ -146,6 +155,43 @@ public class DateFormatLocaleEssay {
 			System.out.println("timeStamp: " + timeStamp3.toString() + " / isDst: " + zoneRules.isDaylightSavings(timeStamp3.toInstant()));
 			System.out.println();
 		}
+	}
+	
+	/**
+	 * Returns the effective platform specific decimal separator
+	 * @return the decimal separator
+	 */
+	public static char platformDecimalSeparator() {
+		char result = new DecimalFormatSymbols().getDecimalSeparator();
+		if ("Mac OS X".equals(System.getProperty("os.name"))) {
+			// @formatter:off
+			final ProcessBuilder processBuilder = new ProcessBuilder(
+				"/usr/bin/osascript",
+				"-e",
+				"use framework \"Foundation\"",
+				"-e",
+				"return (localizedStringFromNumber_numberStyle_(numberWithFloat_(0.5) of NSNumber of current application, NSNumberFormatterDecimalStyle of current application) of NSNumberFormatter of current application) as string"
+			);
+			// @formatter:on
+			try {
+				final Process process = processBuilder.start();
+				if (process.waitFor(3, TimeUnit.SECONDS)) {
+					if (process.exitValue() == 0) {
+						try (final InputStream in = process.getInputStream(); final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+							int c = in.read();
+							while (c != -1) {
+								os.write(c);
+								c = in.read();
+							}
+							result = os.toString().charAt(1);
+						}
+					}
+				}
+			} catch (final Exception e) {
+				// Do Nothing
+			}
+		}
+		return result;
 	}
 
 }
