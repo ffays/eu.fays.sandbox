@@ -130,7 +130,7 @@ public class DateFormatLocaleEssay {
 		{
 			final Instant instant = Instant.parse("2001-12-31T00:00:00Z");
 			System.out.println(instant.getClass().getSimpleName());
-			final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.SHORT);
+			final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
 			final String formatted = formatter.format(instant.atOffset(ZoneOffset.UTC));
 			final boolean isDmyOrder = formatted.startsWith("31");
 			System.out.println(formatted);
