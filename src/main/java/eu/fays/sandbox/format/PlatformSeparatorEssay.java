@@ -25,12 +25,12 @@ public class PlatformSeparatorEssay {
 	public static char getPlatformDecimalSeparator() {
 		if (PLATFORM_DECIMAL_SEPARATOR == '\u0000') {
 			PLATFORM_DECIMAL_SEPARATOR = new DecimalFormatSymbols().getDecimalSeparator();
-			if (System.getProperty("os.name").startsWith("Windows")) {
+			if (isWindows()) {
 				// reg query "HKCU\Control Panel\International" /v sDecimal
 				final String stdout = executeCommand("reg", "query", "\"HKCU\\Control Panel\\International\"", "/v", "sDecimal").trim();
 				PLATFORM_DECIMAL_SEPARATOR = stdout.charAt(stdout.length() - 1);
-			} else if ("Mac OS X".equals(System.getProperty("os.name"))) {
-				final String stdout = executeCommand("/usr/bin/osascript", "-e", "return (1 / 2) as string");
+			} else if (isMacOSX()) {
+				final String stdout = executeCommand("/usr/bin/osascript", "-e", "return 1/2 as string");
 				PLATFORM_DECIMAL_SEPARATOR = stdout.charAt(1);
 			}
 		}
@@ -41,11 +41,11 @@ public class PlatformSeparatorEssay {
 	public static char getPlatformListSeparator() {
 		if (PLATFORM_LIST_SEPARATOR == '\u0000') {
 			PLATFORM_LIST_SEPARATOR = ',';
-			if (System.getProperty("os.name").startsWith("Windows")) {
+			if (isWindows()) {
 				// reg query "HKCU\Control Panel\International" /v sList
 				final String stdout = executeCommand("reg", "query", "\"HKCU\\Control Panel\\International\"", "/v", "sList").trim();
 				PLATFORM_LIST_SEPARATOR = stdout.charAt(stdout.length() - 1);
-			} else if ("Mac OS X".equals(System.getProperty("os.name"))) {
+			} else if (isMacOSX()) {
 				final char decimalSeparator = getPlatformDecimalSeparator();
 				if (decimalSeparator == PLATFORM_LIST_SEPARATOR) {
 					PLATFORM_LIST_SEPARATOR = ';';
@@ -58,19 +58,28 @@ public class PlatformSeparatorEssay {
 	@SuppressWarnings("nls")
 	public static char getExcelFormulaSeparator() {
 		char result = ',';
-		if (System.getProperty("os.name").startsWith("Windows")) {
+		if (isWindows()) {
 			result = getPlatformListSeparator();
-		} else if ("Mac OS X".equals(System.getProperty("os.name"))) {
+		} else if (isMacOSX()) {
 			// http://www.macfreek.nl/memory/Decimal_Seperator_in_Mac_OS_X
 			final String localeName = Locale.getDefault().toString();
-			assert DEFAULT_DECIMAL_SEPARATOR_MAP.containsKey(localeName);
-			final char defaultDecimalSeparator = DEFAULT_DECIMAL_SEPARATOR_MAP.get(localeName);
-			final char platformDecimalSeparator = getPlatformDecimalSeparator();
-			if (defaultDecimalSeparator == result || platformDecimalSeparator == result) {
-				result = ';';
+			if (DEFAULT_DECIMAL_SEPARATOR_MAP.containsKey(localeName)) {
+				final char defaultDecimalSeparator = DEFAULT_DECIMAL_SEPARATOR_MAP.get(localeName);
+				final char platformDecimalSeparator = getPlatformDecimalSeparator();
+				if (defaultDecimalSeparator == result || platformDecimalSeparator == result) {
+					result = ';';
+				}
 			}
 		}
 		return result;
+	}
+
+	private static boolean isWindows() {
+		return System.getProperty("os.name").startsWith("Windows");
+	}
+
+	private static boolean isMacOSX() {
+		return "Mac OS X".equals(System.getProperty("os.name"));
 	}
 
 	private static char PLATFORM_DECIMAL_SEPARATOR = '\u0000';
