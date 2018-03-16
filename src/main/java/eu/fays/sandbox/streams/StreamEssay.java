@@ -1,8 +1,11 @@
 package eu.fays.sandbox.streams;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.text.MessageFormat.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.partitioningBy;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -10,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
@@ -84,6 +88,14 @@ public class StreamEssay {
 			LOGGER.info(format("addIfAbsent({0}) : {1}", kv22, addIfAbsent(map, kv22)));
 			LOGGER.info(format("addIfAbsent({0}) : {1}", kv21, addIfAbsent(map, kv21)));
 		}
+		
+		LOGGER.info(format("partitionIntList(FALSE) of [0,1,0,2] : {0}", partitionIntList(asList(new Integer[] {0,1,0,2})).get(FALSE)));
+		LOGGER.info(format("partitionIntList(TRUE)  of [0,1,0,2] : {0}", partitionIntList(asList(new Integer[] {0,1,0,2})).get(TRUE)));
+		LOGGER.info(format("partitionIntList(FALSE) of [0]       : {0}", partitionIntList(asList(new Integer[] {0})).get(FALSE)));
+		LOGGER.info(format("partitionIntList(TRUE)  of [0]       : {0}", partitionIntList(asList(new Integer[] {0})).get(TRUE)));
+		LOGGER.info(format("partitionIntList(FALSE) of []        : {0}", partitionIntList(asList(new Integer[] {})).get(FALSE)));
+		LOGGER.info(format("partitionIntList(TRUE)  of []        : {0}", partitionIntList(asList(new Integer[] {})).get(TRUE)));
+
 
 	}
 
@@ -198,6 +210,14 @@ public class StreamEssay {
 	 */
 	public static KeyValue<Integer, Integer> addIfAbsent(final Map<KeyValue<Integer, Integer>, KeyValue<Integer, Integer>> map, final KeyValue<Integer, Integer> kv) {
 		return map.computeIfAbsent(kv, Function.identity());
+	}
+	
+	/**
+	 * Partition integers as follow : TRUE key will be associated with zero value, FALSE key for all other integer value
+	 * @param list input integer list
+	 */
+	public static Map<Boolean, List<Integer>> partitionIntList(final List<Integer> list) {
+		return list.stream().collect(partitioningBy(i -> i==0));
 	}
 
 	/** Standard logger */
