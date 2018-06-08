@@ -5,6 +5,7 @@
 		<xs:all>
 			<xs:element name="myDate" type="xs:date" minOccurs="0" />
 			<xs:element name="myTimeStamp" type="xs:dateTime" minOccurs="0" />
+			<xs:element name="myLocalTimeStamp" type="xs:dateTime" minOccurs="0" />
 			<xs:element name="myBoolean" type="xs:boolean" minOccurs="0" />
 			<xs:element name="myInteger" type="xs:integer" minOccurs="0" />
 			<xs:element name="myFruit" type="EnumOfFruit" minOccurs="0" />

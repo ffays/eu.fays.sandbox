@@ -9,6 +9,7 @@ import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 import static javax.xml.bind.Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +55,7 @@ import eu.fays.sandbox.iterators.Fruit;
 @SuppressWarnings("nls")
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = { "myDate", "myTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList", "mySubDataList", "mySubDataRefs" })
+@XmlType(propOrder = { "myDate", "myTimeStamp", "myLocalTimeStamp", "myBoolean", "myInteger", "myFruit", "myNumberList", "mySubDataList", "mySubDataRefs" })
 public class MyData {
 	/**
 	 * Constructor with default values
@@ -70,11 +71,12 @@ public class MyData {
 	 * @param myDate a date
 	 * @param myFruit a fruit
 	 */
-	public MyData(final boolean myBoolean, final int myInteger, final GregorianCalendar myTimeStamp, final GregorianCalendar myDate, final Fruit myFruit) {
+	public MyData(final boolean myBoolean, final int myInteger, final GregorianCalendar myTimeStamp, final GregorianCalendar myDate, final LocalDateTime myLocalTimeStamp, final Fruit myFruit) {
 		setMyBoolean(myBoolean);
 		setMyInteger(myInteger);
 		setMyTimeStamp(myTimeStamp);
 		setMyDate(myDate);
+		setMyLocalTimeStamp(myLocalTimeStamp);
 		setMyFruit(myFruit);
 		this.myNumberList = new ArrayList<>();
 		this.mySubDataList = new ArrayList<>();
@@ -179,7 +181,15 @@ public class MyData {
 		c.setTimeZone(UTC);
 		this.myTimeStamp = c;
 	}
+	
+	public LocalDateTime getMyLocalTimeStamp() {
+		return myLocalTimeStamp;
+	}
 
+	public void setMyLocalTimeStamp(final LocalDateTime myLocalTimeStamp) {
+		this.myLocalTimeStamp = myLocalTimeStamp;
+	}
+	
 	public GregorianCalendar getMyDate() {
 		if (myDate == null) {
 			return defaultGregorianCalendar();
@@ -350,6 +360,12 @@ public class MyData {
 	/** A time stamp */
 	@XmlElement
 	private GregorianCalendar myTimeStamp = null;
+	
+	/** A time stamp */
+	@XmlElement
+	@XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
+	private LocalDateTime myLocalTimeStamp = null;
+
 
 	/** A boolean */
 	@XmlElement

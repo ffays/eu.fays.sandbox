@@ -5,6 +5,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.sqrt;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.GregorianCalendar;
 
 import eu.fays.sandbox.iterators.Fruit;
@@ -32,7 +33,7 @@ public class JAXBEssay {
 
 		{
 			final File file = new File("output/my_data_with_values.xml");
-			final MyData myOutputData = new MyData(false, 1, new GregorianCalendar(), new GregorianCalendar(), Fruit.ORANGE);
+			final MyData myOutputData = new MyData(false, 1, new GregorianCalendar(), new GregorianCalendar(), LocalDateTime.now(), Fruit.ORANGE);
 			myOutputData.addNumber(PHI);
 			myOutputData.addNumber(E);
 			myOutputData.addNumber(PI);
