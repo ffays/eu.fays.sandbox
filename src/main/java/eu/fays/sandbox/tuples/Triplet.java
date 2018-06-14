@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
  * @param <V> type of the third key
  * @author Frederic Fays
  */
-class Triplet<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>> implements Comparable<Triplet<T, U, V>> {
+public class Triplet<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>> implements Comparable<Triplet<T, U, V>> {
 
 	/** First key */
 	public final T t;
