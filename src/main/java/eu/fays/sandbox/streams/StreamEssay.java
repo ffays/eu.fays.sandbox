@@ -49,8 +49,10 @@ public class StreamEssay {
 	 * @throws Exception in case of unexpected error
 	 */
 	public static void main(String[] args) throws Exception {
+		LOGGER.info(format("booleanAny #0: {0}", booleanAny(new Boolean[] {})));
 		LOGGER.info(format("booleanAny #1: {0}", booleanAny(new Boolean[] { false, true, false })));
 		LOGGER.info(format("booleanAny #2: {0}", booleanAny(new Boolean[] { false, false, false })));
+		LOGGER.info(format("booleanAll #0: {0}", booleanAll(new Boolean[] {})));
 		LOGGER.info(format("booleanAll #1: {0}", booleanAll(new Boolean[] { true, true, true })));
 		LOGGER.info(format("booleanAll #2: {0}", booleanAll(new Boolean[] { false, true, false })));
 		LOGGER.info(format("enumToSetOfString: {0}", enumToSetOfString(Fruit.class)));
