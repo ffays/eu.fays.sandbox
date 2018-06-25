@@ -5,6 +5,8 @@ import static java.text.MessageFormat.format;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import static java.util.Locale.FRANCE;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 import java.util.Calendar;
 import java.util.logging.Logger;
@@ -51,6 +53,10 @@ public class FormatEssay {
 		LOGGER.info(format("Integer#6:''{0,number,#;(#)}''", -1));
 		LOGGER.info(format("Integer#7:''{0,number,#;(#)}''", 1));
 		LOGGER.info(format("Integer#8:''{0,number,0}''", 1 << 16));
+		
+		LOGGER.warning(format("{0,choice,0#\u26A0|1#|2#\uD83D\uDED1} {0,number,0}", SEVERE.intValue()-WARNING.intValue()));
+		LOGGER.severe(format("{0,choice,0#\u26A0|1#|2#\uD83D\uDED1} {0,number,0}", WARNING.intValue()-WARNING.intValue()));
+
 	}
 
 	/** Standard logger */
