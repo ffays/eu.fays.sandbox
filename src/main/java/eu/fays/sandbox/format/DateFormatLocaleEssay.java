@@ -62,6 +62,11 @@ public class DateFormatLocaleEssay {
 			final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG);
 			final String formatted = formatter.format(now);
 			System.out.println(formatted);
+			
+			final DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("'Now:' dd MMM yyyy");
+			final String formatted1 = formatter1.format(now);
+			System.out.println(formatted1);
+
 			final LocalDate localDate = LocalDate.parse(formatted, formatter);
 			System.out.println();
 		}
