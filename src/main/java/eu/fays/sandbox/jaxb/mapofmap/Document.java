@@ -1,10 +1,14 @@
 package eu.fays.sandbox.jaxb.mapofmap;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toMap;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -15,6 +19,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import static java.text.MessageFormat.format;
+import static java.util.AbstractMap.SimpleImmutableEntry;
 
 @XmlType
 @XmlAccessorType(XmlAccessType.NONE)
@@ -24,8 +30,10 @@ public class Document {
 	@XmlElement
 	private String name;
 	@XmlElement
-	@XmlJavaTypeAdapter(DictionaryAdapter.class)	
-	private Map<String, Object> dict;
+	@XmlJavaTypeAdapter(DictionaryAdapter.class)
+	private Map<String, Object> dictionary;
+	@XmlJavaTypeAdapter(DictionaryDictionaryAdapter.class)
+	private Map<String, Map<String, Object>> dictionary2;
 
 	/**
 	 * Constructor
@@ -37,11 +45,27 @@ public class Document {
 	/**
 	 * Constructor
 	 * @param name name of the document
-	 * @param dict dictionary 
+	 * @param dict dictionary
 	 */
 	public Document(final String name, final Map<String, Object> dict) {
 		this.name = name;
-		this.dict = dict;
+
+		// @formatter:off
+		final Map<Boolean, Map<String, Object>> partition = dict.entrySet().stream().collect(groupingBy(e -> e.getValue() instanceof Map, toMap(Entry::getKey,Entry::getValue)));
+		
+		if(partition.containsKey(false)) {
+			this.dictionary = partition.get(false);
+		}
+		if(partition.containsKey(true)) {
+			@SuppressWarnings("unchecked")
+			final LinkedHashMap<String, Map<String, Object>> dictDict = partition.get(true)
+				.entrySet()
+				.stream()
+				.map(e -> new SimpleImmutableEntry<String, Map<String, Object>>(e.getKey(), (Map<String, Object>) e.getValue()))
+				.collect(toMap(Entry::getKey, Entry::getValue, (k0, k1) -> { throw new AssertionError(format("Duplicate key ''{0}''!", k0)); }, LinkedHashMap<String, Map<String,Object>>::new));
+			this.dictionary2 = dictDict;
+		}
+		// @formatter:on
 	}
 
 	/**
@@ -65,7 +89,7 @@ public class Document {
 	 * @return the dictionary
 	 */
 	public Map<String, Object> getDict() {
-		return dict;
+		return dictionary;
 	}
 
 	/**
@@ -73,7 +97,7 @@ public class Document {
 	 * @param dict the dictionary
 	 */
 	public void setDict(final Map<String, Object> dict) {
-		this.dict = dict;
+		this.dictionary = dict;
 	}
 
 	/**

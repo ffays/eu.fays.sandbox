@@ -25,7 +25,7 @@ public class JAXBMapOfMapEssay {
 		final LinkedHashMap<String, Object> dict0 = new LinkedHashMap<>();
 		dict0.put("PI", PI);
 		dict0.put("E", E);
-//		dict0.put(Fruit.class.getSimpleName(), dict1);
+		dict0.put(Fruit.class.getSimpleName(), dict1);
 		final Document document = new Document(now, dict0);
 		document.marshal(file);
 		System.out.println(file);
