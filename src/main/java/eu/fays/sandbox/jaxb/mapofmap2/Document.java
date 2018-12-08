@@ -3,7 +3,7 @@ package eu.fays.sandbox.jaxb.mapofmap2;
 import static java.lang.Boolean.TRUE;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
@@ -66,18 +66,18 @@ public class Document {
 
 	/**
 	 * Marshal to XML this instance into the given output file
-	 * @param file the output file
+	 * @param out the output stream
 	 * @throws JAXBException in case of unexpected error
 	 */
-	public void marshal(final File file) throws JAXBException {
+	public void marshal(final OutputStream out) throws JAXBException {
 		//
-		assert file != null;
+		assert out != null;
 		//
 
 		final JAXBContext context = JAXBContext.newInstance(getClass());
 		final Marshaller marshaller = context.createMarshaller();
 		marshaller.setProperty(JAXB_FORMATTED_OUTPUT, TRUE);
-		marshaller.marshal(this, file);
+		marshaller.marshal(this, out);
 	}
 
 }
