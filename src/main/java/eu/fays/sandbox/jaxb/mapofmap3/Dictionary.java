@@ -46,7 +46,7 @@ public class Dictionary {
 		bb.putLong(uuid.getLeastSignificantBits());
 		final String b64 = Base64.getEncoder().encodeToString(bb.array());
 //		String result = b64.replace('+', '\u00D0').replace('/', '\u00D8').replace('=', '_');
-		String result = b64.replace('+', '_').replace('/', ':').replace('=', ' ').trim();
+		String result = ":" + b64.replace('+', '_').replace('/', ':').replace('=', ' ').trim();
 		return result;
 	}
 
