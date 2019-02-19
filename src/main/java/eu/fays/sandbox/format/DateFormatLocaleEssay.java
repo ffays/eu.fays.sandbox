@@ -78,6 +78,8 @@ public class DateFormatLocaleEssay {
 			final DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG, FormatStyle.SHORT);
 			final String formatted = formatter.format(now);
 			System.out.println(formatted);
+			System.out.println(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(now));
+			System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(now));
 			final LocalDateTime localDateTime = LocalDateTime.parse(formatted, formatter);
 			System.out.println();
 		}
