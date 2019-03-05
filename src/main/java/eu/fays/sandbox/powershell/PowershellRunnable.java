@@ -1,6 +1,7 @@
 package eu.fays.sandbox.powershell;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,16 +14,19 @@ import java.util.function.BooleanSupplier;
  */
 public class PowershellRunnable extends Thread implements UncaughtExceptionHandler {
 
-	
 	public static void main(String[] args) throws Exception {
-		final PowershellRunnable runnable = new PowershellRunnable(pwsh(),"-ExecutionPolicy","Bypass","-NoLogo","-NonInteractive","-NoProfile","-Command","[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;[Console]::WriteLine((Get-Date).ToString(\\\"yyyy-MM-dd_HH$([char]0x00F7)mm$([char]0x00F7)ss\\\"))");
+		final PowershellRunnable runnable = new PowershellRunnable(pwsh(), "-ExecutionPolicy", "Bypass", "-NoLogo", "-NonInteractive", "-NoProfile", "-Command",
+				escape("[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;[Console]::WriteLine((Get-Date).ToString(\"yyyy-MM-dd_HH$([char]0x00F7)mm$([char]0x00F7)ss\"))"));
 		runnable.start();
 		runnable.join(runnable.timeout);
 		final String stdout = runnable.standardOutputStream.toString("UTF-8");
-		final String stderr = runnable.errorOutputStream.toString();
+		final String stderr = runnable.errorOutputStream.toString("UTF-8");
 		System.out.println(stdout);
-		if(!stderr.isEmpty()) {
+		if (!stderr.isEmpty()) {
 			System.err.println(stderr);
+		}
+		if (runnable.exception != null) {
+			runnable.exception.printStackTrace();
 		}
 	}
 
@@ -34,7 +38,6 @@ public class PowershellRunnable extends Thread implements UncaughtExceptionHandl
 		try {
 			final long t0 = Calendar.getInstance().getTimeInMillis();
 			final Process process = new ProcessBuilder().command(command).start();
-			
 
 			// @formatter:off
 			final BooleanSupplier isProcessAlive = () -> {try {process.exitValue(); return false;} catch(IllegalThreadStateException e) {return true;}};
@@ -98,12 +101,32 @@ public class PowershellRunnable extends Thread implements UncaughtExceptionHandl
 		out.flush();
 	}
 
+	public static final String escape(final String str) {
+		return isWindows() ? str.replace("\"", "\\\"") : str;
+	}
+
+	public static final boolean isWindows() {
+		return System.getProperty("os.name", "").startsWith("Windows");
+	}
+
 	/**
 	 * Returns the name of the powershell executable
 	 * @return the name of the powershell executable
+	 * @throws InterruptedException
 	 */
-	public static final String pwsh() {
-		return System.getProperty("os.name", "").startsWith("Windows") ? "powershell.exe" : "pwsh";
+	public static final String pwsh() throws InterruptedException {
+		if (isWindows()) {
+			return "powershell.exe";
+		}
+
+		for (final String pwsh : new String[] { "/usr/bin/pwsh", "/usr/local/bin/pwsh" }) {
+			final File file = new File(pwsh);
+			if (file.exists() && file.isFile() && file.canExecute()) {
+				return pwsh;
+			}
+		}
+
+		throw new AssertionError("Powershell executable not found!");
 	}
 
 	/**
@@ -114,7 +137,6 @@ public class PowershellRunnable extends Thread implements UncaughtExceptionHandl
 		//
 		assert command != null;
 		assert command.length > 0;
-		assert "powershell.exe".equals(command[0]) || "pwsh".equals(command[0]);
 		//
 		setName(getClass().getSimpleName());
 		setUncaughtExceptionHandler(this);
