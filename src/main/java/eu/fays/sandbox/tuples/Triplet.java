@@ -9,7 +9,9 @@ import java.util.stream.IntStream;
  * @param <V> type of the third key
  * @author Frederic Fays
  */
-public class Triplet<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>> implements Comparable<Triplet<T, U, V>> {
+public class Triplet<T extends Comparable<? super T>, U extends Comparable<? super U>, V extends Comparable<? super V>> implements Comparable<Triplet<T, U, V>> {
+
+	// Comparable<? super T>, c.f. https://stackoverflow.com/questions/25779184/explanation-of-generic-t-extends-comparable-super-t-in-collection-sort-com
 
 	/** First key */
 	public final T t;
