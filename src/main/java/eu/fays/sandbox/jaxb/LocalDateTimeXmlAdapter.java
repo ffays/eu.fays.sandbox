@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * <br>
  * Article: <a href="http://stackoverflow.com/questions/13568543/how-do-you-specify-the-date-format-used-when-jaxb-marshals-xsddatetime">How do you specify the date format used when JAXB marshals xsd:dateTime?</a><br>
  */
-public class LocalDateTimeAdapter extends XmlAdapter<String, LocalDateTime> {
+public class LocalDateTimeXmlAdapter extends XmlAdapter<String, LocalDateTime> {
 	/**
 	 * @see javax.xml.bind.annotation.adapters.XmlAdapter#marshal(java.lang.Object)
 	 */

@@ -360,7 +360,7 @@ public class MyData {
 	
 	/** A time stamp */
 	@XmlElement
-	@XmlJavaTypeAdapter(LocalDateTimeAdapter.class)
+	@XmlJavaTypeAdapter(LocalDateTimeXmlAdapter.class)
 	private LocalDateTime myLocalTimeStamp = null;
 
 
@@ -369,11 +369,16 @@ public class MyData {
 	private Boolean myBoolean = null;
 
 	/** An integer */
-	@XmlElement(type=Integer.class)
-	@XmlJavaTypeAdapter(type=int.class, value=IntAdapter.class)
-	@XmlNullPolicy(nullRepresentationForXml=XmlMarshalNullRepresentation.XSI_NIL)
+	@XmlElement
+	// Requires Eclipse Link / Moxy
 	// https://stackoverflow.com/questions/10415075/marshalling-null-values-with-a-custom-type-used-with-an-xml-adapter
-	private int myInteger;
+	// -Djavax.xml.bind.context.factory=org.eclipse.persistence.jaxb.JAXBContextFactory
+//	import static org.eclipse.persistence.oxm.annotations.XmlMarshalNullRepresentation.ABSENT_NODE;
+//	import org.eclipse.persistence.oxm.annotations.XmlNullPolicy;
+//	@XmlJavaTypeAdapter(IntegerXmlAdapter.class)
+//	@XmlNullPolicy(nullRepresentationForXml=ABSENT_NODE)
+//	private int myInteger;
+	private Integer myInteger;
 
 	/** A fruit */
 	@XmlElement
