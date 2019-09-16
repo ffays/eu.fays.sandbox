@@ -372,6 +372,7 @@ public class MyData {
 	@XmlElement(type=Integer.class)
 	@XmlJavaTypeAdapter(type=int.class, value=IntAdapter.class)
 	@XmlNullPolicy(nullRepresentationForXml=XmlMarshalNullRepresentation.XSI_NIL)
+	// https://stackoverflow.com/questions/10415075/marshalling-null-values-with-a-custom-type-used-with-an-xml-adapter
 	private int myInteger;
 
 	/** A fruit */
