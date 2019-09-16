@@ -154,9 +154,6 @@ public class MyData {
 	 * @return the integer value
 	 */
 	public int getMyInteger() {
-		if (myInteger == null) {
-			return 0;
-		}
 		return myInteger;
 	}
 
@@ -372,8 +369,10 @@ public class MyData {
 	private Boolean myBoolean = null;
 
 	/** An integer */
-	@XmlElement
-	private Integer myInteger = null;
+	@XmlElement(type=Integer.class)
+	@XmlJavaTypeAdapter(type=int.class, value=IntAdapter.class)
+	@XmlNullPolicy(nullRepresentationForXml=XmlMarshalNullRepresentation.XSI_NIL)
+	private int myInteger;
 
 	/** A fruit */
 	@XmlElement
