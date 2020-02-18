@@ -11,6 +11,18 @@ dependencies {
 	testCompile 'junit:junit:4.12'
 }
 
+
+jar {
+    manifest {
+        attributes(
+        	"Author": "Frederic Fays",
+        	'Premain-Class': 'eu.fays.sandbox.objsize.ObjectSizeEssay',
+			'Main-Class': 'eu.fays.sandbox.objsize.ObjectSizeEssay'
+		)
+    }
+}
+
+
 task printDeps {
 	group 'essay'
 	description = "Displays the libraries associated to 'testCompile'"
