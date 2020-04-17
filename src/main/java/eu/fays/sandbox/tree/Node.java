@@ -92,6 +92,51 @@ public class Node<D> implements Iterable<Node<D>> {
 		}
 		return _children;
 	}
+	
+	/**
+	 * Returns the first child, may be null;
+	 * @return the first child
+	 */
+	public Node<D> getFirstChild() {
+		if(hasChildren()) {
+			return getChildren().get(0);
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the direct right sibling to the given child, may be null
+	 * @param child the child
+	 * @return the direct right sibling to the given child
+	 */
+	protected Node<D> getSibling(final Node<D> child) {
+		if(!hasChildren()) {
+			return null; // No children
+		}
+
+		final int ix = getChildren().indexOf(child);
+		if(ix == -1) {
+			return null; // Not found
+		}
+
+		if((ix + 1) == getChildren().size()) {
+			return null; // Last child
+		}
+
+		return getChildren().get(ix + 1);
+	}
+
+	/**
+	 * Returns the right sibling to this node, may be null
+	 * @return the right sibling to this node, may be null
+	 */
+	public Node<D> getSibling() {
+		if(isRoot()) {
+			return null;
+		}
+
+		return getParent().getSibling(this);
+	}
 
 	/**
 	 * Returns the depth of the node
