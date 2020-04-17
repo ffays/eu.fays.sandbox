@@ -250,32 +250,35 @@ public class Node<D> implements Iterable<Node<D>> {
 
 	/**
 	 * Builds the tree
-	 * @param data input data representing a tree, each value being either a String or a Map<String, ?>
+	 * @param <D> data type
+	 * @param data data value of the root node
+	 * @param map input data representing a tree, each value being either a D or a Map<D, ?>
 	 * @return the root of the tree
 	 */
-	public static Node<String> buildTree(final Map<String, ?> data) {
-		final Node<String> result = new Node<String>("root");
-		final Deque<Entry<Node<String>, Map<String, ?>>> stack = new ArrayDeque<>();
-		stack.push(new SimpleImmutableEntry<Node<String>, Map<String, ?>>(result, data));
+	public static <D> Node<D> buildTree(final D data, final Map<D, ?> map) {
+		final Node<D> result = new Node<D>(data);
+		final Deque<Entry<Node<D>, Map<D, ?>>> stack = new ArrayDeque<>();
+		stack.push(new SimpleImmutableEntry<Node<D>, Map<D, ?>>(result, map));
 
 		while (!stack.isEmpty()) {
-			final Entry<Node<String>, Map<String, ?>> el0 = stack.pop();
-			final Node<String> node0 = el0.getKey();
-			final Map<String, ?> v0 = el0.getValue();
-			for (final Entry<String, ?> e : v0.entrySet()) {
+			final Entry<Node<D>, Map<D, ?>> el0 = stack.pop();
+			final Node<D> node0 = el0.getKey();
+			final Map<D, ?> v0 = el0.getValue();
+			for (final Entry<D, ?> e : v0.entrySet()) {
 				final Object v1 = e.getValue();
-				final Node<String> node1;
+				final Node<D> node1;
 				if (v1 instanceof Map) {
-					node1 = new Node<String>(node0, e.getKey());
+					node1 = new Node<D>(node0, e.getKey());
 					@SuppressWarnings("unchecked")
-					final Entry<Node<String>, Map<String, ?>> el1 = new SimpleImmutableEntry<Node<String>, Map<String, ?>>(node1, (Map<String, ?>) v1);
+					final Entry<Node<D>, Map<D, ?>> el1 = new SimpleImmutableEntry<Node<D>, Map<D, ?>>(node1, (Map<D, ?>) v1);
 					stack.push(el1);
 				} else {
-					node1 = new Node<String>(node0, v1.toString());
+					@SuppressWarnings("unchecked")
+					final D data1 = (D) v1;
+					node1 = new Node<D>(node0, data1);
 				}
 			}
 		}
-		
 		return result;
 	}
 	
