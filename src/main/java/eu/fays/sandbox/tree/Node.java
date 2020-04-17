@@ -216,17 +216,17 @@ public class Node<D> implements Iterable<Node<D>> {
 		while (!stack.isEmpty()) {
 			final Entry<Node<String>, Map<String, ?>> el0 = stack.pop();
 			final Node<String> node0 = el0.getKey();
-			final Map<String, ?> map0 = el0.getValue();
-			for (Entry<String, ?> e : map0.entrySet()) {
-				final Object v = e.getValue();
+			final Map<String, ?> v0 = el0.getValue();
+			for (final Entry<String, ?> e : v0.entrySet()) {
+				final Object v1 = e.getValue();
 				final Node<String> node1;
-				if (v instanceof Map) {
+				if (v1 instanceof Map) {
 					node1 = new Node<String>(node0, e.getKey());
 					@SuppressWarnings("unchecked")
-					final Entry<Node<String>, Map<String, ?>> el1 = new SimpleImmutableEntry<Node<String>, Map<String, ?>>(node1, (Map<String, ?>) v);
+					final Entry<Node<String>, Map<String, ?>> el1 = new SimpleImmutableEntry<Node<String>, Map<String, ?>>(node1, (Map<String, ?>) v1);
 					stack.push(el1);
 				} else {
-					node1 = new Node<String>(node0, v.toString());
+					node1 = new Node<String>(node0, v1.toString());
 				}
 			}
 		}
