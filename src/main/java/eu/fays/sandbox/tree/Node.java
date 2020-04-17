@@ -147,7 +147,7 @@ public class Node<D> implements Iterable<Node<D>> {
 		Node<D> parent = getParent();
 		while(parent != null) {
 			result++;
-			parent = getParent();
+			parent = parent.getParent();
 		}
 		
 		return result;
