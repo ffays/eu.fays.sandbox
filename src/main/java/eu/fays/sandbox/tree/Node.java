@@ -1,12 +1,17 @@
 package eu.fays.sandbox.tree;
 
+import static java.util.AbstractMap.SimpleImmutableEntry;
 import static java.util.Collections.emptyList;
 import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterators.spliteratorUnknownSize;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -86,6 +91,21 @@ public class Node<D> implements Iterable<Node<D>> {
 			return emptyList();
 		}
 		return _children;
+	}
+
+	/**
+	 * Returns the depth of the node
+	 * @return the depth of the node
+	 */
+	public int getDepth() {
+		int result = 0;
+		Node<D> parent = getParent();
+		while(parent != null) {
+			result++;
+			parent = getParent();
+		}
+		
+		return result;
 	}
 
 	/**
@@ -183,9 +203,40 @@ public class Node<D> implements Iterable<Node<D>> {
 		return StreamSupport.stream(spliteratorUnknownSize(breadthFirstIterator(), ORDERED), false);
 	}
 
+	/**
+	 * Builds the tree
+	 * @param data input data representing a tree, each value being either a String or a Map<String, ?>
+	 * @return the root of the tree
+	 */
+	public static Node<String> buildTree(final Map<String, ?> data) {
+		final Node<String> result = new Node<String>("root");
+		final Deque<Entry<Node<String>, Map<String, ?>>> stack = new ArrayDeque<>();
+		stack.push(new SimpleImmutableEntry<Node<String>, Map<String, ?>>(result, data));
+
+		while (!stack.isEmpty()) {
+			final Entry<Node<String>, Map<String, ?>> el0 = stack.pop();
+			final Node<String> node0 = el0.getKey();
+			final Map<String, ?> map0 = el0.getValue();
+			for (Entry<String, ?> e : map0.entrySet()) {
+				final Object v = e.getValue();
+				final Node<String> node1;
+				if (v instanceof Map) {
+					node1 = new Node<String>(node0, e.getKey());
+					@SuppressWarnings("unchecked")
+					final Entry<Node<String>, Map<String, ?>> el1 = new SimpleImmutableEntry<Node<String>, Map<String, ?>>(node1, (Map<String, ?>) v);
+					stack.push(el1);
+				} else {
+					node1 = new Node<String>(node0, v.toString());
+				}
+			}
+		}
+		
+		return result;
+	}
+	
 	/** data, i.e. node payload, may be null */
 	private D _data;
-
+	
 	/** parent node, may be null */
 	private Node<D> _parent;
 
