@@ -18,7 +18,7 @@ public class Quiz {
 	public final List<Quiz> history;
 
 	/** Color codes */
-	public static final char[] CC = new char [] { 'B', 'G', 'M', 'Y'};
+	public static final char[] CC = new char [] { 'b', 'G', 'm', 'y'};
 	public static final int B = 0;
 	public static final int G = 1;
 	public static final int M = 2;
@@ -30,7 +30,7 @@ public class Quiz {
 		//
 		assert quiz != null;
 		assert n > 0;
-		assert quiz.matches("[BGMYOX]+");
+		assert quiz.matches("[bGmyOX]+");
 		assert exit.matches("[Gÿ]+");
 		assert quiz.length() == n * n;
 		assert exit.length() == n * n;
@@ -226,6 +226,19 @@ public class Quiz {
 		}
 	}
 
+	public String diff(final Quiz quiz) {
+		final char[][] result = new char[n][n];
+		for (int r = 0; r < n; r++) {
+			for (int c = 0; c < n; c++) {
+				if(quiz.q[r][c] != q[r][c]) {
+					result[r][c] = q[r][c];
+				} else {
+					result[r][c] = '.';
+				}
+			}
+		}
+		return toString(result, true);
+	}
 	public static String chainToString(final char color, final int n, final int[][] chain) {
 		final char[][] q = new char[n][n];
 		for (int r = 0; r < n; r++) {
