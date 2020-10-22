@@ -83,14 +83,18 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 							final String[] kv = pair.replace('`', '\"').replace('\u00A0', ',').split("=");
 							if (kv.length == 2) {
 								String key = kv[0].trim();
-								if ("C".equals(key)) {
-									key = "Country";
-								} else if ("O".equals(key)) {
-									key = "Organization";
+								if ("CN".equals(key)) {
+									key = "Common Name";
 								} else if ("OU".equals(key)) {
 									key = "Organizational Unit";
-								} else if ("CN".equals(key)) {
-									key = "Common Name";
+								} else if ("O".equals(key)) {
+									key = "Organization";
+								} else if ("L".equals(key)) {
+									key = "Location";
+								} else if ("ST".equals(key)) {
+									key = "State";
+								} else if ("C".equals(key)) {
+									key = "Country";
 								}
 								infoMap.put(prefixes[i] + " " + key, kv[1]);
 							}
