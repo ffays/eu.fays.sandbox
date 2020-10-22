@@ -103,7 +103,7 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 
 					// exporting keys
 					infoMap.put("Version", Integer.toString(cert.getVersion()));
-					infoMap.put("Serial Number", hexToHexWithColon(String.format("%1$08X", cert.getSerialNumber())));
+					infoMap.put("Serial Number", cert.getSerialNumber().toString());
 					infoMap.put("Issued on", dateFormat.format(cert.getNotBefore()));
 					infoMap.put("Expires on", dateFormat.format(cert.getNotAfter()));
 					infoMap.put("SHA1 Fingerprint", hexToHexWithColon(buildSHA1(cert.getEncoded())));
