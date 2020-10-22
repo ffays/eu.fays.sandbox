@@ -65,12 +65,12 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 
 			final LinkedHashMap<String, Map<String, String>> infoMapMap = new LinkedHashMap<String, Map<String, String>>();
 			final LinkedHashMap<String, X509Certificate> certMap = new LinkedHashMap<String, X509Certificate>();
-			for (Certificate certificate : certs) {
+			final String[] prefixes = { "Subject", "Issuer" };
+			for (final Certificate certificate : certs) {
 				if (certificate instanceof X509Certificate) {
 					final X509Certificate cert = (X509Certificate) certificate;
 					final String md5 = buildMD5(cert.getEncoded());
 
-					final String[] prefixes = { "Subject", "Issuer" };
 					final String subjectX500PrincipalName = cert.getSubjectX500Principal().getName("RFC1779");
 					final String issuerX500PrincipalName = cert.getIssuerX500Principal().getName("RFC1779");
 					final String[] principalNames = { subjectX500PrincipalName, issuerX500PrincipalName };
@@ -79,7 +79,7 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 					final Map<String, String> infoMap = new LinkedHashMap<String, String>();
 					for (int i = 0; i < prefixes.length; i++) {
 						final String[] pairs = principalNames[i].replaceAll("(\\\".*)(,)(.*\\\")", "$1\u00A0$3").replace('\"', '`').split(",");
-						for (String pair : pairs) {
+						for (final String pair : pairs) {
 							final String[] kv = pair.replace('`', '\"').replace('\u00A0', ',').split("=");
 							if (kv.length == 2) {
 								String key = kv[0].trim();
@@ -108,11 +108,12 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 					infoMap.put("Expires on", dateFormat.format(cert.getNotAfter()));
 					infoMap.put("SHA1 Fingerprint", hexToHexWithColon(buildSHA1(cert.getEncoded())));
 					infoMap.put("MD5 Fingerprint", hexToHexWithColon(md5));
+
 					// modulus
 					{
-						Matcher matcher = Pattern.compile("modulus: (\\p{XDigit}+)").matcher(cert.toString());
+						final Matcher matcher = Pattern.compile("modulus: (\\p{XDigit}+)").matcher(cert.toString());
 						if (matcher.find()) {
-							String modulus = matcher.group(1);
+							final String modulus = matcher.group(1);
 							infoMap.put("Modulus", modulus);
 						}
 					}
@@ -171,7 +172,7 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 		//
 		assert cert != null;
 		//
-		StringBuilder result = new StringBuilder();
+		final StringBuilder result = new StringBuilder();
 
 		result.append("-----BEGIN CERTIFICATE-----");
 		result.append(System.lineSeparator());
@@ -197,10 +198,10 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 		assert data.length > 0;
 		//
 
-		String result = null;
-		MessageDigest m = MessageDigest.getInstance("MD5");
+		final String result;
+		final MessageDigest m = MessageDigest.getInstance("MD5");
 		m.update(data, 0, data.length);
-		BigInteger i = new BigInteger(1, m.digest());
+		final BigInteger i = new BigInteger(1, m.digest());
 		result = String.format("%1$032X", i);
 		//
 		assert result != null;
@@ -218,10 +219,10 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 		assert data != null;
 		assert data.length > 0;
 		//
-		String result = null;
-		MessageDigest m = MessageDigest.getInstance("SHA1");
+		final String result;
+		final MessageDigest m = MessageDigest.getInstance("SHA1");
 		m.update(data, 0, data.length);
-		BigInteger i = new BigInteger(1, m.digest());
+		final BigInteger i = new BigInteger(1, m.digest());
 		result = String.format("%1$040X", i);
 		//
 		assert result != null;
