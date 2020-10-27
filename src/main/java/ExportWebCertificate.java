@@ -10,12 +10,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -97,6 +100,17 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 									key = "Country";
 								}
 								infoMap.put(prefixes[i] + " " + key, kv[1]);
+							}
+						}
+						if (i == 0 && cert.getSubjectAlternativeNames() != null) {
+							final List<String> subjectAlternativeNames = new ArrayList<>();
+							for (final List<?> altName : cert.getSubjectAlternativeNames()) {
+								if (altName.size() >= 2 && Integer.valueOf(2 /* Cf. sun.security.x509.GeneralName */).equals(altName.get(0))) {
+									subjectAlternativeNames.add(altName.get(1).toString());
+								}
+							}
+							if(!subjectAlternativeNames.isEmpty()) {
+								infoMap.put("Subject Alternative Names", subjectAlternativeNames.stream().collect(Collectors.joining(", ")));
 							}
 						}
 					}
