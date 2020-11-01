@@ -22,6 +22,23 @@ public class BrainQuizSolver {
 
 	// @formatter:off
 	private static final String[] quizz = {
+		"XXmmmm" +
+		"GGGXXm" +
+		"OXOXXm" +
+		"yyOmmm" +
+		"XyXmXX" +
+		"yyOmmO" ,
+
+		"OOOOmO" +
+		"XXXXmX" +
+		"bbbbmX" +
+		"XXOXmX" +
+		"yGGGmO" +
+		"yXXXXO" 
+	};
+
+	// @formatter:off
+	public static final String[] quizz1 = {
 		"XXyyyy" +
 		"GGyXXm" +
 		"GXOXXm" +
