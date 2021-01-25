@@ -121,6 +121,7 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 					infoMap.put("Issued on", dateFormat.format(cert.getNotBefore()));
 					infoMap.put("Expires on", dateFormat.format(cert.getNotAfter()));
 					infoMap.put("SHA1 Fingerprint", hexToHexWithColon(buildSHA1(cert.getEncoded())));
+					infoMap.put("SHA256 Fingerprint", hexToHexWithColon(buildSHA256(cert.getEncoded())));
 					infoMap.put("MD5 Fingerprint", hexToHexWithColon(md5));
 
 					// modulus
@@ -238,6 +239,27 @@ public class ExportWebCertificate implements HostnameVerifier, X509TrustManager 
 		m.update(data, 0, data.length);
 		final BigInteger i = new BigInteger(1, m.digest());
 		result = String.format("%1$040X", i);
+		//
+		assert result != null;
+		//
+		return result;
+	}
+
+	/**
+	 * Produce the SHA-256 digest from the given data
+	 * @param data the data from which the checksum has to be computed
+	 * @return a SHA-256
+	 */
+	protected static String buildSHA256(byte[] data) throws NoSuchAlgorithmException {
+		//
+		assert data != null;
+		assert data.length > 0;
+		//
+		final String result;
+		final MessageDigest m = MessageDigest.getInstance("SHA-256");
+		m.update(data, 0, data.length);
+		final BigInteger i = new BigInteger(1, m.digest());
+		result = String.format("%1$064X", i);
 		//
 		assert result != null;
 		//
