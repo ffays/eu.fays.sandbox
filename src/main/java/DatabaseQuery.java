@@ -30,6 +30,7 @@ public class DatabaseQuery {
 	private final static String USER_PARAMETER_NAME = "user";
 	private final static String PASSWORD_PARAMETER_NAME = "password";
 	private final static String SEPARATOR_PROPERTY_NAME = "separator";
+	private final static String ROW_SEPARATOR_PROPERTY_NAME = "rowSeparator";
 	private final static String QUERY_SEPARATOR_PROPERTY_NAME = "querySeparator";
 	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
 	private final static String COMMIT_PARAMETER_NAME = "commit";
@@ -47,6 +48,7 @@ public class DatabaseQuery {
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
 	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>separator: field separator (optional, default value: tab)
+	 * <li>rowSeparator: row separator (optional, relies on system line separator value)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
 	 * <ol>
@@ -65,6 +67,7 @@ public class DatabaseQuery {
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
 		final String separator = getSystemProperty(SEPARATOR_PROPERTY_NAME, "\t");
 		final String lineSeparator = System.getProperty("line.separator", "\n");
+		final String rowSeparator = getSystemProperty(ROW_SEPARATOR_PROPERTY_NAME, lineSeparator);
 		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PROPERTY_NAME, lineSeparator);
 		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
@@ -149,7 +152,7 @@ public class DatabaseQuery {
 								final String columnName = metaData.getColumnName(c);
 								out.print(columnName);
 							}
-							out.println();
+							out.print(rowSeparator);
 							while (rs.next()) {
 								for (int c = 1; c <= n; c++) {
 									if (c > 1) {
@@ -160,7 +163,7 @@ public class DatabaseQuery {
 										out.print(value.toString());
 									}
 								}
-								out.println();
+								out.print(rowSeparator);
 							}
 						} catch (final SQLException e) {
 							e.printStackTrace();
@@ -169,7 +172,8 @@ public class DatabaseQuery {
 					} else {
 						try (final Statement statement = connection.createStatement()) {
 							final int updateCount = statement.executeUpdate(sql);
-							out.println(updateCount);
+							out.print(updateCount);
+							out.print(rowSeparator);
 							if (!connection.getAutoCommit() && commit != null) {
 								if (Boolean.valueOf(commit)) {
 									connection.commit();
@@ -207,6 +211,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (mandatory)");
 		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
 		parametersDescriptions.put(SEPARATOR_PROPERTY_NAME, "field separator (optional, default value: tab)");
+		parametersDescriptions.put(ROW_SEPARATOR_PROPERTY_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PROPERTY_NAME, "query separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
