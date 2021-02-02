@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Query a database thru a JDBC connection
@@ -30,6 +32,8 @@ public class DatabaseQuery {
 	private final static String USER_PARAMETER_NAME = "user";
 	private final static String PASSWORD_PARAMETER_NAME = "password";
 	private final static String SEPARATOR_PROPERTY_NAME = "separator";
+	private final static String QUOTE_CHAR_PROPERTY_NAME = "quoteChar";
+	private final static String ESCAPE_CHAR_PROPERTY_NAME = "escapeChar";
 	private final static String ROW_SEPARATOR_PROPERTY_NAME = "rowSeparator";
 	private final static String QUERY_SEPARATOR_PROPERTY_NAME = "querySeparator";
 	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
@@ -48,6 +52,8 @@ public class DatabaseQuery {
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
 	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>separator: field separator (optional, default value: tab)
+	 * <li>quoteChar: quoting character for String values (optional, default value: none)
+	 * <li>escapeChar: escape character for the quoting parameter of a String value (optional, default value: none)
 	 * <li>rowSeparator: row separator (optional, relies on system line separator value)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
@@ -66,6 +72,10 @@ public class DatabaseQuery {
 		final String user = System.getProperty(USER_PARAMETER_NAME);
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
 		final String separator = getSystemProperty(SEPARATOR_PROPERTY_NAME, "\t");
+		final String quoteChar = System.getProperty(QUOTE_CHAR_PROPERTY_NAME, null);
+		final String escapeChar = System.getProperty(ESCAPE_CHAR_PROPERTY_NAME, null);
+		final Pattern escapePattern = escapeChar != null ? Pattern.compile("[" + quoteChar + "]", Pattern.MULTILINE) : null;
+		final String escapedQuoteChar = escapeChar != null ? escapeChar + quoteChar : null;
 		final String lineSeparator = System.getProperty("line.separator", "\n");
 		final String rowSeparator = getSystemProperty(ROW_SEPARATOR_PROPERTY_NAME, lineSeparator);
 		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PROPERTY_NAME, lineSeparator);
@@ -160,7 +170,18 @@ public class DatabaseQuery {
 									}
 									final Object value = rs.getObject(c);
 									if (value != null) {
-										out.print(value.toString());
+										if (quoteChar != null && value instanceof String) {
+											out.print(quoteChar);
+											if (escapePattern != null) {
+												final Matcher matcher = escapePattern.matcher((String) value);
+												out.print(matcher.replaceAll(escapedQuoteChar));
+											} else {
+												out.print((String) value);
+											}
+											out.print(quoteChar);
+										} else {
+											out.print(value.toString());
+										}
 									}
 								}
 								out.print(rowSeparator);
@@ -211,6 +232,10 @@ public class DatabaseQuery {
 		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (mandatory)");
 		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
 		parametersDescriptions.put(SEPARATOR_PROPERTY_NAME, "field separator (optional, default value: tab)");
+
+		parametersDescriptions.put(QUOTE_CHAR_PROPERTY_NAME, "quoting character for String values (optional, default value: none)");
+		parametersDescriptions.put(ESCAPE_CHAR_PROPERTY_NAME, "escape character for the quoting parameter of a String value (optional, default value: none)");
+
 		parametersDescriptions.put(ROW_SEPARATOR_PROPERTY_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PROPERTY_NAME, "query separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
