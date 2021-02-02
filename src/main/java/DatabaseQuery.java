@@ -36,6 +36,7 @@ public class DatabaseQuery {
 	private final static String ESCAPE_CHAR_PARAMETER_NAME = "escapeChar";
 	private final static String ROW_SEPARATOR_PARAMETER_NAME = "rowSeparator";
 	private final static String QUERY_SEPARATOR_PARAMETER_NAME = "querySeparator";
+	private final static String PRINT_HEADER_PARAMETER_NAME = "printHeader";
 	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
 	private final static String COMMIT_PARAMETER_NAME = "commit";
 	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
@@ -56,6 +57,7 @@ public class DatabaseQuery {
 	 * <li>escapeChar: escape character for the quoting parameter of a String value (optional, default value: none)
 	 * <li>rowSeparator: row separator (optional, relies on system line separator value)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
+	 * <li>printHeader: print-out the header (optional, true or false, default: true)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
 	 * <ol>
 	 * <li>query ordinal
@@ -74,11 +76,12 @@ public class DatabaseQuery {
 		final String separator = getSystemProperty(SEPARATOR_PARAMETER_NAME, "\t");
 		final String quoteChar = System.getProperty(QUOTE_CHAR_PARAMETER_NAME, null);
 		final String escapeChar = System.getProperty(ESCAPE_CHAR_PARAMETER_NAME, null);
-		final Pattern escapePattern = escapeChar != null ? Pattern.compile("[" + quoteChar + "]", Pattern.MULTILINE) : null;
-		final String escapedQuoteChar = escapeChar != null ? escapeChar + quoteChar : null;
+		final Pattern escapePattern = escapeChar != null && quoteChar != null ? Pattern.compile("[" + quoteChar + "]", Pattern.MULTILINE) : null;
+		final String escapedQuoteChar = escapePattern != null ? escapeChar + quoteChar : null;
 		final String lineSeparator = System.getProperty("line.separator", "\n");
 		final String rowSeparator = getSystemProperty(ROW_SEPARATOR_PARAMETER_NAME, lineSeparator);
 		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PARAMETER_NAME, lineSeparator);
+		final boolean printHeader = Boolean.valueOf(System.getProperty(PRINT_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
 		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
@@ -112,7 +115,7 @@ public class DatabaseQuery {
 			}
 		}
 
-		if (url == null || url.isEmpty() || user == null || queries.isEmpty()) {
+		if (url == null || url.isEmpty() || queries.isEmpty()) {
 			printUsage();
 			return;
 		}
@@ -152,17 +155,30 @@ public class DatabaseQuery {
 					final String sql = queries.get(i);
 					if (sql.startsWith("SELECT")) {
 						try (final Statement statement = connection.createStatement(); final ResultSet rs = statement.executeQuery(sql)) {
-							// Header
 							final ResultSetMetaData metaData = rs.getMetaData();
 							final int n = metaData.getColumnCount();
-							for (int c = 1; c <= n; c++) {
-								if (c > 1) {
-									out.print(separator);
+							// Header
+							if (printHeader) {
+								for (int c = 1; c <= n; c++) {
+									if (c > 1) {
+										out.print(separator);
+									}
+									final String columnName = metaData.getColumnName(c);
+									if (quoteChar != null) {
+										out.print(quoteChar);
+									}
+									if (escapePattern != null) {
+										final Matcher matcher = escapePattern.matcher(columnName);
+										out.print(matcher.replaceAll(escapedQuoteChar));
+									} else {
+										out.print(columnName);
+									}
+									if (quoteChar != null) {
+										out.print(quoteChar);
+									}
 								}
-								final String columnName = metaData.getColumnName(c);
-								out.print(columnName);
+								out.print(rowSeparator);
 							}
-							out.print(rowSeparator);
 							while (rs.next()) {
 								for (int c = 1; c <= n; c++) {
 									if (c > 1) {
@@ -229,13 +245,14 @@ public class DatabaseQuery {
 		System.out.println("List of named parameters:");
 		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
 		parametersDescriptions.put(URL_PARAMETER_NAME, "JDBC connection string (mandatory)");
-		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (mandatory)");
+		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (optional)");
 		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
 		parametersDescriptions.put(SEPARATOR_PARAMETER_NAME, "field separator (optional, default value: tab)");
 		parametersDescriptions.put(QUOTE_CHAR_PARAMETER_NAME, "quoting character for String values (optional, default value: none)");
 		parametersDescriptions.put(ESCAPE_CHAR_PARAMETER_NAME, "escape character for the quoting parameter of a String value (optional, default value: none)");
 		parametersDescriptions.put(ROW_SEPARATOR_PARAMETER_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PARAMETER_NAME, "query separator (optional, relies on system line separator value)");
+		parametersDescriptions.put(PRINT_HEADER_PARAMETER_NAME, "print-out the header (optional, true or false, default: true)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
@@ -266,8 +283,8 @@ public class DatabaseQuery {
 			result = defaultValue;
 		} else {
 			final Properties properties = new Properties();
-			final StringReader stringReader = new StringReader(propertyName + "=" + value + "\n");
-			properties.load(stringReader);
+			final StringReader reader = new StringReader(propertyName + "=" + value + "\n");
+			properties.load(reader);
 			result = properties.getProperty(propertyName);
 		}
 
