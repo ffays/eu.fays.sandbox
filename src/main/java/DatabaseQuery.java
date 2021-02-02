@@ -4,11 +4,13 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -186,13 +188,13 @@ public class DatabaseQuery {
 									}
 									final Object value = rs.getObject(c);
 									if (value != null) {
-										if (quoteChar != null && value instanceof String) {
+										if (quoteChar != null && (value instanceof String || value instanceof Date || value instanceof Timestamp)) {
 											out.print(quoteChar);
 											if (escapePattern != null) {
-												final Matcher matcher = escapePattern.matcher((String) value);
+												final Matcher matcher = escapePattern.matcher(value.toString());
 												out.print(matcher.replaceAll(escapedQuoteChar));
 											} else {
-												out.print((String) value);
+												out.print(value.toString());
 											}
 											out.print(quoteChar);
 										} else {
