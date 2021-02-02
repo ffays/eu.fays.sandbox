@@ -232,10 +232,8 @@ public class DatabaseQuery {
 		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (mandatory)");
 		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
 		parametersDescriptions.put(SEPARATOR_PROPERTY_NAME, "field separator (optional, default value: tab)");
-
 		parametersDescriptions.put(QUOTE_CHAR_PROPERTY_NAME, "quoting character for String values (optional, default value: none)");
 		parametersDescriptions.put(ESCAPE_CHAR_PROPERTY_NAME, "escape character for the quoting parameter of a String value (optional, default value: none)");
-
 		parametersDescriptions.put(ROW_SEPARATOR_PROPERTY_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PROPERTY_NAME, "query separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
