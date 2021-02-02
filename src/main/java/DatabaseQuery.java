@@ -4,22 +4,25 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,10 +44,17 @@ public class DatabaseQuery {
 	private final static String PRINT_HEADER_PARAMETER_NAME = "printHeader";
 	private final static String PRINT_NULL_PARAMETER_NAME = "printNull";
 	private final static String NULL_VALUE_PARAMETER_NAME = "nullValue";
+	private final static String PRINT_EXCEL_DATE_PARAMETER_NAME = "printExcelDate";
 	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
 	private final static String COMMIT_PARAMETER_NAME = "commit";
 	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
 	private final static String FILE_NAME_EXTENSION_PARAMETER_NAME = "fileNameExtension";
+
+	/** The Excel Epoch (i.e. 1/1/1900) */
+	private static final LocalDate EXCEL_EPOCH = LocalDate.of(1900, 1, 1);
+
+	/** Days between the Excel Epoch (i.e. 1/1/1900), and the Unix Epoch (i.e. 1/1/1970) */
+	private static final long MILLISECONDS_BETWEEN_EXCEL_EPOCH_AND_UNIX_EPOCH = (ChronoUnit.DAYS.between(EXCEL_EPOCH, LocalDate.of(1970, 1, 1)) + 2L /* correction for Excel */) * 86_400_000L;
 
 	/**
 	 * Usage: java -Durl=&lt;jdbcConnectionString&gt; -Duser=&lt;user&gt; -Dpassword=&lt;password&gt; DatabaseQuery &lt;sql&gt;<br>
@@ -62,6 +72,7 @@ public class DatabaseQuery {
 	 * <li>printHeader: print-out the header (optional, true or false, default: true)
 	 * <li>printNull: print-out null values (optional, true or false, default: false)
 	 * <li>nullValue: null replacement value (optional, relies on system null representation)
+	 * <li>printExcelDate: print-out dates as Excel dates, i.e. days since January 1st 1900 (optional, true or false, default: false)
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
 	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
@@ -89,11 +100,13 @@ public class DatabaseQuery {
 		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PARAMETER_NAME, lineSeparator);
 		final boolean printHeader = Boolean.valueOf(System.getProperty(PRINT_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
 		final boolean printNull = Boolean.valueOf(System.getProperty(PRINT_NULL_PARAMETER_NAME, Boolean.FALSE.toString()));
+		final boolean printExcelDate = Boolean.valueOf(System.getProperty(PRINT_EXCEL_DATE_PARAMETER_NAME, Boolean.FALSE.toString()));
 		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object)null));
 		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
 		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
+		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		boolean success = true;
 
 		final List<String> queries = new ArrayList<>();
@@ -194,7 +207,10 @@ public class DatabaseQuery {
 									}
 									final Object value = rs.getObject(c);
 									if (value != null) {
-										if (quoteChar != null && (value instanceof String || value instanceof Date || value instanceof Timestamp)) {
+										if(printExcelDate && value instanceof Date) {
+											final double excelDate = Long.valueOf(rs.getTimestamp(c, calendar).getTime() + MILLISECONDS_BETWEEN_EXCEL_EPOCH_AND_UNIX_EPOCH).doubleValue() / 86_400_000d;
+											out.print(excelDate);
+										} else if (quoteChar != null && (value instanceof String || value instanceof Date)) {
 											out.print(quoteChar);
 											if (escapePattern != null) {
 												final Matcher matcher = escapePattern.matcher(value.toString());
@@ -265,6 +281,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(PRINT_HEADER_PARAMETER_NAME, "print-out the header (optional, true or false, default: true)");
 		parametersDescriptions.put(PRINT_NULL_PARAMETER_NAME, "print-out null values (optional, true or false, default: false)");
 		parametersDescriptions.put(NULL_VALUE_PARAMETER_NAME, "null replacement value (optional, relies on system null representation)");
+		parametersDescriptions.put(PRINT_EXCEL_DATE_PARAMETER_NAME, "print-out dates as Excel dates, i.e. days since January 1st 1900 (optional, true or false, default: false)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
