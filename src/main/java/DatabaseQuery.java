@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.sql.Connection;
@@ -10,7 +12,9 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -69,20 +73,22 @@ public class DatabaseQuery {
 		final String user = System.getProperty("user");
 		final String password = System.getProperty("password");
 		final String separator = getSystemProperty(separatorPropertyName, "\t");
-		final String querySeparator = getSystemProperty(querySeparatorPropertyName, System.getProperty("line.separator", "\n"));
+		final String lineSeparator = System.getProperty("line.separator", "\n");
+		final String querySeparator = getSystemProperty(querySeparatorPropertyName, lineSeparator);
 		final String autoCommit = System.getProperty("autoCommit");
 		final String commit = System.getProperty("commit");
 		final String fileNameScheme = System.getProperty("fileNameScheme");
 		final String fileNameExtension = System.getProperty("fileNameExtension", "csv");
 
 		if (url == null || url.isEmpty() || user == null) {
-			System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", urlParameterName, userParameterName, passwordParameterName, DatabaseQuery.class.getSimpleName()));
+			System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", urlParameterName, userParameterName, passwordParameterName,
+					DatabaseQuery.class.getSimpleName()));
 			System.out.println();
 			System.out.println("List of named parameters:");
 			for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
 				System.out.print(MessageFormat.format("\t-D{0}", entry.getKey()));
-				final int n = 3 - ((entry.getKey().length()+2)/8);
-				for(int i=0; i<n; i++) {
+				final int n = 3 - ((entry.getKey().length() + 2) / 8);
+				for (int i = 0; i < n; i++) {
 					System.out.print('\t');
 				}
 				System.out.println(entry.getValue());
@@ -90,11 +96,35 @@ public class DatabaseQuery {
 			return;
 		}
 
+		final List<String> queries = Arrays.asList(args);
+		try (final InputStreamReader isr = new InputStreamReader(System.in); final BufferedReader br = new BufferedReader(isr)) {
+			final StringBuilder builder = new StringBuilder();
+			while (br.ready()) {
+				String line = br.readLine();
+				if (line != null) {
+					line = line.trim();
+					if (!line.startsWith("--")) {
+						if (builder.length() > 0) {
+							builder.append(lineSeparator);
+						}
+						builder.append(line);
+						if (line.endsWith(";")) {
+							queries.add(builder.toString());
+							builder.setLength(0);
+						}
+					}
+				}
+			}
+			if (builder.length() > 0) {
+				queries.add(builder.toString());
+			}
+		}
+
 		try (final Connection connection = DriverManager.getConnection(url, user, password)) {
 			if (autoCommit != null) {
 				connection.setAutoCommit(Boolean.valueOf(autoCommit));
 			}
-			for (int i = 0; i < args.length; i++) {
+			for (int i = 0; i < queries.size(); i++) {
 				final String filename;
 				{
 					final String basename;
@@ -122,7 +152,7 @@ public class DatabaseQuery {
 
 				try (final PrintStream ps = filename != null ? new PrintStream(filename) : null) {
 					final PrintStream out = ps != null ? ps : System.out;
-					final String sql = args[i];
+					final String sql = queries.get(i);
 					if (sql.startsWith("SELECT")) {
 						try (final Statement statement = connection.createStatement(); final ResultSet rs = statement.executeQuery(sql)) {
 							// Header
