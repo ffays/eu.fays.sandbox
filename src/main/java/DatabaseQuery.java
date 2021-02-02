@@ -39,6 +39,8 @@ public class DatabaseQuery {
 	private final static String ROW_SEPARATOR_PARAMETER_NAME = "rowSeparator";
 	private final static String QUERY_SEPARATOR_PARAMETER_NAME = "querySeparator";
 	private final static String PRINT_HEADER_PARAMETER_NAME = "printHeader";
+	private final static String PRINT_NULL_PARAMETER_NAME = "printNull";
+	private final static String NULL_VALUE_PARAMETER_NAME = "nullValue";
 	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
 	private final static String COMMIT_PARAMETER_NAME = "commit";
 	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
@@ -52,14 +54,16 @@ public class DatabaseQuery {
 	 * <li>url: JDBC connection string
 	 * <li>user: database user
 	 * <li>password: database password
-	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
-	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>separator: field separator (optional, default value: tab)
 	 * <li>quoteChar: quoting character for String values (optional, default value: none)
 	 * <li>escapeChar: escape character for the quoting parameter of a String value (optional, default value: none)
 	 * <li>rowSeparator: row separator (optional, relies on system line separator value)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
 	 * <li>printHeader: print-out the header (optional, true or false, default: true)
+	 * <li>printNull: print-out null values (optional, true or false, default: false)
+	 * <li>nullValue: null replacement value (optional, relies on system null representation)
+	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
+	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
 	 * <ol>
 	 * <li>query ordinal
@@ -84,6 +88,8 @@ public class DatabaseQuery {
 		final String rowSeparator = getSystemProperty(ROW_SEPARATOR_PARAMETER_NAME, lineSeparator);
 		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PARAMETER_NAME, lineSeparator);
 		final boolean printHeader = Boolean.valueOf(System.getProperty(PRINT_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
+		final boolean printNull = Boolean.valueOf(System.getProperty(PRINT_NULL_PARAMETER_NAME, Boolean.FALSE.toString()));
+		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object)null));
 		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
@@ -200,6 +206,8 @@ public class DatabaseQuery {
 										} else {
 											out.print(value.toString());
 										}
+									} else if(printNull) {
+										out.print(nullValue);
 									}
 								}
 								out.print(rowSeparator);
@@ -255,6 +263,8 @@ public class DatabaseQuery {
 		parametersDescriptions.put(ROW_SEPARATOR_PARAMETER_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PARAMETER_NAME, "query separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(PRINT_HEADER_PARAMETER_NAME, "print-out the header (optional, true or false, default: true)");
+		parametersDescriptions.put(PRINT_NULL_PARAMETER_NAME, "print-out null values (optional, true or false, default: false)");
+		parametersDescriptions.put(NULL_VALUE_PARAMETER_NAME, "null replacement value (optional, relies on system null representation)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
