@@ -13,7 +13,6 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,30 +72,30 @@ public class DatabaseQuery {
 		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
 		boolean success = true;
 
-		List<String> queries = Arrays.asList(args);
+		final List<String> queries = new ArrayList<>();
+		for (final String sql : args) {
+			queries.add(sql);
+		}
 		try (final InputStreamReader isr = new InputStreamReader(System.in); final BufferedReader br = new BufferedReader(isr)) {
-			if (br.ready()) {
-				final StringBuilder builder = new StringBuilder();
-				queries = new ArrayList<>();
-				while (br.ready()) {
-					String line = br.readLine();
-					if (line != null) {
-						line = line.trim();
-						if (!line.startsWith("--")) {
-							if (builder.length() > 0) {
-								builder.append(lineSeparator);
-							}
-							builder.append(line);
-							if (line.endsWith(";")) {
-								queries.add(builder.toString());
-								builder.setLength(0);
-							}
+			final StringBuilder builder = new StringBuilder();
+			while (br.ready()) {
+				String line = br.readLine();
+				if (line != null) {
+					line = line.trim();
+					if (!line.startsWith("--")) {
+						if (builder.length() > 0) {
+							builder.append(lineSeparator);
+						}
+						builder.append(line);
+						if (line.endsWith(";")) {
+							queries.add(builder.toString());
+							builder.setLength(0);
 						}
 					}
 				}
-				if (builder.length() > 0) {
-					queries.add(builder.toString());
-				}
+			}
+			if (builder.length() > 0) {
+				queries.add(builder.toString());
 			}
 		}
 
