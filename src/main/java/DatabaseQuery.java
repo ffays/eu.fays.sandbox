@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.sql.Connection;
@@ -6,8 +7,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -24,8 +29,8 @@ public class DatabaseQuery {
 	 * <li>url: JDBC connection string
 	 * <li>user: database user
 	 * <li>password: database password
-	 * <li>autoCommit: perform commit after UPDATE/INSERT/DELETE (optional, relies on driver default value)
-	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, relies on driver default value)
+	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
+	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>separator: field separator (optional, default value: tab)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
@@ -40,41 +45,48 @@ public class DatabaseQuery {
 	 * @throws Exception in case of unexpected error
 	 */
 	public static void main(String[] args) throws Exception {
+		final String urlParameterName = "url";
+		final String userParameterName = "user";
+		final String passwordParameterName = "password";
+		final String separatorPropertyName = "separator";
+		final String querySeparatorPropertyName = "querySeparator";
+		final String autoCommitParameterName = "autoCommit";
+		final String commitParameterName = "commit";
+		final String fileNameSchemeParameterName = "fileNameScheme";
+		final String fileNameExtensionParameterName = "fileNameExtension";
+		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
+		parametersDescriptions.put(urlParameterName, "JDBC connection string (mandatory)");
+		parametersDescriptions.put(userParameterName, "database user (mandatory)");
+		parametersDescriptions.put(passwordParameterName, "database password (optional)");
+		parametersDescriptions.put(separatorPropertyName, "field separator (optional, default value: tab)");
+		parametersDescriptions.put(querySeparatorPropertyName, "query separator (optional, relies on system line separator value)");
+		parametersDescriptions.put(autoCommitParameterName, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
+		parametersDescriptions.put(commitParameterName, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
+		parametersDescriptions.put(fileNameSchemeParameterName, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
+		parametersDescriptions.put(fileNameExtensionParameterName, "file name extension (optional, default: csv)");
+
 		final String url = System.getProperty("url");
 		final String user = System.getProperty("user");
 		final String password = System.getProperty("password");
+		final String separator = getSystemProperty(separatorPropertyName, "\t");
+		final String querySeparator = getSystemProperty(querySeparatorPropertyName, System.getProperty("line.separator", "\n"));
 		final String autoCommit = System.getProperty("autoCommit");
 		final String commit = System.getProperty("commit");
 		final String fileNameScheme = System.getProperty("fileNameScheme");
 		final String fileNameExtension = System.getProperty("fileNameExtension", "csv");
-		final String separator;
-		{
-			final String separatorPropertyName = "separator";
-			if (System.getProperty(separatorPropertyName) == null) {
-				separator = "\t";
-			} else {
-				final Properties properties = new Properties();
-				final StringReader stringReader = new StringReader(separatorPropertyName + "=" + System.getProperty(separatorPropertyName) + "\n");
-				properties.load(stringReader);
-				separator = properties.getProperty(separatorPropertyName);
-			}
-		}
 
-		final String querySeparator;
-		{
-			final String querySeparatorPropertyName = "querySeparator";
-			if (System.getProperty(querySeparatorPropertyName) == null) {
-				querySeparator = System.getProperty("line.separator", "\n");
-			} else {
-				final Properties properties = new Properties();
-				final StringReader stringReader = new StringReader(querySeparatorPropertyName + "=" + System.getProperty(querySeparatorPropertyName) + "\n");
-				properties.load(stringReader);
-				querySeparator = properties.getProperty(querySeparatorPropertyName);
+		if (url == null || url.isEmpty() || user == null) {
+			System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", urlParameterName, userParameterName, passwordParameterName, DatabaseQuery.class.getSimpleName()));
+			System.out.println();
+			System.out.println("List of named parameters:");
+			for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
+				System.out.print(MessageFormat.format("\t-D{0}", entry.getKey()));
+				final int n = 3 - ((entry.getKey().length()+2)/8);
+				for(int i=0; i<n; i++) {
+					System.out.print('\t');
+				}
+				System.out.println(entry.getValue());
 			}
-		}
-
-		if (url == null || url.isEmpty() || user == null || password == null || args.length < 1) {
-			System.out.println("Usage: java -Durl=<jdbcConnectionString> -Duser=<user> -Dpassword=<password> " + DatabaseQuery.class.getSimpleName() + " <sql>");
 			return;
 		}
 
@@ -163,4 +175,27 @@ public class DatabaseQuery {
 
 	}
 
+	/**
+	 * Returns either the value of the given system property or the given default value.<br>
+	 * <br>
+	 * Note: this method allows the substitution of escaped control characters, such as '\t', '\r', '\n' and '\f'.<br>
+	 * @param propertyName the name of the system property
+	 * @param defaultValue the default value in case the system property is not defined
+	 * @return the value of the system property
+	 * @throws IOException in case of unexpected error
+	 */
+	private static String getSystemProperty(final String propertyName, final String defaultValue) throws IOException {
+		final String result;
+		final String value = System.getProperty(propertyName);
+		if (value == null) {
+			result = defaultValue;
+		} else {
+			final Properties properties = new Properties();
+			final StringReader stringReader = new StringReader(propertyName + "=" + value + "\n");
+			properties.load(stringReader);
+			result = properties.getProperty(propertyName);
+		}
+
+		return result;
+	}
 }
