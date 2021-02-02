@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Query a database thru a JDBC connection
+ * Query a database via a JDBC connection
  */
 @SuppressWarnings("nls")
 public class DatabaseQuery {
