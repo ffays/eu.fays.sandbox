@@ -23,7 +23,18 @@ import java.util.UUID;
 /**
  * Query a database thru a JDBC connection
  */
+@SuppressWarnings("nls")
 public class DatabaseQuery {
+
+	private final static String URL_PARAMETER_NAME = "url";
+	private final static String USER_PARAMETER_NAME = "user";
+	private final static String PASSWORD_PARAMETER_NAME = "password";
+	private final static String SEPARATOR_PROPERTY_NAME = "separator";
+	private final static String QUERY_SEPARATOR_PROPERTY_NAME = "querySeparator";
+	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
+	private final static String COMMIT_PARAMETER_NAME = "commit";
+	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
+	private final static String FILE_NAME_EXTENSION_PARAMETER_NAME = "fileNameExtension";
 
 	/**
 	 * Usage: java -Durl=&lt;jdbcConnectionString&gt; -Duser=&lt;user&gt; -Dpassword=&lt;password&gt; DatabaseQuery &lt;sql&gt;<br>
@@ -49,52 +60,17 @@ public class DatabaseQuery {
 	 * @throws Exception in case of unexpected error
 	 */
 	public static void main(String[] args) throws Exception {
-		final String urlParameterName = "url";
-		final String userParameterName = "user";
-		final String passwordParameterName = "password";
-		final String separatorPropertyName = "separator";
-		final String querySeparatorPropertyName = "querySeparator";
-		final String autoCommitParameterName = "autoCommit";
-		final String commitParameterName = "commit";
-		final String fileNameSchemeParameterName = "fileNameScheme";
-		final String fileNameExtensionParameterName = "fileNameExtension";
-		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
-		parametersDescriptions.put(urlParameterName, "JDBC connection string (mandatory)");
-		parametersDescriptions.put(userParameterName, "database user (mandatory)");
-		parametersDescriptions.put(passwordParameterName, "database password (optional)");
-		parametersDescriptions.put(separatorPropertyName, "field separator (optional, default value: tab)");
-		parametersDescriptions.put(querySeparatorPropertyName, "query separator (optional, relies on system line separator value)");
-		parametersDescriptions.put(autoCommitParameterName, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
-		parametersDescriptions.put(commitParameterName, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
-		parametersDescriptions.put(fileNameSchemeParameterName, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
-		parametersDescriptions.put(fileNameExtensionParameterName, "file name extension (optional, default: csv)");
-
-		final String url = System.getProperty("url");
-		final String user = System.getProperty("user");
-		final String password = System.getProperty("password");
-		final String separator = getSystemProperty(separatorPropertyName, "\t");
+		final String url = System.getProperty(URL_PARAMETER_NAME);
+		final String user = System.getProperty(USER_PARAMETER_NAME);
+		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
+		final String separator = getSystemProperty(SEPARATOR_PROPERTY_NAME, "\t");
 		final String lineSeparator = System.getProperty("line.separator", "\n");
-		final String querySeparator = getSystemProperty(querySeparatorPropertyName, lineSeparator);
-		final String autoCommit = System.getProperty("autoCommit");
-		final String commit = System.getProperty("commit");
-		final String fileNameScheme = System.getProperty("fileNameScheme");
-		final String fileNameExtension = System.getProperty("fileNameExtension", "csv");
-
-		if (url == null || url.isEmpty() || user == null) {
-			System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", urlParameterName, userParameterName, passwordParameterName,
-					DatabaseQuery.class.getSimpleName()));
-			System.out.println();
-			System.out.println("List of named parameters:");
-			for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
-				System.out.print(MessageFormat.format("\t-D{0}", entry.getKey()));
-				final int n = 3 - ((entry.getKey().length() + 2) / 8);
-				for (int i = 0; i < n; i++) {
-					System.out.print('\t');
-				}
-				System.out.println(entry.getValue());
-			}
-			return;
-		}
+		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PROPERTY_NAME, lineSeparator);
+		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
+		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
+		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
+		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
+		boolean success = true;
 
 		final List<String> queries = Arrays.asList(args);
 		try (final InputStreamReader isr = new InputStreamReader(System.in); final BufferedReader br = new BufferedReader(isr)) {
@@ -118,6 +94,11 @@ public class DatabaseQuery {
 			if (builder.length() > 0) {
 				queries.add(builder.toString());
 			}
+		}
+
+		if (url == null || url.isEmpty() || user == null || queries.isEmpty()) {
+			printUsage();
+			return;
 		}
 
 		try (final Connection connection = DriverManager.getConnection(url, user, password)) {
@@ -180,6 +161,7 @@ public class DatabaseQuery {
 							}
 						} catch (final SQLException e) {
 							e.printStackTrace();
+							success = false;
 						}
 					} else {
 						try (final Statement statement = connection.createStatement()) {
@@ -194,6 +176,7 @@ public class DatabaseQuery {
 							}
 						} catch (final SQLException e) {
 							e.printStackTrace();
+							success = false;
 						}
 					}
 				}
@@ -203,6 +186,37 @@ public class DatabaseQuery {
 			}
 		}
 
+		if (!success) {
+			System.exit(1);
+		}
+	}
+
+	/**
+	 * Print usage
+	 */
+	private static void printUsage() {
+		System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", URL_PARAMETER_NAME, USER_PARAMETER_NAME, PASSWORD_PARAMETER_NAME,
+				DatabaseQuery.class.getSimpleName()));
+		System.out.println();
+		System.out.println("List of named parameters:");
+		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
+		parametersDescriptions.put(URL_PARAMETER_NAME, "JDBC connection string (mandatory)");
+		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (mandatory)");
+		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
+		parametersDescriptions.put(SEPARATOR_PROPERTY_NAME, "field separator (optional, default value: tab)");
+		parametersDescriptions.put(QUERY_SEPARATOR_PROPERTY_NAME, "query separator (optional, relies on system line separator value)");
+		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
+		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
+		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
+		parametersDescriptions.put(FILE_NAME_EXTENSION_PARAMETER_NAME, "file name extension (optional, default: csv)");
+		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
+			System.out.print(MessageFormat.format("\t-D{0}", entry.getKey()));
+			final int n = 3 - ((entry.getKey().length() + 2) / 8);
+			for (int i = 0; i < n; i++) {
+				System.out.print('\t');
+			}
+			System.out.println(entry.getValue());
+		}
 	}
 
 	/**
