@@ -112,17 +112,19 @@ public class DatabaseQuery {
 		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		boolean success = true;
 
+		// Command line arguments
 		final List<String> queries = new ArrayList<>();
 		for (final String sql : args) {
 			queries.add(sql);
 		}
+		// Standard Input handling
 		try (final InputStreamReader isr = new InputStreamReader(System.in); final BufferedReader br = new BufferedReader(isr)) {
 			final StringBuilder builder = new StringBuilder();
 			while (br.ready()) {
 				String line = br.readLine();
 				if (line != null) {
 					line = line.trim();
-					if (!line.startsWith("--")) {
+					if (!line.isEmpty() && !line.startsWith("--")) {
 						if (builder.length() > 0) {
 							builder.append(lineSeparator);
 						}
