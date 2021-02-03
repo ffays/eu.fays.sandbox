@@ -128,8 +128,25 @@ public class DatabaseQuery {
 						if (builder.length() > 0) {
 							builder.append(lineSeparator);
 						}
+
+						boolean endsWithSemicolon = false;
+						final int semicolonOffset = line.lastIndexOf(';');
+						if(semicolonOffset != -1) {
+							endsWithSemicolon = semicolonOffset == (line.length() - 1);
+							if(!endsWithSemicolon) {
+								final int doubleMinusOffset = line.indexOf("--");
+								if(doubleMinusOffset > semicolonOffset) {
+									final String whitespaces = line.substring(semicolonOffset+1,doubleMinusOffset);
+									if(whitespaces.matches("\\s*")) {
+										line = line.substring(0, semicolonOffset);
+										endsWithSemicolon = true;
+									}
+								}
+							}
+						}		
+
 						builder.append(line);
-						if (line.endsWith(";")) {
+						if (endsWithSemicolon) {
 							queries.add(builder.toString());
 							builder.setLength(0);
 						}
