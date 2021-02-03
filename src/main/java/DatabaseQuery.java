@@ -131,19 +131,19 @@ public class DatabaseQuery {
 
 						boolean endsWithSemicolon = false;
 						final int semicolonOffset = line.lastIndexOf(';');
-						if(semicolonOffset != -1) {
+						if (semicolonOffset != -1) {
 							endsWithSemicolon = semicolonOffset == (line.length() - 1);
-							if(!endsWithSemicolon) {
+							if (!endsWithSemicolon) {
 								final int doubleMinusOffset = line.indexOf("--");
-								if(doubleMinusOffset > semicolonOffset) {
-									final String whitespaces = line.substring(semicolonOffset+1,doubleMinusOffset);
-									if(whitespaces.matches("\\s*")) {
+								if (doubleMinusOffset > semicolonOffset) {
+									final String whitespaces = line.substring(semicolonOffset + 1, doubleMinusOffset);
+									if (whitespaces.matches("\\s*")) {
 										line = line.substring(0, semicolonOffset);
 										endsWithSemicolon = true;
 									}
 								}
 							}
-						}		
+						}
 
 						builder.append(line);
 						if (endsWithSemicolon) {
