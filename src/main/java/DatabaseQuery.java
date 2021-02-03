@@ -281,7 +281,7 @@ public class DatabaseQuery {
 		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" {2} \"{3}\" \"{4}\"", pathSeparator, URL_PARAMETER_NAME, className, sql1, sql2));
 		System.out.println(MessageFormat.format("echo {0,choice,0#\"|1#|2#}{1}{0,choice,0#\"|1#|2#} | java -cp h2-1.4.200.jar{2}. -D{3}=\"jdbc:h2:mem:mydb\" {4}", windowsWordOffset, sql3, pathSeparator, URL_PARAMETER_NAME, className));
 		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" -Dseparator=\",\" -DquoteChar=\"\\\"\" -DescapeChar=\"\\\"\" {2} \"{3}\"", pathSeparator, URL_PARAMETER_NAME, className, sql4));
-		System.out.println(MessageFormat.format("java -cp mssql-jdbc-9.2.0.jre11.jar{0}. -D{1}=\"jdbc:sqlserver://my-sqlserver.lan:1433;databaseName=master\" -D{2}=\"{3}\" -D{4}=\"mypassword\" {5} \"{6}\"", pathSeparator, URL_PARAMETER_NAME, USER_PARAMETER_NAME, user, PASSWORD_PARAMETER_NAME, className, sql3));
+		System.out.println(MessageFormat.format("java -cp mssql-jdbc-9.2.0.jre11.jar{0}. -D{1}=\"jdbc:sqlserver://my-sqlserver.lan:1433;databaseName=master\" -D{2}=\"{3}\" -D{4}=\"changeit\" {5} \"{6}\"", pathSeparator, URL_PARAMETER_NAME, USER_PARAMETER_NAME, user, PASSWORD_PARAMETER_NAME, className, sql3));
 		System.out.println();
 		System.out.println("Parameters:");
 		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
