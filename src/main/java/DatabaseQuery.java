@@ -56,7 +56,7 @@ public class DatabaseQuery {
 	/** The Unix Epoch (i.e. 1/1/1970) */
 	private static final LocalDate UNIX_EPOCH = LocalDate.of(1970, 1, 1);
 
-	/** Days between the Excel Epoch (i.e. 1/1/1900), and the Unix Epoch (i.e. 1/1/1970) */
+	/** Milliseconds between the Excel Epoch (i.e. 1/1/1900), and the Unix Epoch (i.e. 1/1/1970) */
 	private static final long MILLISECONDS_BETWEEN_EXCEL_EPOCH_AND_UNIX_EPOCH = (ChronoUnit.DAYS.between(EXCEL_EPOCH, UNIX_EPOCH) + 2L /* correction for Excel */) * 86_400_000L;
 
 	/**
