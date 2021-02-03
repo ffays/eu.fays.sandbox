@@ -101,7 +101,7 @@ public class DatabaseQuery {
 		final boolean printHeader = Boolean.valueOf(System.getProperty(PRINT_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
 		final boolean printNull = Boolean.valueOf(System.getProperty(PRINT_NULL_PARAMETER_NAME, Boolean.FALSE.toString()));
 		final boolean printExcelDate = Boolean.valueOf(System.getProperty(PRINT_EXCEL_DATE_PARAMETER_NAME, Boolean.FALSE.toString()));
-		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object)null));
+		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object) null));
 		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
@@ -207,7 +207,7 @@ public class DatabaseQuery {
 									}
 									final Object value = rs.getObject(c);
 									if (value != null) {
-										if(printExcelDate && value instanceof Date) {
+										if (printExcelDate && value instanceof Date) {
 											final double excelDate = Long.valueOf(rs.getTimestamp(c, calendar).getTime() + MILLISECONDS_BETWEEN_EXCEL_EPOCH_AND_UNIX_EPOCH).doubleValue() / 86_400_000d;
 											out.print(excelDate);
 										} else if (quoteChar != null && (value instanceof String || value instanceof Date)) {
@@ -222,7 +222,7 @@ public class DatabaseQuery {
 										} else {
 											out.print(value.toString());
 										}
-									} else if(printNull) {
+									} else if (printNull) {
 										out.print(nullValue);
 									}
 								}
@@ -268,18 +268,19 @@ public class DatabaseQuery {
 		final String user = System.getProperty("user.name");
 		final String className = DatabaseQuery.class.getSimpleName();
 		final String pathSeparator = System.getProperty("path.separator");
+		final int windowsWordOffset = System.getProperty("os.name").indexOf("Windows") + 1;
 		final String sql1 = "SELECT 'John' AS firstname";
 		final String sql2 = "SELECT 'Doe' AS lastname";
 		final String sql3 = sql1 + ", 'Doe' AS lastname";
 		final String sql4 = sql3 + ", 'Hello \\\"John\\\"!' AS greeting";
-		System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", URL_PARAMETER_NAME, USER_PARAMETER_NAME, PASSWORD_PARAMETER_NAME,
-				DatabaseQuery.class.getSimpleName()));
+		// @formatter:off
+		System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", URL_PARAMETER_NAME, USER_PARAMETER_NAME, PASSWORD_PARAMETER_NAME, DatabaseQuery.class.getSimpleName()));
 		System.out.println();
 		System.out.println("Examples");
 		System.out.println();
 		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" {2} \"{3}\" \"{4}\"", pathSeparator, URL_PARAMETER_NAME, className, sql1, sql2));
-		System.out.println(MessageFormat.format("echo \"{0}\" | java -cp h2-1.4.200.jar{1}. -D{2}=\"jdbc:h2:mem:mydb\" {3}", sql3, pathSeparator, URL_PARAMETER_NAME, className));
-		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" -Dseparator=\",\" -DquoteChar=\"\\\\u0022\" -DescapeChar=\"\\\\u0022\" {2} \"{3}\"", pathSeparator, URL_PARAMETER_NAME, className, sql4));
+		System.out.println(MessageFormat.format("echo {0,choice,0#\"|1#|2#}{1}{0,choice,0#\"|1#|2#} | java -cp h2-1.4.200.jar{2}. -D{3}=\"jdbc:h2:mem:mydb\" {4}", windowsWordOffset, sql3, pathSeparator, URL_PARAMETER_NAME, className));
+		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" -Dseparator=\",\" -DquoteChar=\"\\\"\" -DescapeChar=\"\\\"\" {2} \"{3}\"", pathSeparator, URL_PARAMETER_NAME, className, sql4));
 		System.out.println(MessageFormat.format("java -cp mssql-jdbc-9.2.0.jre11.jar{0}. -D{1}=\"jdbc:sqlserver://my-sqlserver.lan:1433;databaseName=master\" -D{2}=\"{3}\" -D{4}=\"mypassword\" {5} \"{6}\"", pathSeparator, URL_PARAMETER_NAME, USER_PARAMETER_NAME, user, PASSWORD_PARAMETER_NAME, className, sql3));
 		System.out.println();
 		System.out.println("Parameters:");
@@ -300,6 +301,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
 		parametersDescriptions.put(FILE_NAME_EXTENSION_PARAMETER_NAME, "file name extension (optional, default: csv)");
+		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
 			System.out.print(MessageFormat.format("  -D{0}", entry.getKey()));
 			final int n = 3 - ((entry.getKey().length() + 4) / 8);
