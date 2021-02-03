@@ -65,14 +65,14 @@ public class DatabaseQuery {
 	 * <li>user: database user
 	 * <li>password: database password
 	 * <li>separator: field separator (optional, default value: tab)
-	 * <li>quoteChar: quoting character for String values (optional, default value: none)
-	 * <li>escapeChar: escape character for the quoting parameter of a String value (optional, default value: none)
+	 * <li>quoteChar: quoting character for String, Date and Timestamp values (optional, default value: none)
+	 * <li>escapeChar: escape character for the quoting parameter of a String, a Date or a Timestamp value (optional, default value: none)
 	 * <li>rowSeparator: row separator (optional, relies on system line separator value)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
 	 * <li>printHeader: print-out the header (optional, true or false, default: true)
 	 * <li>printNull: print-out null values (optional, true or false, default: false)
 	 * <li>nullValue: null replacement value (optional, relies on system null representation)
-	 * <li>printExcelDate: print-out dates as Excel dates, i.e. days since January 1st 1900 (optional, true or false, default: false)
+	 * <li>printExcelDate: print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
 	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
@@ -91,8 +91,8 @@ public class DatabaseQuery {
 		final String user = System.getProperty(USER_PARAMETER_NAME);
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
 		final String separator = getSystemProperty(SEPARATOR_PARAMETER_NAME, "\t");
-		final String quoteChar = System.getProperty(QUOTE_CHAR_PARAMETER_NAME, null);
-		final String escapeChar = System.getProperty(ESCAPE_CHAR_PARAMETER_NAME, null);
+		final String quoteChar = getSystemProperty(QUOTE_CHAR_PARAMETER_NAME, null);
+		final String escapeChar = getSystemProperty(ESCAPE_CHAR_PARAMETER_NAME, null);
 		final Pattern escapePattern = escapeChar != null && quoteChar != null ? Pattern.compile("[" + quoteChar + "]", Pattern.MULTILINE) : null;
 		final String escapedQuoteChar = escapePattern != null ? escapeChar + quoteChar : null;
 		final String lineSeparator = System.getProperty("line.separator", "\n");
@@ -265,30 +265,44 @@ public class DatabaseQuery {
 	 * Print usage
 	 */
 	private static void printUsage() {
+		final String user = System.getProperty("user.name");
+		final String className = DatabaseQuery.class.getSimpleName();
+		final String pathSeparator = System.getProperty("path.separator");
+		final String sql1 = "SELECT 'John' AS firstname";
+		final String sql2 = "SELECT 'Doe' AS lastname";
+		final String sql3 = sql1 + ", 'Doe' AS lastname";
+		final String sql4 = sql3 + ", 'Hello \\\"John\\\"!' AS greeting";
 		System.out.println(MessageFormat.format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <sql> ...", URL_PARAMETER_NAME, USER_PARAMETER_NAME, PASSWORD_PARAMETER_NAME,
 				DatabaseQuery.class.getSimpleName()));
 		System.out.println();
-		System.out.println("List of named parameters:");
+		System.out.println("Examples");
+		System.out.println();
+		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" {2} \"{3}\" \"{4}\"", pathSeparator, URL_PARAMETER_NAME, className, sql1, sql2));
+		System.out.println(MessageFormat.format("echo \"{0}\" | java -cp h2-1.4.200.jar{1}. -D{2}=\"jdbc:h2:mem:mydb\" {3}", sql3, pathSeparator, URL_PARAMETER_NAME, className));
+		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" -Dseparator=\",\" -DquoteChar=\"\\\\u0022\" -DescapeChar=\"\\\\u0022\" {2} \"{3}\"", pathSeparator, URL_PARAMETER_NAME, className, sql4));
+		System.out.println(MessageFormat.format("java -cp mssql-jdbc-9.2.0.jre11.jar{0}. -D{1}=\"jdbc:sqlserver://my-sqlserver.lan:1433;databaseName=master\" -D{2}=\"{3}\" -D{4}=\"mypassword\" {5} \"{6}\"", pathSeparator, URL_PARAMETER_NAME, USER_PARAMETER_NAME, user, PASSWORD_PARAMETER_NAME, className, sql3));
+		System.out.println();
+		System.out.println("Parameters:");
 		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
 		parametersDescriptions.put(URL_PARAMETER_NAME, "JDBC connection string (mandatory)");
 		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (optional)");
 		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
 		parametersDescriptions.put(SEPARATOR_PARAMETER_NAME, "field separator (optional, default value: tab)");
-		parametersDescriptions.put(QUOTE_CHAR_PARAMETER_NAME, "quoting character for String values (optional, default value: none)");
-		parametersDescriptions.put(ESCAPE_CHAR_PARAMETER_NAME, "escape character for the quoting parameter of a String value (optional, default value: none)");
+		parametersDescriptions.put(QUOTE_CHAR_PARAMETER_NAME, "quoting character for String, Date and Timestamp values (optional, default value: none)");
+		parametersDescriptions.put(ESCAPE_CHAR_PARAMETER_NAME, "escape character for the quoting parameter of a String, a Date or a Timestamp value (optional, default value: none)");
 		parametersDescriptions.put(ROW_SEPARATOR_PARAMETER_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PARAMETER_NAME, "query separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(PRINT_HEADER_PARAMETER_NAME, "print-out the header (optional, true or false, default: true)");
 		parametersDescriptions.put(PRINT_NULL_PARAMETER_NAME, "print-out null values (optional, true or false, default: false)");
 		parametersDescriptions.put(NULL_VALUE_PARAMETER_NAME, "null replacement value (optional, relies on system null representation)");
-		parametersDescriptions.put(PRINT_EXCEL_DATE_PARAMETER_NAME, "print-out dates as Excel dates, i.e. days since January 1st 1900 (optional, true or false, default: false)");
+		parametersDescriptions.put(PRINT_EXCEL_DATE_PARAMETER_NAME, "print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
 		parametersDescriptions.put(FILE_NAME_EXTENSION_PARAMETER_NAME, "file name extension (optional, default: csv)");
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
-			System.out.print(MessageFormat.format("\t-D{0}", entry.getKey()));
-			final int n = 3 - ((entry.getKey().length() + 2) / 8);
+			System.out.print(MessageFormat.format("  -D{0}", entry.getKey()));
+			final int n = 3 - ((entry.getKey().length() + 4) / 8);
 			for (int i = 0; i < n; i++) {
 				System.out.print('\t');
 			}
