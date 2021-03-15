@@ -5,7 +5,9 @@ import static java.nio.file.StandardOpenOption.READ;
 import static java.text.MessageFormat.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.Scanner;
 
 import javax.crypto.SecretKey;
 
@@ -80,10 +81,8 @@ public class KeyToolQuery {
 				final Process process = processBuilder.start();
 				if (process.waitFor(3, SECONDS)) {
 					if (process.exitValue() == 0) {
-						try (final InputStream is = process.getInputStream(); final Scanner scanner = new Scanner(is)) {
-							if (scanner.hasNext()) {
-								javaHome = scanner.next();
-							}
+						try (final InputStream is = process.getInputStream(); final InputStreamReader isr = new InputStreamReader(is); final BufferedReader br = new BufferedReader(isr)) {
+							javaHome = br.readLine();
 						}
 					}
 				}
