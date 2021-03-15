@@ -53,7 +53,10 @@ public class KeyToolQuery {
 		Path keystoreFile = null;
 		if (getProperty(KEYSTORE_PARAMETER_NAME) != null) {
 			storetype = getProperty(STORETYPE_PARAMETER_NAME, "PKCS12");
-			final String keystore = getProperty(KEYSTORE_PARAMETER_NAME);
+			String keystore = getProperty(KEYSTORE_PARAMETER_NAME);
+			if (keystore.charAt(0) == '~') {
+				keystore = keystore.replaceFirst("~", getProperty("user.home"));
+			}
 			keystoreFile = Paths.get(keystore);
 		} else {
 			storetype = "JKS";
