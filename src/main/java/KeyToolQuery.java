@@ -77,7 +77,7 @@ public class KeyToolQuery {
 				final Process process = processBuilder.start();
 				if (process.waitFor(3, SECONDS)) {
 					if (process.exitValue() == 0) {
-						try (final InputStream is = process.getInputStream(); Scanner scanner = new Scanner(is)) {
+						try (final InputStream is = process.getInputStream(); final Scanner scanner = new Scanner(is)) {
 							if (scanner.hasNext()) {
 								javaHome = scanner.next();
 							}
