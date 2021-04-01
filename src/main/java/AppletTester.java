@@ -1,44 +1,27 @@
 /**
- * Java Applet proof of concept that provides the system properties in a text area.<br>
+ * Java Applet proof of concept that provides some system properties in a text area.<br>
  * <br>
- * Note: requires Java 1.2 or higher to compile (due do the use of {@link java.util.TreeSet TreeSet} to sort the properties)<br>
- * <br>
- * &lt;applet code="AppletTester.class" width="1280" height="720"&gt;
+ * &lt;applet code="AppletTester.class" width="640" height="240"&gt;
  */
 public class AppletTester extends java.applet.Applet {
 
-	// Suppress the annotations to compile with old java versions
 	/**
 	 * Initialization!
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
 	public void init() {
-		java.awt.TextArea textArea = new java.awt.TextArea(28, 110);
+		java.awt.TextArea textArea = new java.awt.TextArea(9, 50);
 		java.awt.Font font = new java.awt.Font("Dialog", java.awt.Font.PLAIN, 20);
 		textArea.setFont(font);
 		add(textArea);
 
-		java.util.Set sortedKeySet = new java.util.TreeSet();
-		{
-			java.util.Set keySet = System.getProperties().keySet();
-			java.util.Iterator keySetIterator = keySet.iterator();
-			while (keySetIterator.hasNext()) {
-				final String key = (String) keySetIterator.next();
-				sortedKeySet.add(key);
-			}
-		}
-
 		StringBuffer builder = new StringBuffer();
-		{
-			java.util.Iterator<String> sortedKeySetIterator = sortedKeySet.iterator();
-			while (sortedKeySetIterator.hasNext()) {
-				String key = (String) sortedKeySetIterator.next();
-				builder.append(key);
-				builder.append('=');
-				builder.append(System.getProperty(key));
-				builder.append('\n');
-			}
+		String[] keys = { "java.class.version", "java.vendor", "java.vendor.url", "java.version", "os.name", "os.arch", "os.version" };
+	
+		for(int i=0; i<keys.length; i++) {
+			builder.append(keys[i]);
+			builder.append('=');
+			builder.append(System.getProperty(keys[i]));
+			builder.append('\n');
 		}
 
 		textArea.setText(builder.toString());
