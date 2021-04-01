@@ -3,7 +3,7 @@
  * <br>
  * Note: requires Java 1.2 or higher to compile (due do the use of {@link java.util.TreeSet TreeSet} to sort the properties)<br>
  * <br>
- * &lt;applet code="AppletTester.class" height="1280" width="720"&gt;
+ * &lt;applet code="AppletTester.class" width="1280" height="720"&gt;
  */
 public class AppletTester extends java.applet.Applet {
 
