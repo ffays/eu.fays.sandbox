@@ -37,9 +37,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "jdkHome=${jdkHome}"
 	echo "osName=${osName}"
 	
-	for(e in env){
-        echo e + "=" + ${e}
-    }
+	echo sh(script: 'env|sort', returnStdout: true)
 
 	env.JAVA_HOME = "${jdkHome}"
 
