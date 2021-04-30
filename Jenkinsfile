@@ -83,7 +83,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		}
 		step([
 			$class: 'ArtifactArchiver',
-			artifacts: 'target/*.zip,target/*.tar.gz',
+			artifacts: 'target/*.zip,target/*.tar.gz,target/*.jar',
 			fingerprint: false
 		])
 		// step([
