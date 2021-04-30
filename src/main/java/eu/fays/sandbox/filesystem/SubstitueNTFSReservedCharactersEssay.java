@@ -25,9 +25,9 @@ public class SubstitueNTFSReservedCharactersEssay {
 		final String z = unsubstitueNTFSReservedCharacters(y);
 
 		SUBSTITUTION_CHARACTERS_MAP.entrySet().stream().forEach(e -> LOGGER.info(MessageFormat.format("''{0}'' -> ''{1}''", e.getKey(), e.getValue())));
-		LOGGER.info(new Boolean(x.equals(y) == false).toString());
-		LOGGER.info(new Boolean(y.equals(z) == false).toString());
-		LOGGER.info(new Boolean(x.equals(z) == true).toString());
+		LOGGER.info(Boolean.valueOf(x.equals(y) == false).toString());
+		LOGGER.info(Boolean.valueOf(y.equals(z) == false).toString());
+		LOGGER.info(Boolean.valueOf(x.equals(z) == true).toString());
 
 	}
 
@@ -71,20 +71,31 @@ public class SubstitueNTFSReservedCharactersEssay {
 	}
 
 	/**
-	 * Build the substitution character map
+	 * Build the substitution character map as follow:
+	 * <ul>
+	 * <li>" &#8658; &#xa8; - DIAERESIS
+	 * <li>* &#8658; &#xa4; - CURRENCY SIGN
+	 * <li>/ &#8658; &#xf8; - LATIN SMALL LETTER O WITH STROKE
+	 * <li>: &#8658; &#xf7; - DIVISION SIGN
+	 * <li>&lt; &#8658; &#xab; - LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+	 * <li>&gt; &#8658; &#xbb; - RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+	 * <li>? &#8658; &#xbf; - INVERTED QUESTION MARK
+	 * <li>\ &#8658; &#xff; - LATIN SMALL LETTER Y WITH DIAERESIS
+	 * <li>| &#8658; &#xa6; - BROKEN BAR
+	 * </ul>
 	 * @return the map
 	 */
 	private static Map<Character, Character> buildSubstitutionCharactersMap() {
 		LinkedHashMap<Character, Character> result = new LinkedHashMap<>();
-		result.put('"', (char) 0xa8 /* '¨' - DIAERESIS */);
-		result.put('*', (char) 0xa4 /* '¤' - CURRENCY SIGN */);
-		result.put('/', (char) 0xf8 /* 'ø' - LATIN SMALL LETTER O WITH STROKE */);
-		result.put(':', (char) 0xf7 /* '÷' - DIVISION SIGN */);
-		result.put('<', (char) 0xab /* '«' - LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */);
-		result.put('>', (char) 0xbb /* '»' - RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */);
-		result.put('?', (char) 0xbf /* '¿' - INVERTED QUESTION MARK */);
-		result.put('\\', (char) 0xff /* 'ÿ' - LATIN SMALL LETTER Y WITH DIAERESIS */);
-		result.put('|', (char) 0xa6 /* '¦' - BROKEN BAR */);
+		result.put('"', (char) 0xa8 /* DIAERESIS */);
+		result.put('*', (char) 0xa4 /* CURRENCY SIGN */);
+		result.put('/', (char) 0xf8 /* LATIN SMALL LETTER O WITH STROKE */);
+		result.put(':', (char) 0xf7 /* DIVISION SIGN */);
+		result.put('<', (char) 0xab /* LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */);
+		result.put('>', (char) 0xbb /* RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */);
+		result.put('?', (char) 0xbf /* INVERTED QUESTION MARK */);
+		result.put('\\',(char) 0xff /* LATIN SMALL LETTER Y WITH DIAERESIS */);
+		result.put('|', (char) 0xa6 /* BROKEN BAR */);
 
 		return unmodifiableMap(result);
 	}
