@@ -12,7 +12,8 @@ node {
 	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
 	def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
-	def mvnOpts = "-f ${projectName}${fileSeparator}pom.xml"
+	// --offline : Work offline - remove this option if a Maven plugin version has been modified
+	def mvnOpts = "--offline -f ${projectName}${fileSeparator}pom.xml"
 	def mvnGoals = 'clean verify'
 	
 	// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
