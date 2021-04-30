@@ -1,7 +1,6 @@
 package eu.fays.sandbox.filesystem;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +14,7 @@ import java.util.stream.Stream;
  * An essay to count all files under a given folder and following the symbolic links<br>
  * <br>
  * For windows users, if you get the following Exception:<br>
- *   java.nio.file.FileSystemException: "A required privilege is not held by the client"<br>
+ * &nbsp;&nbsp;java.nio.file.FileSystemException: "A required privilege is not held by the client"<br>
  * <br>
  * perform the following actions:<br>
  * <ol>

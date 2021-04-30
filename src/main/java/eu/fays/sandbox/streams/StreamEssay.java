@@ -182,7 +182,7 @@ public class StreamEssay {
 	 * @return either true or false.
 	 */
 	public static boolean areAllValuesIntegers1(final double[] values) {
-		return Arrays.stream(values).mapToObj(v -> new Double(v)).reduce(true, (a, v) -> a && (v == Math.floor(v)) && Double.isFinite(v), (a0, a1) -> a0 && a1);
+		return Arrays.stream(values).mapToObj(v -> Double.valueOf(v)).reduce(true, (a, v) -> a && (v == Math.floor(v)) && Double.isFinite(v), (a0, a1) -> a0 && a1);
 	}
 
 	/**
@@ -192,7 +192,7 @@ public class StreamEssay {
 	 * @return either true or false.
 	 */
 	public static boolean areAllValuesIntegers2(final double[] values) {
-		return Arrays.stream(values).mapToObj(v -> new Double(v)).reduce(true, (a, v) -> a && ((v % 1) == 0), (a0, a1) -> a0 && a1);
+		return Arrays.stream(values).mapToObj(v -> Double.valueOf(v)).reduce(true, (a, v) -> a && ((v % 1) == 0), (a0, a1) -> a0 && a1);
 	}
 
 	/**
