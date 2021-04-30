@@ -10,7 +10,7 @@ node {
 	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
 	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
 	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
-	def targetOperatingSystemName = (jenkinsProjectName.tokenize('-') as String[])[1]
+	def projectBuildOs = (jenkinsProjectName.tokenize('-') as String[])[1] // one of: linux,macosx,win32
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
 	def mvnOpts = "-f ${projectName}${fileSeparator}pom.xml"
 	def mvnGoals = 'clean verify'
@@ -43,7 +43,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "scmUrl=${scmUrl}"
 	echo "projectName=${projectName}"
 	echo "jenkinsProjectName=${jenkinsProjectName}"
-	echo "targetOperatingSystemName=${targetOperatingSystemName}"
+	echo "projectBuildOs=${projectBuildOs}"
 	
 	echo sh(script: 'env|sort', returnStdout: true)
 
@@ -59,21 +59,34 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Build') {
+		if("linux".equals(projectBuildOs)) {
+		    mvnOpts = '-Dproject.build.os=linux -Dproject.build.ws=gtk ' + mvnOpts
+		} else if("macosx".equals(projectBuildOs)) {
+			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
+		} else if("win32".equals(projectBuildOs)) {
+			mvnOpts = '-Dproject.build.os=win32 -Dproject.build.ws=win32 ' + mvnOpts
+		}
+
 		if("Linux".equals(osName)) {
-			mvnOpts = '-Dproject.build.os=linux -Dproject.build.ws=gtk ' + mvnOpts
+			if(!"linux".equals(projectBuildOs)) {
+				mvnOpts = '-DskipTests ' + mvnOpts  
+			}
 			wrap([$class: 'Xvfb', displayName: 1, screen: '1920x1080x24']) {
 				withEnv(['DISPLAY=:1']) {
 					sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 				}
 			}
 		} else if("Darwin".equals(osName)) {
+			if(!"macosx".equals(projectBuildOs)) {
+				mvnOpts = '-DskipTests ' + mvnOpts  
+			}
 			env.MAVEN_OPTS = '-XstartOnFirstThread'
 			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
 			sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 		} else if("Windows".equals(osName)) {
-			//
-			// Windows build
-			//
+			if(!"win32".equals(projectBuildOs)) {
+				mvnOpts = '-DskipTests ' + mvnOpts  
+			}
 
 			def userHome = bat(returnStdout: true, script: '@echo %USERPROFILE%').trim()
 			echo 'USERPROFILE=' + '"' + userHome + '"'
