@@ -6,9 +6,13 @@
 node {
 	def mvnHome = tool 'M3'
 	def jdkHome = tool 'JDK11'
-	def fileSeparator = isUnix()?"/":"\\"
+	def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
+	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
+	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
+	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
+	def targetOperatingSystemName = (jenkinsProjectName.tokenize('-') as String[])[1]
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
-	def mvnOpts = "-f eu.fays.sandbox${fileSeparator}pom.xml"
+	def mvnOpts = "-f ${projectName}${fileSeparator}pom.xml"
 	def mvnGoals = 'clean verify'
 	
 	// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
@@ -36,16 +40,20 @@ $bd  = [System.Convert]::FromBase64String($b64);
 
 	echo "jdkHome=${jdkHome}"
 	echo "osName=${osName}"
+	echo "scmUrl=${scmUrl}"
+	echo "projectName=${projectName}"
+	echo "jenkinsProjectName=${jenkinsProjectName}"
+	echo "targetOperatingSystemName=${targetOperatingSystemName}"
 	
 	echo sh(script: 'env|sort', returnStdout: true)
 
-	env.JAVA_HOME = "${jdkHome}"
+	env.JAVA_HOME = jdkHome
+	env.PROJECT_NAME = projectName
 
 	stage('Checkout') {
 		def scmVars
 		deleteDir()
-
-		dir('eu.fays.sandbox') {
+		dir(env.PROJECT_NAME) {
 			scmVars  = checkout scm
 		}
 	}
@@ -85,7 +93,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		}
 		step([
 			$class: 'ArtifactArchiver',
-			artifacts: 'target/*.zip,target/*.tar.gz,target/*.jar',
+			artifacts: "${projectName}/target/*.jar",
 			fingerprint: false
 		])
 		// step([
