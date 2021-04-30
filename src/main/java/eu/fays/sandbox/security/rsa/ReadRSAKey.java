@@ -1,12 +1,12 @@
 package eu.fays.sandbox.security.rsa;
 
 import static java.util.stream.Collectors.joining;
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -15,6 +15,7 @@ import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.text.MessageFormat;
 import java.util.Base64;
 
 /**
@@ -37,13 +38,15 @@ public class ReadRSAKey {
 	 */
 
 	public static void main(String[] args) throws Exception {
-		final String privateKeyFileName = System.getProperty("in", "id_rsa");
-		final String publicKeyFileName = privateKeyFileName + ".pub";
-
-		final File privateKeyFile = new File(privateKeyFileName);
-		// TODO: read the public key file
-		final File publicKeyFile = new File(publicKeyFileName);
-
+		final String privateKeyFileName = System.getProperty("in");
+		final File privateKeyFile;
+		if(privateKeyFileName == null) {
+			final File homeFolder = new File(System.getProperty("user.home"));
+			final File sshFolder = new File(homeFolder, ".ssh");
+			privateKeyFile = new File(sshFolder, "id_rsa");
+		} else {
+			privateKeyFile = new File(privateKeyFileName);
+		}
 		final KeyPair keyPair = readPrivateKey(privateKeyFile);
 		final RSAPrivateCrtKey privateKey = (RSAPrivateCrtKey) keyPair.getPrivate();
 		final RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
@@ -104,5 +107,12 @@ public class ReadRSAKey {
 		System.out.println("RSA Private CRT Key");
 		System.out.println("\t         modulus: " + printHexBinary(publicKey.getModulus().toByteArray()).toLowerCase());
 		System.out.println("\t public exponent: " + printHexBinary(publicKey.getPublicExponent().toByteArray()).toLowerCase());
+	}
+	
+	private static String printHexBinary(byte[] data) {
+		final BigInteger i = new BigInteger(1, data);
+		final String format = MessageFormat.format("%1$0{0,number,0}X", data.length << 3);
+		final String result = String.format(format, i);
+		return result;
 	}
 }
