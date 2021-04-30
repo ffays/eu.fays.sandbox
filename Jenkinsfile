@@ -10,7 +10,7 @@ node {
 	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
 	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
 	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
-	def projectBuildOs = (jenkinsProjectName.tokenize('-') as String[])[1] // one of: linux,macosx,win32
+	def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
 	def mvnOpts = "-f ${projectName}${fileSeparator}pom.xml"
 	def mvnGoals = 'clean verify'
