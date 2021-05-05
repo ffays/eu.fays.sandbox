@@ -124,7 +124,7 @@ mvn dependency:tree -Dverbose
 			<id>unzip-adoptopenjdk-jre-x64-windows</id>
 			<activation>
 				<file>
-					<exists>${user.home}/workspace/${adoptopenjdk.jre.x64.windows.zip}</exists>
+					<exists>${user.home}/Downloads/${adoptopenjdk.jre.x64.windows.zip}</exists>
 				</file>
 			</activation>
 			<build>
@@ -142,9 +142,9 @@ mvn dependency:tree -Dverbose
 								</goals>
 								<configuration>
 									<target>
-										<echo message="(cd ${project.build.directory}; unzip ${user.home}/workspace/${adoptopenjdk.jre.x64.windows.zip})" />
-										<unzip src="${user.home}/workspace/${adoptopenjdk.jre.x64.windows.zip}" dest="${project.build.directory}" />
-										<echo message="mv ${project.build.directory}/${adoptopenjdk.jre.folder.name} ${project.build.directory}/jre" />
+										<echo message="(cd ${project.build.directory}; unzip ${user.home}/Downloads/${adoptopenjdk.jre.x64.windows.zip})" level="info" />
+										<unzip src="${user.home}/Downloads/${adoptopenjdk.jre.x64.windows.zip}" dest="${project.build.directory}" />
+										<echo message="mv ${project.build.directory}/${adoptopenjdk.jre.folder.name} ${project.build.directory}/jre" level="info" />
 										<move file="${project.build.directory}/${adoptopenjdk.jre.folder.name}" tofile="${project.build.directory}/jre"/>
 									</target>
 								</configuration>
