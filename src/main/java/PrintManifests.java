@@ -16,10 +16,14 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+/**
+ * Recursively scan the given folder for java libraries, and for each of them, print their MANIFEST.MF file
+ */
 public class PrintManifests {
 
 	/** Standard logger */
 	private static final Logger LOGGER = Logger.getLogger(PrintManifests.class.getName());
+
 	/**
 	 * Recursively scan the given folder for java libraries, and for each of them, print their MANIFEST.MF file<br>
 	 * <br>
