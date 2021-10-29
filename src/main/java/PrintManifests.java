@@ -36,7 +36,7 @@ public class PrintManifests {
 		final Path root = Path.of(args[0]);
 		try (final Stream<Path> stream = walk(root)) {
 			final PathMatcher filter = root.getFileSystem().getPathMatcher("glob:**.{jar,war,zip}");
-			final List<Path> paths = stream.filter(filter::matches).collect(toList());
+			final List<Path> paths = stream.filter(p -> filter.matches(p) || "bundleFile".equals(p.getFileName().toString())).collect(toList());
 			for(final Path path : paths) {
 				try (final InputStream fis = newInputStream(path); final ZipInputStream zis = new ZipInputStream(fis)) {
 					ZipEntry zipEntry = zis.getNextEntry();
