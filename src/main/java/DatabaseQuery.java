@@ -254,7 +254,7 @@ public class DatabaseQuery {
 							e.printStackTrace();
 							success = false;
 						}
-					} else if (sql.startsWith("UPDATE")) {
+					} else if (sql.startsWith("UPDATE") || sql.startsWith("INSERT") || sql.startsWith("DELETE")) {
 						try (final Statement statement = connection.createStatement()) {
 							final int updateCount = statement.executeUpdate(sql);
 							out.print(updateCount);
