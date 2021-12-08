@@ -254,10 +254,26 @@ public class DatabaseQuery {
 							e.printStackTrace();
 							success = false;
 						}
-					} else {
+					} else if (sql.startsWith("UPDATE")) {
 						try (final Statement statement = connection.createStatement()) {
 							final int updateCount = statement.executeUpdate(sql);
 							out.print(updateCount);
+							out.print(rowSeparator);
+							if (!connection.getAutoCommit() && commit != null) {
+								if (Boolean.valueOf(commit)) {
+									connection.commit();
+								} else {
+									connection.rollback();
+								}
+							}
+						} catch (final SQLException e) {
+							e.printStackTrace();
+							success = false;
+						}
+					} else {
+						try (final Statement statement = connection.createStatement()) {
+							boolean rc = statement.execute(sql);
+							out.print(rc);
 							out.print(rowSeparator);
 							if (!connection.getAutoCommit() && commit != null) {
 								if (Boolean.valueOf(commit)) {
