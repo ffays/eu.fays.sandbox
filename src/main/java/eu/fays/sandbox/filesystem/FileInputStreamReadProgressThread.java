@@ -2,7 +2,6 @@ package eu.fays.sandbox.filesystem;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.channels.FileChannel;
 import java.util.function.DoubleConsumer;
