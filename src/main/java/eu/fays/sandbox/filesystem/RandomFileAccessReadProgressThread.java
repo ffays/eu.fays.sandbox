@@ -6,14 +6,14 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.channels.FileChannel;
 import java.util.function.DoubleConsumer;
 
-class RandomFileAccessReadProgressThread extends Thread implements UncaughtExceptionHandler {
+public class RandomFileAccessReadProgressThread extends Thread implements UncaughtExceptionHandler {
 	/** Input stream */ private final RandomAccessFile randomAccessFile;
 	/** File size */ private final long length;
 	/** Read progress in percents */ private double progress = 0d;
 	/** Exception from thread */ private Throwable exception = null;
 	/** Consumer of the progress */ private final DoubleConsumer callBack;
 
-	RandomFileAccessReadProgressThread(final RandomAccessFile raf, final long l, final DoubleConsumer cb) {
+	public RandomFileAccessReadProgressThread(final RandomAccessFile raf, final long l, final DoubleConsumer cb) {
 		randomAccessFile = raf;
 		length = l;
 		callBack = cb;
@@ -21,14 +21,14 @@ class RandomFileAccessReadProgressThread extends Thread implements UncaughtExcep
 		setName(getClass().getSimpleName());
 	}
 
-	double getProgress() { return progress; }
-	Throwable getException() { return exception; }
+	public double getProgress() { return progress; }
+	public Throwable getException() { return exception; }
 	@Override public void uncaughtException(final Thread t, final Throwable e) { exception = e; }
 	
 	@Override
 	public void run() {
 		try {
-			long filePointer = -1;
+			long filePointer = -1L;
 			final FileChannel channel = randomAccessFile.getChannel();
 			while (!isInterrupted() && channel.isOpen() && filePointer < length) {
 				filePointer = randomAccessFile.getFilePointer();
