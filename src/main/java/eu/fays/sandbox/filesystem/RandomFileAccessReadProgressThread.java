@@ -4,16 +4,19 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.channels.FileChannel;
+import java.util.function.DoubleConsumer;
 
 class RandomFileAccessReadProgressThread extends Thread implements UncaughtExceptionHandler {
 	/** Input stream */ private final RandomAccessFile randomAccessFile;
 	/** File size */ private final long length;
 	/** Read progress in percents */ private double progress = 0d;
 	/** Exception from thread */ private Throwable exception = null;
+	/** Consumer of the progress */ private final DoubleConsumer callBack;
 
-	RandomFileAccessReadProgressThread(final RandomAccessFile raf, final long l) {
+	RandomFileAccessReadProgressThread(final RandomAccessFile raf, final long l, final DoubleConsumer cb) {
 		randomAccessFile = raf;
 		length = l;
+		callBack = cb;
 		setUncaughtExceptionHandler(this);
 		setName(getClass().getSimpleName());
 	}
@@ -25,12 +28,12 @@ class RandomFileAccessReadProgressThread extends Thread implements UncaughtExcep
 	@Override
 	public void run() {
 		try {
-			long filePointer = -1, previous = -1L;
+			long filePointer = -1;
 			final FileChannel channel = randomAccessFile.getChannel();
 			while (!isInterrupted() && channel.isOpen() && filePointer < length) {
 				filePointer = randomAccessFile.getFilePointer();
-				progress = ((double)filePointer) * 100d / ((double)length);
-				/* business logic here */ if(previous != ((long)progress)) System.out.println((previous = (long) progress) + "%");
+				progress = length == 0L ? 100d : ((double)filePointer) * 100d / ((double)length);
+				callBack.accept(progress);
 				sleep(100L);
 			} 
 		} catch (final IOException e) {
