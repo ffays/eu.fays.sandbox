@@ -38,6 +38,15 @@ public class RandomFileAccessWithProgressEssay {
 		try (final FileInputStream fis = new FileInputStream(file); final InputStreamWithProgressDecorator is = new InputStreamWithProgressDecorator(fis, file.length(), callBack)) {
 			readAllBytes(is, 1 << 20);
 		}
+		
+		
+		System.out.println("3rd way");
+		try (final FileInputStream fis = new FileInputStream(file); final InputStream is = Channels.newInputStream(fis.getChannel())) {
+			final FileInputStreamReadProgressThread readProgressThread = new FileInputStreamReadProgressThread(fis, file.length(), p -> System.out.printf("%.0f%%\n", p));
+			readProgressThread.start();
+			is.readAllBytes();
+		}
+
 	}
 
 	/**
