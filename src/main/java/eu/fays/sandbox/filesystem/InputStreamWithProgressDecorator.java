@@ -6,7 +6,7 @@ import java.util.function.DoubleConsumer;
 
 public class InputStreamWithProgressDecorator extends InputStream {
 	/** Input stream to be decorated */ private final InputStream inputStream;
-	/** Amount of byte read */ private long filePointer = 0L;
+	/** Amount of byte read */ private long position = 0L;
 	/** File size */ private final long length;
 	/** Mark */ private int mark = 0;
 	/** Consumer of the progress */ private final DoubleConsumer callBack;
@@ -17,58 +17,58 @@ public class InputStreamWithProgressDecorator extends InputStream {
 		callBack = cb;
 	}
 
-	private void setFilePointer(final long fp) {
-		filePointer = fp;
+	private void setPosition(final long fp) {
+		position = fp;
 		callBack.accept(getProgress());
 	}
 
 	public double getProgress() {
-		return length == 0L ? 100d : ((double) filePointer) * 100d / ((double) length);
+		return length == 0L ? 100d : ((double) position) * 100d / ((double) length);
 	}
 
-	public long getFilePointer() {
-		return filePointer;
+	public long getPosition() {
+		return position;
 	}
 
 	@Override
 	public int read(byte[] b) throws IOException {
 		final int rc = inputStream.read(b);
-		setFilePointer(filePointer + rc);
+		setPosition(position + rc);
 		return rc;
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		final int rc = inputStream.read(b, off, len);
-		setFilePointer(filePointer + rc);
+		setPosition(position + rc);
 		return rc;
 	}
 
 	@Override
 	public byte[] readAllBytes() throws IOException {
 		final byte[] result = inputStream.readAllBytes();
-		setFilePointer(filePointer + result.length);
+		setPosition(position + result.length);
 		return result;
 	}
 
 	@Override
 	public byte[] readNBytes(int len) throws IOException {
 		final byte[] result = inputStream.readNBytes(len);
-		setFilePointer(filePointer + result.length);
+		setPosition(position + result.length);
 		return result;
 	}
 
 	@Override
 	public int readNBytes(byte[] b, int off, int len) throws IOException {
 		final int rc = inputStream.readNBytes(b, off, len);
-		setFilePointer(filePointer + rc);
+		setPosition(position + rc);
 		return rc;
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
 		final long rc = inputStream.skip(n);
-		setFilePointer(filePointer + rc);
+		setPosition(position + rc);
 		return rc;
 	}
 
@@ -91,7 +91,7 @@ public class InputStreamWithProgressDecorator extends InputStream {
 	@Override
 	public synchronized void reset() throws IOException {
 		inputStream.reset();
-		setFilePointer(mark);
+		setPosition(mark);
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class InputStreamWithProgressDecorator extends InputStream {
 	@Override
 	public int read() throws IOException {
 		final int c = inputStream.read();
-		setFilePointer(filePointer + 1);
+		setPosition(position + 1);
 		return c;
 	}
 }
