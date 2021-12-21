@@ -51,11 +51,13 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	env.JAVA_HOME = jdkHome
 	env.PROJECT_NAME = projectName
 
+	def scmVars // Map keys: GIT_BRANCH, GIT_COMMIT, GIT_PREVIOUS_COMMIT, GIT_PREVIOUS_SUCCESSFUL_COMMIT, GIT_URL
 	stage('Checkout') {
-		def scmVars
 		deleteDir()
 		dir(env.PROJECT_NAME) {
 			scmVars  = checkout scm
+			echo "scmVars" 
+			print scmVars			
 		}
 	}
 
