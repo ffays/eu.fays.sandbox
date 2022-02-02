@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -49,6 +51,7 @@ public class DatabaseQuery {
 	private final static String COMMIT_PARAMETER_NAME = "commit";
 	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
 	private final static String FILE_NAME_EXTENSION_PARAMETER_NAME = "fileNameExtension";
+	private final static String ENCODING_PARAMETER_NAME = "encoding";
 
 	/** The Excel Epoch (i.e. 1/1/1900) */
 	private static final LocalDate EXCEL_EPOCH = LocalDate.of(1900, 1, 1);
@@ -85,11 +88,13 @@ public class DatabaseQuery {
 	 * <li>universally unique identifier
 	 * </ol>
 	 * <li>fileNameExtension: file name extension (optional, default: csv)
+	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
 	 * </ul>
 	 * @param args SQL queries
 	 * @throws Exception in case of unexpected error
 	 */
 	public static void main(String[] args) throws Exception {
+		final Properties systemProperties = System.getProperties();
 		final String url = System.getProperty(URL_PARAMETER_NAME);
 		final String user = System.getProperty(USER_PARAMETER_NAME);
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
@@ -109,6 +114,12 @@ public class DatabaseQuery {
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
 		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
+		final Charset encoding;
+		if(systemProperties.contains(ENCODING_PARAMETER_NAME)) {
+			encoding = Charset.forName(System.getProperty(ENCODING_PARAMETER_NAME));
+		} else {
+			encoding = StandardCharsets.UTF_8;	
+		}
 		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		boolean success = true;
 
@@ -193,7 +204,7 @@ public class DatabaseQuery {
 					System.out.flush();
 				}
 
-				try (final PrintStream ps = filename != null ? new PrintStream(filename) : null) {
+				try (final PrintStream ps = filename != null ? new PrintStream(filename, encoding) : null) {
 					final PrintStream out = ps != null ? ps : System.out;
 					final String sql = queries.get(i);
 					if (sql.startsWith("SELECT")) {
@@ -312,7 +323,7 @@ public class DatabaseQuery {
 		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" {2} \"{3}\" \"{4}\"", pathSeparator, URL_PARAMETER_NAME, className, sql1, sql2));
 		System.out.println(MessageFormat.format("echo {0,choice,0#\"|1#|2#}{1}{0,choice,0#\"|1#|2#} | java -cp h2-1.4.200.jar{2}. -D{3}=\"jdbc:h2:mem:mydb\" {4}", windowsWordOffset, sql3, pathSeparator, URL_PARAMETER_NAME, className));
 		System.out.println(MessageFormat.format("java -cp h2-1.4.200.jar{0}. -D{1}=\"jdbc:h2:mem:mydb\" -Dseparator=\",\" -DquoteChar=\"\\\"\" -DescapeChar=\"\\\"\" {2} \"{3}\"", pathSeparator, URL_PARAMETER_NAME, className, sql4));
-		System.out.println(MessageFormat.format("java -cp mssql-jdbc-9.2.0.jre11.jar{0}. -D{1}=\"jdbc:sqlserver://my-sqlserver.lan:1433;databaseName=master\" -D{2}=\"{3}\" -D{4}=\"changeit\" {5} \"{6}\"", pathSeparator, URL_PARAMETER_NAME, USER_PARAMETER_NAME, user, PASSWORD_PARAMETER_NAME, className, sql3));
+		System.out.println(MessageFormat.format("java -cp mssql-jdbc-9.4.0.jre11.jar{0}. -D{1}=\"jdbc:sqlserver://my-sqlserver.lan:1433;databaseName=master\" -D{2}=\"{3}\" -D{4}=\"changeit\" {5} \"{6}\"", pathSeparator, URL_PARAMETER_NAME, USER_PARAMETER_NAME, user, PASSWORD_PARAMETER_NAME, className, sql3));
 		System.out.println();
 		System.out.println("Parameters:");
 		final Map<String, String> parametersDescriptions = new LinkedHashMap<>();
@@ -332,6 +343,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
 		parametersDescriptions.put(FILE_NAME_EXTENSION_PARAMETER_NAME, "file name extension (optional, default: csv)");
+		parametersDescriptions.put(ENCODING_PARAMETER_NAME, "the file encoding (optional, default=UTF-8)");
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
 			System.out.print(MessageFormat.format("  -D{0}", entry.getKey()));
