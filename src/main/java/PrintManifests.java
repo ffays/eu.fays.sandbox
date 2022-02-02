@@ -40,12 +40,7 @@ public class PrintManifests {
 		}
 		
 		final Path root = Path.of(args[0]);
-		
-		
-		
-		final char[] versionDelimiters = {',', '('};
 
-		
 		try (final Stream<Path> stream = walk(root)) {
 			final PathMatcher filter = root.getFileSystem().getPathMatcher("glob:**.{jar,war,zip}");
 			final List<Path> paths = stream.filter(p -> filter.matches(p) || "bundleFile".equals(p.getFileName().toString())).collect(toList());
@@ -69,64 +64,147 @@ public class PrintManifests {
 						zipEntry = zis.getNextEntry();
 					}
 					if(manifest != null) {
+						final Attributes mainAttributes = manifest.getMainAttributes();						
+						
+						// License
+						String bundleLicense = mainAttributes.getValue("Bundle-License");
+						final String[] licenseInformation;
+						if(bundleLicense != null) {
+							licenseInformation = getLicenseInformationFromBundleVersion(bundleLicense);
+						} else  if(licenseText != null) {
+							licenseInformation = getLicenseInformationFromText(licenseText);
+						} else {
+							licenseInformation = new String[3];
+						}
+						
+						final String license = licenseInformation[0];
+						final String licenseVersion = licenseInformation[1];
+						final String licenseUrl =  licenseInformation[2];
+						
+						if(bundleLicense == null && licenseUrl != null) {
+							mainAttributes.putValue("Bundle-License", licenseUrl);
+						}
+						
+						if(license != null) {
+							mainAttributes.putValue("License", license);
+						}
+
+						if(license != null) {
+							mainAttributes.putValue("License-Version", licenseVersion);
+						}
+
+						if(licenseUrl != null) {
+							mainAttributes.putValue("License-URL", licenseUrl);
+						}
+						
 						System.out.println("Dash=--------------------------------------------------------------------------------");
 						System.out.println(format("File={0}",path.toString()));
-						final Attributes mainAttributes = manifest.getMainAttributes();
 						for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
 							String value = (String) entry.getValue();
-							if(value.startsWith("%") && pluginProperties != null && pluginProperties.containsKey(value.substring(1))) {
+							if(value != null && value.startsWith("%") && pluginProperties != null && pluginProperties.containsKey(value.substring(1))) {
 								value = (String) pluginProperties.get(value.substring(1));
 							}
 							System.out.println(format("{0}={1}", entry.getKey(), value));
-						}
-						if(licenseText != null) {
-							final String licenseOneLiner = licenseText.replaceAll("<[^>]+>","").replaceAll("\\p{Space}+", " ");
-							String license = null;
-							for(final String knownLicense : KNOWN_LICENSES) {
-								if(licenseOneLiner.indexOf(knownLicense) != -1) {
-									license = knownLicense;
-									break;
-								}
-							}
-							
-							if(license != null) {
-								System.out.println(format("License={0}", license));
-							} else {
-								System.out.println(format("License-Text={0}", licenseOneLiner));
-							}
-							
-							final int licenseVersionBeginIndex = licenseText.indexOf("Version ");
-							if(licenseVersionBeginIndex != -1) {
-								String licenseVersion = licenseText.substring(licenseVersionBeginIndex + "Version ".length());
-								
-								int licenseVersionEndIndex = Integer.MAX_VALUE;
-								for(char delimiter : versionDelimiters) {
-									final int index = licenseVersion.indexOf(delimiter);
-									if(index != -1 && index < licenseVersionEndIndex) {
-										licenseVersionEndIndex = index;
-									}
-								}
-								if(licenseVersionEndIndex != Integer.MAX_VALUE) {
-									licenseVersion = licenseVersion.substring(0, licenseVersionEndIndex).trim();
-								}
-								System.out.println(format("License-Version={0}", licenseVersion));
-								
-								if(licenseVersionEndIndex != Integer.MAX_VALUE) {
-									if(("Apache License").equals(license)) {
-										final String licenseURL = format("https://www.apache.org/licenses/LICENSE-{0}", licenseVersion);
-										System.out.println(format("License-URL={0}", licenseURL));
-									} else if(("Eclipse Public License").equals(license)) {
-										final String licenseURL = format("https://www.eclipse.org/legal/epl-v{0}.html", licenseVersion.replaceAll("\\.", ""));
-										System.out.println(format("License-URL={0}", licenseURL));
-										assert BUNDLE_VERSION_MAP.entrySet().stream().filter(e -> ECLIPSE_PUBLIC_LICENSE.equals(e.getValue().getKey())).map(Entry::getKey).anyMatch(url -> licenseOneLiner.contains(url));
-									}
-								}
-							}
 						}
 					}
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Returns the license information
+	 * @param bundleLicense the value of "Bundle-License" Manifest entry
+	 * @return an array composed of 3 values:
+	 * <ol start="0">
+	 * <li>License
+	 * <li>Version
+	 * <li>URL
+	 * </ol>
+	 */
+	private static String[] getLicenseInformationFromBundleVersion(final String bundleLicense) {
+		//
+		assert bundleLicense != null;
+		//
+		final String[] result = new String[3];
+		final int licenseUrlBeginIndex = bundleLicense.indexOf("http");
+		
+		if(licenseUrlBeginIndex != -1) {
+			String licenseUrl = bundleLicense.substring(licenseUrlBeginIndex);
+			int licenseUrlEndIndex = licenseUrl.indexOf('"');
+			if(licenseUrlEndIndex != -1) {
+				licenseUrl = licenseUrl.substring(0, licenseUrlEndIndex);
+			}
+			
+			result[2] = licenseUrl;
+			if(BUNDLE_VERSION_MAP.containsKey(licenseUrl)) {
+				result[0] = BUNDLE_VERSION_MAP.get(licenseUrl).getKey();
+				result[1] = BUNDLE_VERSION_MAP.get(licenseUrl).getValue();
+			}
+		}
+		
+		
+		return result;
+	}
+	
+	/**
+	 * Returns the license information
+	 * @param licenseText the license text
+	 * @return an array composed of 3 values:
+	 * <ol start="0">
+	 * <li>License
+	 * <li>Version
+	 * <li>URL
+	 * </ol>
+	 */
+	private static String[] getLicenseInformationFromText(final String licenseText) {
+		//
+		assert licenseText != null;
+		//
+		final String[] result = new String[3];
+		
+		final String licenseOneLiner = licenseText.replaceAll("<[^>]+>","").replaceAll("\\p{Space}+", " ");
+		String license = null;
+		for(final String knownLicense : KNOWN_LICENSES) {
+			if(licenseOneLiner.indexOf(knownLicense) != -1) {
+				license = knownLicense;
+				result[0] = license;
+				break;
+			}
+		}
+		
+		if(license == null) {
+			result[0] = licenseOneLiner;
+		}
+		
+		final int licenseVersionBeginIndex = licenseText.indexOf("Version ");
+		if(licenseVersionBeginIndex != -1) {
+			String licenseVersion = licenseText.substring(licenseVersionBeginIndex + "Version ".length());
+			final char[] versionDelimiters = {',', '('};
+			int licenseVersionEndIndex = Integer.MAX_VALUE;
+			for(char delimiter : versionDelimiters) {
+				final int index = licenseVersion.indexOf(delimiter);
+				if(index != -1 && index < licenseVersionEndIndex) {
+					licenseVersionEndIndex = index;
+				}
+			}
+			if(licenseVersionEndIndex != Integer.MAX_VALUE) {
+				licenseVersion = licenseVersion.substring(0, licenseVersionEndIndex).trim();
+			}
+			result[1] = licenseVersion;
+			
+			if(licenseVersionEndIndex != Integer.MAX_VALUE) {
+				if(APACHE_LICENSE.equals(license)) {
+					final String licenseURL = format(APACHE_LICENSE_FORMAT, "https", licenseVersion);
+					result[2] = licenseURL;
+				} else if(ECLIPSE_PUBLIC_LICENSE.equals(license)) {
+					final String licenseURL = format(ECLIPSE_LICENSE_FORMAT, "https", licenseVersion.replaceAll("\\.", ""));
+					result[2] = licenseURL;
+					assert BUNDLE_VERSION_MAP.entrySet().stream().filter(e -> ECLIPSE_PUBLIC_LICENSE.equals(e.getValue().getKey())).map(Entry::getKey).anyMatch(url -> licenseOneLiner.contains(url));
+				}
+			}
+		}
+		return result;
 	}
 	
 	private static final String ECLIPSE_PUBLIC_LICENSE = "Eclipse Public License";
@@ -142,6 +220,8 @@ public class PrintManifests {
 	private static final String[] APACHE_LICENSE_VERSIONS = {"1.0", "1.1", "2.0"};
 	private static final String[] ECLIPSE_LICENSE_VERSIONS = {"1.0", "2.0"};
 
+	private static final String APACHE_LICENSE_FORMAT = "{0}://www.apache.org/licenses/LICENSE-{1}";
+	private static final String ECLIPSE_LICENSE_FORMAT = "{0}://www.eclipse.org/legal/epl-v{1}.html";
 
 	private static final Map<String, Entry<String, String>> BUNDLE_VERSION_MAP;
 	
@@ -153,16 +233,16 @@ public class PrintManifests {
 		for(final String licenseVersion : ECLIPSE_LICENSE_VERSIONS) {
 			final SimpleImmutableEntry<String, String> entry = new SimpleImmutableEntry<>(ECLIPSE_PUBLIC_LICENSE, licenseVersion);
 			for(final String scheme : schemes) {
-				map.put(format("{0}://www.eclipse.org/legal/epl-v{1}.html", scheme, licenseVersion.replaceAll("\\.", "")), entry);
+				map.put(format(ECLIPSE_LICENSE_FORMAT, scheme, licenseVersion.replaceAll("\\.", "")), entry);
 				map.put(format("{0}://www.eclipse.org/legal/epl-{1}", scheme, licenseVersion), entry);
 			}
 		}
 		
-		final String[] formats = {"{0}://www.apache.org/licenses/LICENSE-{1}", "{0}://www.apache.org/licenses/LICENSE-{1}.txt" }; 
+		final String[] apacheLicenseFormats = {APACHE_LICENSE_FORMAT, "{0}://www.apache.org/licenses/LICENSE-{1}.txt" }; 
 		for(final String licenseVersion : APACHE_LICENSE_VERSIONS) {
 			final SimpleImmutableEntry<String, String> entry = new SimpleImmutableEntry<>(APACHE_LICENSE, licenseVersion);
 			for(final String scheme : schemes) {
-				for(final String format : formats) {
+				for(final String format : apacheLicenseFormats) {
 					map.put(format(format, scheme, licenseVersion), entry);
 				}
 			}
