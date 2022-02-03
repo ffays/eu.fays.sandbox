@@ -10,13 +10,18 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -40,7 +45,25 @@ public class PrintManifests {
 		}
 		
 		final Path root = Path.of(args[0]);
+		final boolean exportColumns = System.getProperties().containsKey("columns");
+		final Set<String> columns;
 
+		if(exportColumns) {
+			columns = Arrays.stream(System.getProperty("columns").split(",")).collect(Collectors.toCollection(LinkedHashSet::new));
+			boolean flag = false;
+			for(final String column : columns) {
+				if(flag) {
+					System.out.print('\t');
+				} else {
+					flag = true;
+				}
+				System.out.print(column);
+			}
+			System.out.println();
+		} else {
+			columns = null;
+		}
+		
 		try (final Stream<Path> stream = walk(root)) {
 			final PathMatcher filter = root.getFileSystem().getPathMatcher("glob:**.{jar,war,zip}");
 			final List<Path> paths = stream.filter(p -> filter.matches(p) || "bundleFile".equals(p.getFileName().toString())).collect(toList());
@@ -74,15 +97,19 @@ public class PrintManifests {
 						} else  if(licenseText != null) {
 							licenseInformation = getLicenseInformationFromText(licenseText);
 						} else {
-							licenseInformation = new String[3];
+							licenseInformation = new String[4];
 						}
 						
 						final String license = licenseInformation[0];
 						final String licenseVersion = licenseInformation[1];
 						final String licenseUrl =  licenseInformation[2];
 						
-						if(bundleLicense == null && licenseUrl != null) {
-							mainAttributes.putValue("Bundle-License", licenseUrl);
+						if(bundleLicense == null) {
+							if(licenseUrl != null) {
+								mainAttributes.putValue("Bundle-License", licenseUrl);
+							} else {
+								mainAttributes.putValue("Bundle-License", licenseInformation[3]);
+							}
 						}
 						
 						if(license != null) {
@@ -97,14 +124,42 @@ public class PrintManifests {
 							mainAttributes.putValue("License-URL", licenseUrl);
 						}
 						
-						System.out.println("Dash=--------------------------------------------------------------------------------");
-						System.out.println(format("File={0}",path.toString()));
-						for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
-							String value = (String) entry.getValue();
-							if(value != null && value.startsWith("%") && pluginProperties != null && pluginProperties.containsKey(value.substring(1))) {
-								value = (String) pluginProperties.get(value.substring(1));
+						if(exportColumns) {
+							boolean flag = false;
+							final Map<String, String> map = new LinkedHashMap<>();
+							for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
+								final String key = entry.getKey().toString();
+								String value = (String) entry.getValue();
+								if(columns.contains(key) && value != null) {
+									if("Bundle-SymbolicName".equals(key) && value.indexOf(';') != -1) {
+										value = value.substring(0, value.indexOf(';'));
+									}
+									map.put(key, value);
+								}
 							}
-							System.out.println(format("{0}={1}", entry.getKey(), value));
+							
+							for(final String column : columns) {
+								if(flag) {
+									System.out.print('\t');
+								} else {
+									flag = true;
+								}
+								
+								if(map.containsKey(column)) {
+									System.out.print(map.get(column));
+								}
+							}
+							System.out.println();
+						} else {
+							System.out.println("Dash=--------------------------------------------------------------------------------");
+							System.out.println(format("File={0}",path.toString()));
+							for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
+								String value = (String) entry.getValue();
+								if(value != null && value.startsWith("%") && pluginProperties != null && pluginProperties.containsKey(value.substring(1))) {
+									value = (String) pluginProperties.get(value.substring(1));
+								}
+								System.out.println(format("{0}={1}", entry.getKey(), value));
+							}
 						}
 					}
 				}
@@ -120,19 +175,27 @@ public class PrintManifests {
 	 * <li>License
 	 * <li>Version
 	 * <li>URL
+	 * <li>Text
 	 * </ol>
 	 */
 	private static String[] getLicenseInformationFromBundleVersion(final String bundleLicense) {
 		//
 		assert bundleLicense != null;
 		//
-		final String[] result = new String[3];
+		final String[] result = new String[4];
+		result[3] = bundleLicense;
 		final int licenseUrlBeginIndex = bundleLicense.indexOf("http");
 		
 		if(licenseUrlBeginIndex != -1) {
 			String licenseUrl = bundleLicense.substring(licenseUrlBeginIndex);
-			int licenseUrlEndIndex = licenseUrl.indexOf('"');
-			if(licenseUrlEndIndex != -1) {
+			int licenseUrlEndIndex = Integer.MAX_VALUE;
+			for(char delimiter : new char[] {',', '"'}) {
+				final int index = licenseUrl.indexOf(delimiter);
+				if(index != -1 && index < licenseUrlEndIndex) {
+					licenseUrlEndIndex = index;
+				}
+			}
+			if(licenseUrlEndIndex != Integer.MAX_VALUE) {
 				licenseUrl = licenseUrl.substring(0, licenseUrlEndIndex);
 			}
 			
@@ -150,20 +213,22 @@ public class PrintManifests {
 	/**
 	 * Returns the license information
 	 * @param licenseText the license text
-	 * @return an array composed of 3 values:
+	 * @return an array composed of 4 values:
 	 * <ol start="0">
 	 * <li>License
 	 * <li>Version
 	 * <li>URL
+	 * <li>Text
 	 * </ol>
 	 */
 	private static String[] getLicenseInformationFromText(final String licenseText) {
 		//
 		assert licenseText != null;
 		//
-		final String[] result = new String[3];
+		final String[] result = new String[4];
 		
 		final String licenseOneLiner = licenseText.replaceAll("<[^>]+>","").replaceAll("\\p{Space}+", " ");
+		result[3] = licenseOneLiner;
 		String license = null;
 		for(final String knownLicense : KNOWN_LICENSES) {
 			if(licenseOneLiner.indexOf(knownLicense) != -1) {
@@ -173,16 +238,11 @@ public class PrintManifests {
 			}
 		}
 		
-		if(license == null) {
-			result[0] = licenseOneLiner;
-		}
-		
 		final int licenseVersionBeginIndex = licenseText.indexOf("Version ");
 		if(licenseVersionBeginIndex != -1) {
 			String licenseVersion = licenseText.substring(licenseVersionBeginIndex + "Version ".length());
-			final char[] versionDelimiters = {',', '('};
 			int licenseVersionEndIndex = Integer.MAX_VALUE;
-			for(char delimiter : versionDelimiters) {
+			for(char delimiter : new char[] {',', '('}) {
 				final int index = licenseVersion.indexOf(delimiter);
 				if(index != -1 && index < licenseVersionEndIndex) {
 					licenseVersionEndIndex = index;
@@ -238,7 +298,7 @@ public class PrintManifests {
 			}
 		}
 		
-		final String[] apacheLicenseFormats = {APACHE_LICENSE_FORMAT, "{0}://www.apache.org/licenses/LICENSE-{1}.txt" }; 
+		final String[] apacheLicenseFormats = {APACHE_LICENSE_FORMAT, "{0}://www.apache.org/licenses/LICENSE-{1}.html", "{0}://www.apache.org/licenses/LICENSE-{1}.txt" }; 
 		for(final String licenseVersion : APACHE_LICENSE_VERSIONS) {
 			final SimpleImmutableEntry<String, String> entry = new SimpleImmutableEntry<>(APACHE_LICENSE, licenseVersion);
 			for(final String scheme : schemes) {
@@ -247,6 +307,14 @@ public class PrintManifests {
 				}
 			}
 		}
+		
+		map.put("http://www.eclipse.org/org/documents/edl-v10.php", new SimpleImmutableEntry<>("Eclipse Distribution License", "1.0"));
+		map.put("https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt", new SimpleImmutableEntry<>(ECLIPSE_PUBLIC_LICENSE, "2.0"));
+		map.put("https://opensource.org/licenses/BSD-3-Clause", new SimpleImmutableEntry<>("BSD-3-Clause", ""));
+		map.put("https://asm.ow2.io/LICENSE.txt", new SimpleImmutableEntry<>("BSD-3-Clause", ""));
+		map.put("https://repository.jboss.org/licenses/apache-2.0.txt", new SimpleImmutableEntry<>(APACHE_LICENSE, "2.0"));
+		map.put("http://www.mozilla.org/MPL/MPL-1.1.html", new SimpleImmutableEntry<>("Mozilla Public License", "1.1"));
+		map.put("http://opensource.org/licenses/MIT", new SimpleImmutableEntry<>("MIT", ""));
 		BUNDLE_VERSION_MAP = unmodifiableMap(map);
 	}
 	
