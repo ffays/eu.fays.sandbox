@@ -115,7 +115,7 @@ public class DatabaseQuery {
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
 		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
 		final Charset encoding;
-		if(systemProperties.contains(ENCODING_PARAMETER_NAME)) {
+		if(systemProperties.containsKey(ENCODING_PARAMETER_NAME)) {
 			encoding = Charset.forName(System.getProperty(ENCODING_PARAMETER_NAME));
 		} else {
 			encoding = StandardCharsets.UTF_8;	
