@@ -110,7 +110,6 @@ public class DatabaseQuery {
 		final boolean printNull = Boolean.valueOf(System.getProperty(PRINT_NULL_PARAMETER_NAME, Boolean.FALSE.toString()));
 		final boolean printExcelDate = Boolean.valueOf(System.getProperty(PRINT_EXCEL_DATE_PARAMETER_NAME, Boolean.FALSE.toString()));
 		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object) null));
-		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
 		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
 		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
@@ -175,8 +174,9 @@ public class DatabaseQuery {
 		}
 
 		try (final Connection connection = DriverManager.getConnection(url, user, password)) {
-			if (autoCommit != null) {
-				connection.setAutoCommit(Boolean.valueOf(autoCommit));
+			if (systemProperties.containsKey(AUTO_COMMIT_PARAMETER_NAME)) {
+				final boolean autoCommit = Boolean.valueOf(System.getProperty(AUTO_COMMIT_PARAMETER_NAME));
+				connection.setAutoCommit(autoCommit);
 			}
 			for (int i = 0; i < queries.size(); i++) {
 				final String filename;
