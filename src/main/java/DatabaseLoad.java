@@ -143,26 +143,28 @@ public class DatabaseLoad {
 			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
 			final char columnLeftQuote = sqlServer?'[':'"';
 			final char columnRightQuote = sqlServer?']':'"';
+			final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
+			final DecimalFormat bigDecimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
+			bigDecimalFormat.setParseBigDecimal(true);
 			
 			for(final File file : files) {
 				try (final InputStream is =  file != null ? new FileInputStream(file) : System.in; final PushbackInputStream pis = new PushbackInputStream(is);) {
 					removeByteOrderMark(pis);
 
-					final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
-					final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
-					final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
-					final DecimalFormat bigDecimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
-					bigDecimalFormat.setParseBigDecimal(true);
-					final StringBuilder selectStatmementBuilder = new StringBuilder("SELECT ");
-					final StringBuilder insertIntoStatementBuilder = new StringBuilder("INSERT INTO ");
-					final StringBuilder insertValuesStatementBuilder = new StringBuilder(" VALUES (");
-					insertIntoStatementBuilder.append(qualifiedTable);
 
-					int[] sqlTypes = {};
 					try(final InputStreamReader isr = new InputStreamReader(pis, encoding)) {
 						List<String> record = readRecord(isr, separator, quoteChar);
 						
 						if(record != null) {
+							final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
+							final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
+							final StringBuilder selectStatmementBuilder = new StringBuilder("SELECT ");
+							final String insertIntoPrefix;
+							final StringBuilder insertIntoStatementBuilder = new StringBuilder("INSERT INTO ");
+							final StringBuilder insertValuesStatementBuilder = new StringBuilder(" VALUES (");
+							insertIntoStatementBuilder.append(qualifiedTable);
+							int[] sqlTypes = {};
+
 							{
 								boolean flagComma = false;
 								if(firstRowHeader) {
@@ -198,6 +200,7 @@ public class DatabaseLoad {
 								selectStatmementBuilder.append(" FROM ");
 								selectStatmementBuilder.append(qualifiedTable);
 								selectStatmementBuilder.append(" WHERE 1=0");
+								insertIntoPrefix = insertIntoStatementBuilder.toString();
 								insertIntoStatementBuilder.append(insertValuesStatementBuilder.toString());
 								insertIntoStatementBuilder.append(')');
 								
@@ -218,36 +221,78 @@ public class DatabaseLoad {
 								}
 
 								while(record != null) {
+									if(dryRun) {
+										insertIntoStatementBuilder.setLength(0);
+										insertIntoStatementBuilder.append(insertIntoPrefix);
+										insertValuesStatementBuilder.setLength(0);
+										insertValuesStatementBuilder.append(" VALUES (");
+									}
 									int c = 1;
 									for(final String data : record) {
 										final int sqlType = sqlTypes[c-1];
-										if (data.isEmpty()) {
-											pstmt.setNull(c, sqlType);
-										} else if (sqlType == VARCHAR || sqlType == CHAR) {
-											pstmt.setString(c, data);
-										} else if (sqlType == DOUBLE) {
-											pstmt.setDouble(c, decimalFormat.parse(data).doubleValue());
-										} else if (sqlType == INTEGER) {
-											pstmt.setInt(c, Integer.parseInt(data));
-										} else if (sqlType == BOOLEAN || sqlType == BIT) {
-											pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
-										} else if (sqlType == TIMESTAMP) {
-											if(excelDate) {
-												final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
-												pstmt.setTimestamp(c, timestamp);
+										if(dryRun) {
+											if(c > 1) {
+												insertValuesStatementBuilder.append(", ");
+											}
+											if (data.isEmpty()) {
+												insertValuesStatementBuilder.append("NULL");
+											} else if (sqlType == DOUBLE) {
+												final Double value = decimalFormat.parse(data).doubleValue();
+												insertValuesStatementBuilder.append(value);
+											} else if (sqlType == INTEGER) {
+												insertValuesStatementBuilder.append(data);
+											} else if (sqlType == BIGINT) {
+												final BigDecimal value = (BigDecimal) bigDecimalFormat.parse(data);
+												insertValuesStatementBuilder.append(value);
+											} else if (sqlType == BOOLEAN) {
+												final Boolean value = "1".equals(data) || Boolean.valueOf(data);
+												insertValuesStatementBuilder.append(value.toString());
+											} else if (sqlType == BIT) {
+												final boolean value = "1".equals(data) || Boolean.valueOf(data);
+												insertValuesStatementBuilder.append(value?"1":"0");												
+											} else {
+												final String value;
+												if (sqlType == TIMESTAMP && excelDate) {
+													final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
+													value = timestamp.toLocalDateTime().toString();
+												} else {
+													value = data.replaceAll("'", "''"); 
+												}
+												insertValuesStatementBuilder.append('\'');
+												insertValuesStatementBuilder.append(value);
+												insertValuesStatementBuilder.append('\'');
+											}								
+										} else {
+											if (data.isEmpty()) {
+												pstmt.setNull(c, sqlType);
+											} else if (sqlType == VARCHAR || sqlType == CHAR) {
+												pstmt.setString(c, data);
+											} else if (sqlType == DOUBLE) {
+												pstmt.setDouble(c, decimalFormat.parse(data).doubleValue());
+											} else if (sqlType == INTEGER) {
+												pstmt.setInt(c, Integer.parseInt(data));
+											} else if (sqlType == BOOLEAN || sqlType == BIT) {
+												pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
+											} else if (sqlType == TIMESTAMP) {
+												if(excelDate) {
+													final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
+													pstmt.setTimestamp(c, timestamp);
+												} else {
+													pstmt.setObject(c, data);
+												}
+											} else if (sqlType == BIGINT) {
+												pstmt.setBigDecimal(c, (BigDecimal) bigDecimalFormat.parse(data));
 											} else {
 												pstmt.setObject(c, data);
-											}
-										} else if (sqlType == BIGINT) {
-											pstmt.setBigDecimal(c, (BigDecimal) bigDecimalFormat.parse(data));
-										} else {
-											pstmt.setObject(c, data);
-										}								
+											}								
+										}
 										c++;
 									}
 
 									if(dryRun) {
-										System.out.println(pstmt.toString());
+										insertIntoStatementBuilder.append(insertValuesStatementBuilder.toString());
+										insertIntoStatementBuilder.append(");");
+										System.out.println(insertIntoStatementBuilder.toString());
 									} else {
 										pstmt.addBatch();
 									}
