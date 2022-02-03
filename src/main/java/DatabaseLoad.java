@@ -59,6 +59,7 @@ public class DatabaseLoad {
 	private final static String SCHEMA_PARAMETER_NAME = "schema";
 	private final static String TABLE_PARAMETER_NAME = "table";
 	private final static String FIRST_ROW_HEADER_PARAMETER_NAME = "firstRowHeader";
+	private final static String QUOTE_COLUMNS_PARAMETER_NAME = "quoteColumns";
 
 	/**
 	 * Usage: java -Durl=&lt;jdbcConnectionString&gt; -Duser=&lt;user&gt; -Dpassword=&lt;password&gt; DatabaseLoad &ltfile1&gt; &ltfile2&gt; ...<br>
@@ -78,6 +79,7 @@ public class DatabaseLoad {
 	 * <li>schema: name of the schema into which the given data will be inserted (optional)
 	 * <li>table: name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)
 	 * <li>firstRowHeader: first row of data is the header (optional, true or false, default: true)
+	 * <li>quoteColumns: quote the name of the columns in the "INSERT INTO" SQL statement  (optional, default: do not quote columns)
 	 * </ul>
 	 * @param args SQL queries
 	 * @throws Exception in case of unexpected error
@@ -115,6 +117,7 @@ public class DatabaseLoad {
 		}
 		final String schema = System.getProperty(SCHEMA_PARAMETER_NAME);
 		final boolean firstRowHeader = Boolean.valueOf(System.getProperty(FIRST_ROW_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
+		final boolean quoteColumns = systemProperties.containsKey(QUOTE_COLUMNS_PARAMETER_NAME);
 		boolean success = true;
 		
 		
@@ -136,11 +139,14 @@ public class DatabaseLoad {
 			if (autoCommit != null) {
 				connection.setAutoCommit(Boolean.valueOf(autoCommit));
 			}
+			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
+			final char columnLeftQuote = sqlServer?'[':'"';
+			final char columnRightQuote = sqlServer?']':'"';
 			
 			for(final File file : files) {
 				try (final InputStream is =  file != null ? new FileInputStream(file) : System.in; final PushbackInputStream pis = new PushbackInputStream(is);) {
 					removeByteOrderMark(pis);
-					
+
 
 					final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
 					final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
@@ -178,7 +184,13 @@ public class DatabaseLoad {
 									}
 									if(firstRowHeader) {
 										selectStatmementBuilder.append(column);
+										if(quoteColumns) {
+											insertIntoStatementBuilder.append(columnLeftQuote);
+										}
 										insertIntoStatementBuilder.append(column);
+										if(quoteColumns) {
+											insertIntoStatementBuilder.append(columnRightQuote);
+										}
 									}
 									insertValuesStatementBuilder.append('?');
 								}
@@ -284,6 +296,7 @@ public class DatabaseLoad {
 		parametersDescriptions.put(SCHEMA_PARAMETER_NAME, "the name of the schema into which the given data will be inserted (optional)");
 		parametersDescriptions.put(TABLE_PARAMETER_NAME, "the name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)");
 		parametersDescriptions.put(FIRST_ROW_HEADER_PARAMETER_NAME, "first row of data is the header (optional, true or false, default: true)");
+		parametersDescriptions.put(QUOTE_COLUMNS_PARAMETER_NAME, "quote the name of the columns in the \"INSERT INTO\" SQL statement  (optional, true or false, default: false)");
 		
 
 		// @formatter:on
