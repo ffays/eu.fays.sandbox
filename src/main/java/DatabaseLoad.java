@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * Load a database via a JDBC connection
@@ -60,6 +59,7 @@ public class DatabaseLoad {
 	private final static String TABLE_PARAMETER_NAME = "table";
 	private final static String FIRST_ROW_HEADER_PARAMETER_NAME = "firstRowHeader";
 	private final static String QUOTE_COLUMNS_PARAMETER_NAME = "quoteColumns";
+	private final static String DRY_RUN_PARAMETER_NAME = "dryRun";
 
 	/**
 	 * Usage: java -Durl=&lt;jdbcConnectionString&gt; -Duser=&lt;user&gt; -Dpassword=&lt;password&gt; DatabaseLoad &ltfile1&gt; &ltfile2&gt; ...<br>
@@ -79,7 +79,8 @@ public class DatabaseLoad {
 	 * <li>schema: name of the schema into which the given data will be inserted (optional)
 	 * <li>table: name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)
 	 * <li>firstRowHeader: first row of data is the header (optional, true or false, default: true)
-	 * <li>quoteColumns: quote the name of the columns in the "INSERT INTO" SQL statement  (optional, default: do not quote columns)
+	 * <li>quoteColumns: quote the name of the columns in the "INSERT INTO" SQL statement (optional, default: do not quote columns)
+	 * <li>dryRun: dry run, i.e. print out the "INSERT INTO" SQL statements and do not execute them (optional) 
 	 * </ul>
 	 * @param args SQL queries
 	 * @throws Exception in case of unexpected error
@@ -107,7 +108,7 @@ public class DatabaseLoad {
 		}
 
 		final boolean excelDate = Boolean.valueOf(System.getProperty(EXCEL_DATE_PARAMETER_NAME, Boolean.FALSE.toString()));
-		final String autoCommit = System.getProperty(AUTO_COMMIT_PARAMETER_NAME);
+		final boolean dryRun = systemProperties.containsKey(DRY_RUN_PARAMETER_NAME) || systemProperties.containsKey(DRY_RUN_PARAMETER_NAME.toLowerCase());
 		final boolean commit = Boolean.valueOf(System.getProperty(COMMIT_PARAMETER_NAME, Boolean.TRUE.toString()));
 		final Charset encoding;
 		if(systemProperties.containsKey(ENCODING_PARAMETER_NAME)) {
@@ -135,8 +136,9 @@ public class DatabaseLoad {
 		}
 
 		try (final Connection connection = DriverManager.getConnection(url, user, password)) {
-			if (autoCommit != null) {
-				connection.setAutoCommit(Boolean.valueOf(autoCommit));
+			if (systemProperties.containsKey(AUTO_COMMIT_PARAMETER_NAME)) {
+				final boolean autoCommit = Boolean.valueOf(System.getProperty(AUTO_COMMIT_PARAMETER_NAME));
+				connection.setAutoCommit(autoCommit);
 			}
 			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
 			final char columnLeftQuote = sqlServer?'[':'"';
@@ -156,15 +158,12 @@ public class DatabaseLoad {
 					final StringBuilder insertValuesStatementBuilder = new StringBuilder(" VALUES (");
 					insertIntoStatementBuilder.append(qualifiedTable);
 
-					PreparedStatement pstmt = null;
-					ResultSetMetaData metaData = null;
+					int[] sqlTypes = {};
 					try(final InputStreamReader isr = new InputStreamReader(pis, encoding)) {
-						List<String> record = null;
-						int r = 0;
-						while((record = readRecord(isr, separator, quoteChar)) != null) {
-							System.out.println(record.stream().collect(Collectors.joining("|")));
-					
-							if(pstmt == null) {
+						List<String> record = readRecord(isr, separator, quoteChar);
+						
+						if(record != null) {
+							{
 								boolean flagComma = false;
 								if(firstRowHeader) {
 									insertIntoStatementBuilder.append(" (");
@@ -202,56 +201,74 @@ public class DatabaseLoad {
 								insertIntoStatementBuilder.append(insertValuesStatementBuilder.toString());
 								insertIntoStatementBuilder.append(')');
 								
-								final Statement stmt = connection.createStatement();
-								final ResultSet resultSet = stmt.executeQuery(selectStatmementBuilder.toString());
-								metaData = resultSet.getMetaData();
-								pstmt = connection.prepareStatement(insertIntoStatementBuilder.toString());
+								
+								try(final Statement stmt = connection.createStatement(); final ResultSet resultSet = stmt.executeQuery(selectStatmementBuilder.toString())) {
+									final ResultSetMetaData metaData = resultSet.getMetaData();
+									sqlTypes = new int[metaData.getColumnCount()];
+									for(int c=1; c <= sqlTypes.length; c++) {
+										sqlTypes[c-1]  = metaData.getColumnType(c);
+									}
+								}
 							}
 							
-							if(r==0 && firstRowHeader) {
-								// Skip
-							} else {
-								int c = 1;
-								for(final String data : record) {
-									final int sqlType = metaData.getColumnType(c);
-									if (data.isEmpty()) {
-										pstmt.setNull(c, sqlType);
-									} else if (sqlType == VARCHAR || sqlType == CHAR) {
-										pstmt.setString(c, data);
-									} else if (sqlType == DOUBLE) {
-										pstmt.setDouble(c, decimalFormat.parse(data).doubleValue());
-									} else if (sqlType == INTEGER) {
-										pstmt.setInt(c, Integer.parseInt(data));
-									} else if (sqlType == BOOLEAN || sqlType == BIT) {
-										pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
-									} else if (sqlType == TIMESTAMP) {
-										if(excelDate) {
-											final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
-											pstmt.setTimestamp(c, timestamp);
+							try(final PreparedStatement pstmt = connection.prepareStatement(insertIntoStatementBuilder.toString())) {
+								if(firstRowHeader) {
+									// skip first record
+									record = readRecord(isr, separator, quoteChar);
+								}
+
+								while(record != null) {
+									int c = 1;
+									for(final String data : record) {
+										final int sqlType = sqlTypes[c-1];
+										if (data.isEmpty()) {
+											pstmt.setNull(c, sqlType);
+										} else if (sqlType == VARCHAR || sqlType == CHAR) {
+											pstmt.setString(c, data);
+										} else if (sqlType == DOUBLE) {
+											pstmt.setDouble(c, decimalFormat.parse(data).doubleValue());
+										} else if (sqlType == INTEGER) {
+											pstmt.setInt(c, Integer.parseInt(data));
+										} else if (sqlType == BOOLEAN || sqlType == BIT) {
+											pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
+										} else if (sqlType == TIMESTAMP) {
+											if(excelDate) {
+												final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
+												pstmt.setTimestamp(c, timestamp);
+											} else {
+												pstmt.setObject(c, data);
+											}
+										} else if (sqlType == BIGINT) {
+											pstmt.setBigDecimal(c, (BigDecimal) bigDecimalFormat.parse(data));
 										} else {
 											pstmt.setObject(c, data);
-										}
-									} else if (sqlType == BIGINT) {
-										pstmt.setBigDecimal(c, (BigDecimal) bigDecimalFormat.parse(data));
-									} else {
-										pstmt.setObject(c, data);
-									}								
-									c++;
-								}
-								pstmt.addBatch();
-							}
-							r++;
-						}
+										}								
+										c++;
+									}
 
-						pstmt.executeBatch();
+									if(dryRun) {
+										System.out.println(pstmt.toString());
+									} else {
+										pstmt.addBatch();
+									}
+									record = readRecord(isr, separator, quoteChar);
+								}
+
+								if(!dryRun) {
+									pstmt.executeBatch();
+								}
+							}
+						}
 					}
 				}
 			}
 
-			if(commit) {
-				connection.commit();
-			} else {
-				connection.rollback();
+			if(!dryRun) {
+				if(commit) {
+					connection.commit();
+				} else {
+					connection.rollback();
+				}
 			}
 		}
 
@@ -294,6 +311,7 @@ public class DatabaseLoad {
 		parametersDescriptions.put(TABLE_PARAMETER_NAME, "the name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)");
 		parametersDescriptions.put(FIRST_ROW_HEADER_PARAMETER_NAME, "first row of data is the header (optional, true or false, default: true)");
 		parametersDescriptions.put(QUOTE_COLUMNS_PARAMETER_NAME, "quote the name of the columns in the \"INSERT INTO\" SQL statement  (optional, true or false, default: false)");
+		parametersDescriptions.put(DRY_RUN_PARAMETER_NAME, "dry run, i.e. print out the \"INSERT INTO\" SQL statements and do not execute them (optional)");
 
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
