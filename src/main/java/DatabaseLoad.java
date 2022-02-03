@@ -119,15 +119,13 @@ public class DatabaseLoad {
 		final boolean firstRowHeader = Boolean.valueOf(System.getProperty(FIRST_ROW_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
 		final boolean quoteColumns = systemProperties.containsKey(QUOTE_COLUMNS_PARAMETER_NAME);
 		boolean success = true;
-		
-		
+
 		if (url == null || url.isEmpty()) {
 			printUsage();
 			return;
 		}
 
 		final List<File> files = new ArrayList<>();
-
 		for(final String path: args) {
 			files.add(new File(path));
 		}
@@ -135,6 +133,7 @@ public class DatabaseLoad {
 		if(files.isEmpty()) {
 			files.add(null); // trick to indicate to read from stdin
 		}
+
 		try (final Connection connection = DriverManager.getConnection(url, user, password)) {
 			if (autoCommit != null) {
 				connection.setAutoCommit(Boolean.valueOf(autoCommit));
@@ -146,7 +145,6 @@ public class DatabaseLoad {
 			for(final File file : files) {
 				try (final InputStream is =  file != null ? new FileInputStream(file) : System.in; final PushbackInputStream pis = new PushbackInputStream(is);) {
 					removeByteOrderMark(pis);
-
 
 					final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
 					final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
@@ -160,7 +158,6 @@ public class DatabaseLoad {
 
 					PreparedStatement pstmt = null;
 					ResultSetMetaData metaData = null;
-					
 					try(final InputStreamReader isr = new InputStreamReader(pis, encoding)) {
 						List<String> record = null;
 						int r = 0;
@@ -245,12 +242,12 @@ public class DatabaseLoad {
 							}
 							r++;
 						}
-						
+
 						pstmt.executeBatch();
 					}
 				}
 			}
-			
+
 			if(commit) {
 				connection.commit();
 			} else {
@@ -297,7 +294,6 @@ public class DatabaseLoad {
 		parametersDescriptions.put(TABLE_PARAMETER_NAME, "the name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)");
 		parametersDescriptions.put(FIRST_ROW_HEADER_PARAMETER_NAME, "first row of data is the header (optional, true or false, default: true)");
 		parametersDescriptions.put(QUOTE_COLUMNS_PARAMETER_NAME, "quote the name of the columns in the \"INSERT INTO\" SQL statement  (optional, true or false, default: false)");
-		
 
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
@@ -344,12 +340,11 @@ public class DatabaseLoad {
 	 * @throws IOException in case of unexpected error
 	 */
 	private static List<String> readRecord(final Reader reader, final char separator, final char quoteChar) throws IOException {
-		
 		//
 		assert reader != null;
 		assert separator != quoteChar;
 		//
-		
+
 		final StringBuilder builder = new StringBuilder(); // builder for the current field
 		int p = -1; // previous char
 		int c = reader.read(); // current char
@@ -399,7 +394,7 @@ public class DatabaseLoad {
 		record.add(builder.toString());
 		return record;
 	}
-	
+
 	/**
 	 * Removes the Byte Order Mark if present
 	 * @param pushbackInputStream the push-back input stream
@@ -417,8 +412,7 @@ public class DatabaseLoad {
 			}
 		}
 	}
-	
-	
+
 	/**
 	 * Returns the filename without its extension
 	 * @param filename the filename
