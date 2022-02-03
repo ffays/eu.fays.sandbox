@@ -107,7 +107,7 @@ public class PrintManifests {
 						if(bundleLicense == null) {
 							if(licenseUrl != null) {
 								mainAttributes.putValue("Bundle-License", licenseUrl);
-							} else {
+							} else if (licenseInformation[3] != null){
 								mainAttributes.putValue("Bundle-License", licenseInformation[3]);
 							}
 						}
@@ -130,7 +130,7 @@ public class PrintManifests {
 							for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
 								final String key = entry.getKey().toString();
 								String value = (String) entry.getValue();
-								if(columns.contains(key) && value != null) {
+								if(value != null) {
 									if("Bundle-SymbolicName".equals(key) && value.indexOf(';') != -1) {
 										value = value.substring(0, value.indexOf(';'));
 									}
@@ -138,6 +138,12 @@ public class PrintManifests {
 								}
 							}
 							
+							map.put("File", path.toString());
+							map.put("File-Name", path.getFileName().toString());
+							if((!map.containsKey("Bundle-SymbolicName") || map.get("Bundle-SymbolicName").isEmpty()) && map.containsKey("Automatic-Module-Name")) {
+								map.put("Bundle-SymbolicName", map.get("Automatic-Module-Name"));
+							}
+
 							for(final String column : columns) {
 								if(flag) {
 									System.out.print('\t');
@@ -309,12 +315,14 @@ public class PrintManifests {
 		}
 		
 		map.put("http://www.eclipse.org/org/documents/edl-v10.php", new SimpleImmutableEntry<>("Eclipse Distribution License", "1.0"));
-		map.put("https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt", new SimpleImmutableEntry<>(ECLIPSE_PUBLIC_LICENSE, "2.0"));
+		map.put("https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt", new SimpleImmutableEntry<>(ECLIPSE_PUBLIC_LICENSE, "1.0"));
 		map.put("https://opensource.org/licenses/BSD-3-Clause", new SimpleImmutableEntry<>("BSD-3-Clause", ""));
 		map.put("https://asm.ow2.io/LICENSE.txt", new SimpleImmutableEntry<>("BSD-3-Clause", ""));
 		map.put("https://repository.jboss.org/licenses/apache-2.0.txt", new SimpleImmutableEntry<>(APACHE_LICENSE, "2.0"));
 		map.put("http://www.mozilla.org/MPL/MPL-1.1.html", new SimpleImmutableEntry<>("Mozilla Public License", "1.1"));
 		map.put("http://opensource.org/licenses/MIT", new SimpleImmutableEntry<>("MIT", ""));
+		map.put("http://www.opensource.org/licenses/mit-license.php", new SimpleImmutableEntry<>("MIT", ""));
+		map.put("https://h2database.com/html/license.html", new SimpleImmutableEntry<>(ECLIPSE_PUBLIC_LICENSE, "2.0"));
 		BUNDLE_VERSION_MAP = unmodifiableMap(map);
 	}
 	
