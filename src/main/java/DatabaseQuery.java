@@ -188,13 +188,13 @@ public class DatabaseQuery {
 				connection.setAutoCommit(autoCommit);
 			}
 			final boolean autoCommit = connection.getAutoCommit();
-			for (int i = 0; i < queries.size(); i++) {
-				final String sql = queries.get(i);
+			for (int q = 0; q < queries.size(); q++) {
+				final String sql = queries.get(q);
 				final String filename;
 				{
 					final String basename;
 					if ("1".equals(fileNameScheme)) {
-						basename = Integer.toString(i);
+						basename = Integer.toString(q);
 					} else if ("2".equals(fileNameScheme)) {
 						basename = DateTimeFormatter.ofPattern("yyyy-MM-dd\u00A0HH\u00F7mm\u00F7ss\u2027SSS").format(LocalDateTime.now());
 					} else if ("3".equals(fileNameScheme)) {
@@ -210,7 +210,7 @@ public class DatabaseQuery {
 							final boolean[] booleans = {true, false};
 							for(boolean uppercase : booleans) {
 								for(String keyword : keywords) {
-									i = table.indexOf(uppercase?keyword:keyword.toLowerCase());
+								final int i = table.indexOf(uppercase?keyword:keyword.toLowerCase());
 									if(i != -1 && i < index) {
 										index = i;
 									}
@@ -228,10 +228,10 @@ public class DatabaseQuery {
 							if(!table.isEmpty()) {
 								basename = table;
 							} else {
-								basename = Integer.toString(i); // fallback;
+								basename = Integer.toString(q); // fallback;
 							}
 						} else {
-							basename = Integer.toString(i); // fallback;
+							basename = Integer.toString(q); // fallback;
 						}
 					} else {
 						basename = null;
@@ -244,7 +244,7 @@ public class DatabaseQuery {
 					}
 				}
 
-				if (i > 0 && filename == null) {
+				if (q > 0 && filename == null) {
 					System.out.print(querySeparator);
 					System.out.flush();
 				}
