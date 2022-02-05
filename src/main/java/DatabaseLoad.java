@@ -24,11 +24,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Load a database via a JDBC connection
@@ -44,22 +47,31 @@ import java.util.Properties;
 @SuppressWarnings("nls")
 public class DatabaseLoad {
 
-	private final static String URL_PARAMETER_NAME = "url";
-	private final static String USER_PARAMETER_NAME = "user";
-	private final static String PASSWORD_PARAMETER_NAME = "password";
-	private final static String SEPARATOR_PARAMETER_NAME = "separator";
-	private final static String QUOTE_CHAR_PARAMETER_NAME = "quoteChar";
-	private final static String QUERY_SEPARATOR_PARAMETER_NAME = "querySeparator";
-	private final static String EXCEL_DATE_PARAMETER_NAME = "excelDate";
-	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
-	private final static String COMMIT_PARAMETER_NAME = "commit";
-	private final static String CSV_PARAMETER_NAME = "csv";
-	private final static String ENCODING_PARAMETER_NAME = "encoding";
-	private final static String SCHEMA_PARAMETER_NAME = "schema";
-	private final static String TABLE_PARAMETER_NAME = "table";
-	private final static String FIRST_ROW_HEADER_PARAMETER_NAME = "firstRowHeader";
-	private final static String QUOTE_COLUMNS_PARAMETER_NAME = "quoteColumns";
-	private final static String DRY_RUN_PARAMETER_NAME = "dryRun";
+	private static final String URL_PARAMETER_NAME = "url";
+	private static final String USER_PARAMETER_NAME = "user";
+	private static final String PASSWORD_PARAMETER_NAME = "password";
+	private static final String SEPARATOR_PARAMETER_NAME = "separator";
+	private static final String QUOTE_CHAR_PARAMETER_NAME = "quoteChar";
+	private static final String QUERY_SEPARATOR_PARAMETER_NAME = "querySeparator";
+	private static final String EXCEL_DATE_PARAMETER_NAME = "excelDate";
+	private static final String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
+	private static final String ROLLBACK_PARAMETER_NAME = "rollback";
+	private static final String CSV_PARAMETER_NAME = "csv";
+	private static final String ENCODING_PARAMETER_NAME = "encoding";
+	private static final String SCHEMA_PARAMETER_NAME = "schema";
+	private static final String TABLE_PARAMETER_NAME = "table";
+	private static final String FIRST_ROW_HEADER_PARAMETER_NAME = "firstRowHeader";
+	private static final String QUOTE_COLUMNS_PARAMETER_NAME = "quoteColumns";
+	private static final String DRY_RUN_PARAMETER_NAME = "dryRun";
+	private static final String BATCH_PARAMETER_NAME = "batch";
+	private static final String ON_ERROR_CONTINUE_PARAMETER_NAME = "onErrorContinue";
+
+	private static final DecimalFormat DECIMAL_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
+	private static final DecimalFormat BIG_DECIMAL_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
+	
+	static {
+		BIG_DECIMAL_FORMAT.setParseBigDecimal(true);
+	}
 
 	/**
 	 * Usage: java -Durl=&lt;jdbcConnectionString&gt; -Duser=&lt;user&gt; -Dpassword=&lt;password&gt; DatabaseLoad &ltfile1&gt; &ltfile2&gt; ...<br>
@@ -73,14 +85,16 @@ public class DatabaseLoad {
 	 * <li>quoteChar: quoting character for String, Date and Timestamp values (optional, default value: none)
 	 * <li>excelDate: dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
-	 * <li>commit: perform commit after load (optional, true (=commit) or false (=rollback), default: true)
+	 * <li>rollback: perform rollback after load (optional, default: commit)
 	 * <li>csv: equivalent to separator=, and quoteChar=" (optional)
 	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
 	 * <li>schema: name of the schema into which the given data will be inserted (optional)
 	 * <li>table: name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)
-	 * <li>firstRowHeader: first row of data is the header (optional, true or false, default: true)
+	 * <li>firstRowHeader: first row of data is the header (optional)
 	 * <li>quoteColumns: quote the name of the columns in the "INSERT INTO" SQL statement (optional, default: do not quote columns)
 	 * <li>dryRun: dry run, i.e. print out the "INSERT INTO" SQL statements and do not execute them (optional) 
+	 * <li>batch: execute in batch (optional) 
+	 * <li>onErrorContinue: on error print the error message then continue (optional, default: exit the program)  
 	 * </ul>
 	 * @param args SQL queries
 	 * @throws Exception in case of unexpected error
@@ -107,9 +121,9 @@ public class DatabaseLoad {
 			quoteChar = (char) -1; // -1 == none
 		}
 
-		final boolean excelDate = Boolean.valueOf(System.getProperty(EXCEL_DATE_PARAMETER_NAME, Boolean.FALSE.toString()));
+		final boolean excelDate = systemProperties.containsKey(EXCEL_DATE_PARAMETER_NAME);
 		final boolean dryRun = systemProperties.containsKey(DRY_RUN_PARAMETER_NAME) || systemProperties.containsKey(DRY_RUN_PARAMETER_NAME.toLowerCase());
-		final boolean commit = Boolean.valueOf(System.getProperty(COMMIT_PARAMETER_NAME, Boolean.TRUE.toString()));
+		final boolean rollback = systemProperties.containsKey(ROLLBACK_PARAMETER_NAME);
 		final Charset encoding;
 		if(systemProperties.containsKey(ENCODING_PARAMETER_NAME)) {
 			encoding = Charset.forName(System.getProperty(ENCODING_PARAMETER_NAME));
@@ -117,8 +131,10 @@ public class DatabaseLoad {
 			encoding = StandardCharsets.UTF_8;	
 		}
 		final String schema = System.getProperty(SCHEMA_PARAMETER_NAME);
-		final boolean firstRowHeader = Boolean.valueOf(System.getProperty(FIRST_ROW_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
+		final boolean firstRowHeader = systemProperties.containsKey(FIRST_ROW_HEADER_PARAMETER_NAME);
 		final boolean quoteColumns = systemProperties.containsKey(QUOTE_COLUMNS_PARAMETER_NAME);
+		final boolean batch = systemProperties.containsKey(BATCH_PARAMETER_NAME);
+		final boolean onErrorContinue = systemProperties.containsKey(ON_ERROR_CONTINUE_PARAMETER_NAME);
 		boolean success = true;
 
 		if (url == null || url.isEmpty()) {
@@ -143,29 +159,27 @@ public class DatabaseLoad {
 			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
 			final char columnLeftQuote = sqlServer?'[':'"';
 			final char columnRightQuote = sqlServer?']':'"';
-			final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
-			final DecimalFormat bigDecimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
-			bigDecimalFormat.setParseBigDecimal(true);
 			
 			for(final File file : files) {
 				try (final InputStream is =  file != null ? new FileInputStream(file) : System.in; final PushbackInputStream pis = new PushbackInputStream(is);) {
 					removeByteOrderMark(pis);
 
-
 					try(final InputStreamReader isr = new InputStreamReader(pis, encoding)) {
-						List<String> record = readRecord(isr, separator, quoteChar);
+						final AtomicInteger lineNumber = new AtomicInteger();
+						List<String> record = readRecord(isr, separator, quoteChar, lineNumber);
 						
 						if(record != null) {
-							final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
-							final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
-							final StringBuilder selectStatmementBuilder = new StringBuilder("SELECT ");
 							final String insertIntoPrefix;
-							final StringBuilder insertIntoStatementBuilder = new StringBuilder("INSERT INTO ");
-							final StringBuilder insertValuesStatementBuilder = new StringBuilder(" VALUES (");
-							insertIntoStatementBuilder.append(qualifiedTable);
+							final String insertIntoParametrized;
 							int[] sqlTypes = {};
-
 							{
+								final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
+								final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
+								final StringBuilder selectStatmementBuilder = new StringBuilder("SELECT ");
+								final StringBuilder insertIntoStatementBuilder = new StringBuilder("INSERT INTO ");
+								final StringBuilder insertValuesStatementBuilder = new StringBuilder(" VALUES (");
+								insertIntoStatementBuilder.append(qualifiedTable);
+
 								boolean flagComma = false;
 								if(firstRowHeader) {
 									insertIntoStatementBuilder.append(" (");
@@ -203,6 +217,7 @@ public class DatabaseLoad {
 								insertIntoPrefix = insertIntoStatementBuilder.toString();
 								insertIntoStatementBuilder.append(insertValuesStatementBuilder.toString());
 								insertIntoStatementBuilder.append(')');
+								insertIntoParametrized = insertIntoStatementBuilder.toString();
 								
 								
 								try(final Statement stmt = connection.createStatement(); final ResultSet resultSet = stmt.executeQuery(selectStatmementBuilder.toString())) {
@@ -214,93 +229,84 @@ public class DatabaseLoad {
 								}
 							}
 							
-							try(final PreparedStatement pstmt = connection.prepareStatement(insertIntoStatementBuilder.toString())) {
+							try(final PreparedStatement pstmt = connection.prepareStatement(insertIntoParametrized)) {
 								if(firstRowHeader) {
 									// skip first record
-									record = readRecord(isr, separator, quoteChar);
+									record = readRecord(isr, separator, quoteChar, lineNumber);
 								}
 
 								while(record != null) {
 									if(dryRun) {
-										insertIntoStatementBuilder.setLength(0);
-										insertIntoStatementBuilder.append(insertIntoPrefix);
-										insertValuesStatementBuilder.setLength(0);
-										insertValuesStatementBuilder.append(" VALUES (");
-									}
-									int c = 1;
-									for(final String data : record) {
-										final int sqlType = sqlTypes[c-1];
-										if(dryRun) {
-											if(c > 1) {
-												insertValuesStatementBuilder.append(", ");
-											}
-											if (data.isEmpty()) {
-												insertValuesStatementBuilder.append("NULL");
-											} else if (sqlType == DOUBLE) {
-												final Double value = decimalFormat.parse(data).doubleValue();
-												insertValuesStatementBuilder.append(value);
-											} else if (sqlType == INTEGER) {
-												insertValuesStatementBuilder.append(data);
-											} else if (sqlType == BIGINT) {
-												final BigDecimal value = (BigDecimal) bigDecimalFormat.parse(data);
-												insertValuesStatementBuilder.append(value);
-											} else if (sqlType == BOOLEAN) {
-												final Boolean value = "1".equals(data) || Boolean.valueOf(data);
-												insertValuesStatementBuilder.append(value.toString());
-											} else if (sqlType == BIT) {
-												final boolean value = "1".equals(data) || Boolean.valueOf(data);
-												insertValuesStatementBuilder.append(value?"1":"0");												
-											} else {
-												final String value;
-												if (sqlType == TIMESTAMP && excelDate) {
-													final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
-													value = timestamp.toLocalDateTime().toString();
-												} else {
-													value = data.replaceAll("'", "''"); 
-												}
-												insertValuesStatementBuilder.append('\'');
-												insertValuesStatementBuilder.append(value);
-												insertValuesStatementBuilder.append('\'');
-											}								
-										} else {
+										final String insertIntoStatement = buildInsertStatement(record, insertIntoPrefix, sqlTypes, excelDate);
+										System.out.println(insertIntoStatement);
+									} else {
+										int c = 1;
+										for(final String data : record) {
+											final int sqlType = sqlTypes[c-1];
 											if (data.isEmpty()) {
 												pstmt.setNull(c, sqlType);
 											} else if (sqlType == VARCHAR || sqlType == CHAR) {
 												pstmt.setString(c, data);
 											} else if (sqlType == DOUBLE) {
-												pstmt.setDouble(c, decimalFormat.parse(data).doubleValue());
+												pstmt.setDouble(c, DECIMAL_FORMAT.parse(data).doubleValue());
 											} else if (sqlType == INTEGER) {
 												pstmt.setInt(c, Integer.parseInt(data));
 											} else if (sqlType == BOOLEAN || sqlType == BIT) {
 												pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
 											} else if (sqlType == TIMESTAMP) {
 												if(excelDate) {
-													final Timestamp timestamp = toTimestamp(decimalFormat.parse(data).doubleValue());	
+													final Timestamp timestamp = toTimestamp(DECIMAL_FORMAT.parse(data).doubleValue());	
 													pstmt.setTimestamp(c, timestamp);
 												} else {
 													pstmt.setObject(c, data);
 												}
 											} else if (sqlType == BIGINT) {
-												pstmt.setBigDecimal(c, (BigDecimal) bigDecimalFormat.parse(data));
+												pstmt.setBigDecimal(c, (BigDecimal) BIG_DECIMAL_FORMAT.parse(data));
 											} else {
 												pstmt.setObject(c, data);
 											}								
+											c++;
 										}
-										c++;
+										if(batch) {
+											pstmt.addBatch();
+										} else if (onErrorContinue) {
+											try {
+												pstmt.execute();
+											} catch (final SQLException e) {
+												success = false;
+												final String insertIntoStatement = buildInsertStatement(record, insertIntoPrefix, sqlTypes, excelDate);
+												String message = e.getMessage();
+												if(message != null) {
+													message = message.trim().replaceAll(System.lineSeparator(), " ~ ");
+												} else {
+													message = "";
+												}
+												System.err.println(format("{0}:{1,number,0}:{2}:{3}", file.getPath(), lineNumber.get(), message, insertIntoStatement));
+											}
+										} else {
+											pstmt.execute();
+										}
 									}
-
-									if(dryRun) {
-										insertIntoStatementBuilder.append(insertValuesStatementBuilder.toString());
-										insertIntoStatementBuilder.append(");");
-										System.out.println(insertIntoStatementBuilder.toString());
-									} else {
-										pstmt.addBatch();
-									}
-									record = readRecord(isr, separator, quoteChar);
+									record = readRecord(isr, separator, quoteChar, lineNumber);
 								}
 
-								if(!dryRun) {
-									pstmt.executeBatch();
+								if(!dryRun && batch) {
+									if (onErrorContinue) {
+										try {
+											pstmt.executeBatch();
+										} catch (final SQLException e) {
+											success = false;
+											String message = e.getMessage();
+											if(message != null) {
+												message = message.trim().replaceAll(System.lineSeparator(), " ~ ");
+											} else {
+												message = "";
+											}
+											System.err.println(format("{0}:{1}", file.getPath(), message));
+										}
+									} else {
+										pstmt.executeBatch();
+									}
 								}
 							}
 						}
@@ -309,10 +315,10 @@ public class DatabaseLoad {
 			}
 
 			if(!dryRun) {
-				if(commit) {
-					connection.commit();
-				} else {
+				if(rollback) {
 					connection.rollback();
+				} else {
+					connection.commit();
 				}
 			}
 		}
@@ -322,6 +328,48 @@ public class DatabaseLoad {
 		}
 	}
 
+	private static String buildInsertStatement(final List<String> record, final String insertIntoPrefix, final int[] sqlTypes, final boolean excelDate) throws ParseException {
+		final StringBuilder result = new StringBuilder(insertIntoPrefix);
+		result.append(" VALUES (");
+		int c = 1;
+		for(final String data : record) {
+			final int sqlType = sqlTypes[c-1];
+				if(c > 1) {
+					result.append(", ");
+				}
+				if (data.isEmpty()) {
+					result.append("NULL");
+				} else if (sqlType == DOUBLE) {
+					final Double value = DECIMAL_FORMAT.parse(data).doubleValue();
+					result.append(value);
+				} else if (sqlType == INTEGER) {
+					result.append(data);
+				} else if (sqlType == BIGINT) {
+					final BigDecimal value = (BigDecimal) BIG_DECIMAL_FORMAT.parse(data);
+					result.append(value);
+				} else if (sqlType == BOOLEAN) {
+					final Boolean value = "1".equals(data) || Boolean.valueOf(data);
+					result.append(value.toString());
+				} else if (sqlType == BIT) {
+					final boolean value = "1".equals(data) || Boolean.valueOf(data);
+					result.append(value?"1":"0");												
+				} else {
+					final String value;
+					if (sqlType == TIMESTAMP && excelDate) {
+						final Timestamp timestamp = toTimestamp(DECIMAL_FORMAT.parse(data).doubleValue());	
+						value = timestamp.toLocalDateTime().toString();
+					} else {
+						value = data.replaceAll("'", "''"); 
+					}
+					result.append('\'');
+					result.append(value);
+					result.append('\'');
+				}
+			c++;
+		}
+		result.append(");");
+		return result.toString();
+	}
 	/**
 	 * Print usage
 	 */
@@ -347,16 +395,18 @@ public class DatabaseLoad {
 		parametersDescriptions.put(SEPARATOR_PARAMETER_NAME, "field separator (optional, default value: tab)");
 		parametersDescriptions.put(QUOTE_CHAR_PARAMETER_NAME, "quoting character for String, Date and Timestamp values (optional, default value: none)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PARAMETER_NAME, "query separator (optional, relies on system line separator value)");
-		parametersDescriptions.put(EXCEL_DATE_PARAMETER_NAME, "dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)");
+		parametersDescriptions.put(EXCEL_DATE_PARAMETER_NAME, "dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
-		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after load (optional, true (=commit) or false (=rollback), default: true)");
+		parametersDescriptions.put(ROLLBACK_PARAMETER_NAME, "perform rollback after load (optional, default: commit)");
 		parametersDescriptions.put(CSV_PARAMETER_NAME, format("equivalent to [-D{0}=, -D{1}=\"] (optional)", SEPARATOR_PARAMETER_NAME, QUOTE_CHAR_PARAMETER_NAME));
 		parametersDescriptions.put(ENCODING_PARAMETER_NAME, "the file encoding (optional, default=UTF-8)");
 		parametersDescriptions.put(SCHEMA_PARAMETER_NAME, "the name of the schema into which the given data will be inserted (optional)");
 		parametersDescriptions.put(TABLE_PARAMETER_NAME, "the name of the table into which the given data will be inserted (optional, if not given then the name of the file without its extension will be used as table name)");
-		parametersDescriptions.put(FIRST_ROW_HEADER_PARAMETER_NAME, "first row of data is the header (optional, true or false, default: true)");
-		parametersDescriptions.put(QUOTE_COLUMNS_PARAMETER_NAME, "quote the name of the columns in the \"INSERT INTO\" SQL statement  (optional, true or false, default: false)");
+		parametersDescriptions.put(FIRST_ROW_HEADER_PARAMETER_NAME, "first row of data is the header (optional)");
+		parametersDescriptions.put(QUOTE_COLUMNS_PARAMETER_NAME, "quote the name of the columns in the \"INSERT INTO\" SQL statement (optional, default: do not quote columns)");
 		parametersDescriptions.put(DRY_RUN_PARAMETER_NAME, "dry run, i.e. print out the \"INSERT INTO\" SQL statements and do not execute them (optional)");
+		parametersDescriptions.put(BATCH_PARAMETER_NAME, "execute in batch (optional)");
+		parametersDescriptions.put(ON_ERROR_CONTINUE_PARAMETER_NAME, "on error print the error message then continue (optional, default: exit the program)");
 
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
@@ -398,11 +448,12 @@ public class DatabaseLoad {
 	 * Records must be compliant to <a href="https://datatracker.ietf.org/doc/html/rfc4180">RFC 4180</a>. 
 	 * @param reader the reader
 	 * @param separator field separator (e.g. comma, semicolon, tab)
-	 * @param quoteChar quoting character (e.g. double quote, simple quote. -1 = none) 
+	 * @param quoteChar quoting character (e.g. double quote, simple quote. -1 = none)
+	 * @param lineNumber line number (out parameter) 
 	 * @return the record
 	 * @throws IOException in case of unexpected error
 	 */
-	private static List<String> readRecord(final Reader reader, final char separator, final char quoteChar) throws IOException {
+	private static List<String> readRecord(final Reader reader, final char separator, final char quoteChar, final AtomicInteger lineNumber) throws IOException {
 		//
 		assert reader != null;
 		assert separator != quoteChar;
@@ -422,6 +473,9 @@ public class DatabaseLoad {
 				if(quoting) {
 					// quoting ... may span over multiple lines
 					builder.append((char) c);
+					if (c == '\n') {
+						lineNumber.incrementAndGet();	
+					}
 				} else if (c == separator) {
 					// end of field
 					record.add(builder.toString());
@@ -429,6 +483,7 @@ public class DatabaseLoad {
 					builder.setLength(0);
 				} else if (c == '\n') {
 					// end of record
+					lineNumber.incrementAndGet();
 					break; 
 				}
 				// Skip '\r'
