@@ -48,7 +48,7 @@ public class DatabaseQuery {
 	private final static String NULL_VALUE_PARAMETER_NAME = "nullValue";
 	private final static String PRINT_EXCEL_DATE_PARAMETER_NAME = "printExcelDate";
 	private final static String AUTO_COMMIT_PARAMETER_NAME = "autoCommit";
-	private final static String COMMIT_PARAMETER_NAME = "commit";
+	private final static String ROLLBACK_PARAMETER_NAME = "rollback";
 	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
 	private final static String FILE_NAME_EXTENSION_PARAMETER_NAME = "fileNameExtension";
 	private final static String ENCODING_PARAMETER_NAME = "encoding";
@@ -75,12 +75,12 @@ public class DatabaseQuery {
 	 * <li>escapeChar: escape character for the quoting parameter of a String, a Date or a Timestamp value (optional, default value: none)
 	 * <li>rowSeparator: row separator (optional, relies on system line separator value)
 	 * <li>querySeparator: query separator (optional, relies on system line separator value)
-	 * <li>printHeader: print-out the header (optional, true or false, default: true)
-	 * <li>printNull: print-out null values (optional, true or false, default: false)
+	 * <li>printHeader: print-out the header (optional)
+	 * <li>printNull: print-out null values (optional)
 	 * <li>nullValue: null replacement value (optional, relies on system null representation)
-	 * <li>printExcelDate: print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)
+	 * <li>printExcelDate: print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional)
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
-	 * <li>commit: perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)
+	 * <li>rollback: perform rollback after UPDATE/INSERT/DELETE (optional, default: commit)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
 	 * <ol>
 	 * <li>query ordinal
@@ -106,11 +106,11 @@ public class DatabaseQuery {
 		final String lineSeparator = System.getProperty("line.separator", "\n");
 		final String rowSeparator = getSystemProperty(ROW_SEPARATOR_PARAMETER_NAME, lineSeparator);
 		final String querySeparator = getSystemProperty(QUERY_SEPARATOR_PARAMETER_NAME, lineSeparator);
-		final boolean printHeader = Boolean.valueOf(System.getProperty(PRINT_HEADER_PARAMETER_NAME, Boolean.TRUE.toString()));
-		final boolean printNull = Boolean.valueOf(System.getProperty(PRINT_NULL_PARAMETER_NAME, Boolean.FALSE.toString()));
-		final boolean printExcelDate = Boolean.valueOf(System.getProperty(PRINT_EXCEL_DATE_PARAMETER_NAME, Boolean.FALSE.toString()));
+		final boolean printHeader = systemProperties.containsKey(PRINT_HEADER_PARAMETER_NAME);
+		final boolean printNull = systemProperties.containsKey(PRINT_NULL_PARAMETER_NAME);
+		final boolean printExcelDate = systemProperties.containsKey(PRINT_EXCEL_DATE_PARAMETER_NAME);
 		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object) null));
-		final String commit = System.getProperty(COMMIT_PARAMETER_NAME);
+		final boolean rollback = systemProperties.containsKey(ROLLBACK_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
 		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
 		final Charset encoding;
@@ -178,6 +178,7 @@ public class DatabaseQuery {
 				final boolean autoCommit = Boolean.valueOf(System.getProperty(AUTO_COMMIT_PARAMETER_NAME));
 				connection.setAutoCommit(autoCommit);
 			}
+			final boolean autoCommit = connection.getAutoCommit();
 			for (int i = 0; i < queries.size(); i++) {
 				final String filename;
 				{
@@ -277,11 +278,11 @@ public class DatabaseQuery {
 								out.print(rc);
 							}
 							out.print(rowSeparator);
-							if (!connection.getAutoCommit() && commit != null) {
-								if (Boolean.valueOf(commit)) {
-									connection.commit();
-								} else {
+							if (!autoCommit) {
+								if (rollback) {
 									connection.rollback();
+								} else {
+									connection.commit();
 								}
 							}
 						} catch (final SQLException e) {
@@ -340,7 +341,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(NULL_VALUE_PARAMETER_NAME, "null replacement value (optional, relies on system null representation)");
 		parametersDescriptions.put(PRINT_EXCEL_DATE_PARAMETER_NAME, "print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)");
 		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
-		parametersDescriptions.put(COMMIT_PARAMETER_NAME, "perform commit after UPDATE/INSERT/DELETE (optional, true or false, relies on driver default value)");
+		parametersDescriptions.put(ROLLBACK_PARAMETER_NAME, "perform rollback after UPDATE/INSERT/DELETE (optional)");
 		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
 		parametersDescriptions.put(FILE_NAME_EXTENSION_PARAMETER_NAME, "file name extension (optional, default: csv)");
 		parametersDescriptions.put(ENCODING_PARAMETER_NAME, "the file encoding (optional, default=UTF-8)");
