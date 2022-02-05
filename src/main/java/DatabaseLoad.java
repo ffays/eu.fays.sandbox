@@ -156,6 +156,7 @@ public class DatabaseLoad {
 				final boolean autoCommit = Boolean.valueOf(System.getProperty(AUTO_COMMIT_PARAMETER_NAME));
 				connection.setAutoCommit(autoCommit);
 			}
+			final boolean autoCommit = connection.getAutoCommit();
 			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
 			final char columnLeftQuote = sqlServer?'[':'"';
 			final char columnRightQuote = sqlServer?']':'"';
@@ -314,7 +315,7 @@ public class DatabaseLoad {
 				}
 			}
 
-			if(!dryRun) {
+			if (!dryRun && !autoCommit) {
 				if(rollback) {
 					connection.rollback();
 				} else {
