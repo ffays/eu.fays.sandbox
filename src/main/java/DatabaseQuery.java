@@ -1,3 +1,5 @@
+import static java.text.MessageFormat.format;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,7 +33,6 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 /**
  * Query a database via a JDBC connection
  */
@@ -56,6 +58,8 @@ public class DatabaseQuery {
 	private final static String ENCODING_PARAMETER_NAME = "encoding";
 	private final static String APPEND_PARAMETER_NAME = "append";
 	private final static String AUTO_FLUSH_PARAMETER_NAME = "autoFlush";
+	private static final String CSV_PARAMETER_NAME = "csv";
+
 
 	/** The Excel Epoch (i.e. 1/1/1900) */
 	private static final LocalDate EXCEL_EPOCH = LocalDate.of(1900, 1, 1);
@@ -89,6 +93,7 @@ public class DatabaseQuery {
 	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
 	 * <li>autoFlush: auto-flush the output file (optional, default: false)
+	 * <li>csv: equivalent to [-Dseparator=, -DquoteChar=" -DescapeChar="] (optional)
 	 * <ol>
 	 * <li>query ordinal
 	 * <li>timestamp
@@ -105,9 +110,26 @@ public class DatabaseQuery {
 		final String url = System.getProperty(URL_PARAMETER_NAME);
 		final String user = System.getProperty(USER_PARAMETER_NAME);
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
-		final String separator = getSystemProperty(SEPARATOR_PARAMETER_NAME, "\t");
-		final String quoteChar = getSystemProperty(QUOTE_CHAR_PARAMETER_NAME, null);
-		final String escapeChar = getSystemProperty(ESCAPE_CHAR_PARAMETER_NAME, null);
+		final boolean csv = systemProperties.containsKey(CSV_PARAMETER_NAME);		
+		final String separator;
+		if(csv && !systemProperties.containsKey(SEPARATOR_PARAMETER_NAME)) {
+			final char decimalSeparator = new DecimalFormatSymbols().getDecimalSeparator();
+			separator = decimalSeparator == ',' ? ";" : ","; // Infer list separator (e.g. ",") based on the decimal separator (e.g. ".")
+		} else {
+			separator = getSystemProperty(SEPARATOR_PARAMETER_NAME, "\t");
+		}
+		final String quoteChar;
+		if(csv && !systemProperties.containsKey(QUOTE_CHAR_PARAMETER_NAME)) {
+			quoteChar = "\"";
+		} else {
+			quoteChar = getSystemProperty(QUOTE_CHAR_PARAMETER_NAME, null);
+		}
+		final String escapeChar;
+		if(csv && !systemProperties.containsKey(ESCAPE_CHAR_PARAMETER_NAME)) {
+			escapeChar = "\"";
+		} else {
+			escapeChar = getSystemProperty(ESCAPE_CHAR_PARAMETER_NAME, null);
+		}
 		final Pattern escapePattern = escapeChar != null && quoteChar != null ? Pattern.compile("[" + quoteChar + "]", Pattern.MULTILINE) : null;
 		final String escapedQuoteChar = escapePattern != null ? escapeChar + quoteChar : null;
 		final String lineSeparator = System.getProperty("line.separator", "\n");
@@ -297,13 +319,20 @@ public class DatabaseQuery {
 										if (printExcelDate && value instanceof Date) {
 											final double excelDate = Long.valueOf(rs.getTimestamp(c, calendar).getTime() + MILLISECONDS_BETWEEN_EXCEL_EPOCH_AND_UNIX_EPOCH).doubleValue() / 86_400_000d;
 											out.print(excelDate);
-										} else if (quoteChar != null && (value instanceof String || value instanceof Date)) {
+										} else if (quoteChar != null && (value instanceof String || value instanceof Date || value instanceof UUID)) {
 											out.print(quoteChar);
+											final String columnTypeName = metaData.getColumnTypeName(c);
+											if("uniqueidentifier".equals(columnTypeName)) {
+												out.print('{');
+											}
 											if (escapePattern != null) {
 												final Matcher matcher = escapePattern.matcher(value.toString());
 												out.print(matcher.replaceAll(escapedQuoteChar));
 											} else {
 												out.print(value.toString());
+											}
+											if("uniqueidentifier".equals(columnTypeName)) {
+												out.print('}');													
 											}
 											out.print(quoteChar);
 										} else {
@@ -400,6 +429,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(ENCODING_PARAMETER_NAME, "the file encoding (optional, default=UTF-8)");
 		parametersDescriptions.put(APPEND_PARAMETER_NAME, "if the output file exists then append to it (optional, default: overwrite)");
 		parametersDescriptions.put(AUTO_FLUSH_PARAMETER_NAME, "auto-flush the output file (optional)");
+		parametersDescriptions.put(CSV_PARAMETER_NAME, format("equivalent to [-D{0}=, -D{1}=\", -D{2}=\"] (optional)", SEPARATOR_PARAMETER_NAME, QUOTE_CHAR_PARAMETER_NAME, ESCAPE_CHAR_PARAMETER_NAME));
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
 			System.out.print(MessageFormat.format("  -D{0}", entry.getKey()));
