@@ -200,12 +200,13 @@ public class DatabaseQuery {
 					} else if ("3".equals(fileNameScheme)) {
 						basename = UUID.randomUUID().toString();
 					} else if ("4".equals(fileNameScheme)) {
-						int index = sql.indexOf("FROM");
-						if(index != -1) {
+						final Pattern pattern = Pattern.compile("\\p{Space}*SELECT\\p{Space}+.*\\p{Space}+FROM\\p{Space}+(.*)", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+						final Matcher matcher = pattern.matcher(sql);
+						if(matcher.find()) {
 							// heuristic to obtain the table name
-							String table = sql.substring(index);
+							String table = matcher.group(1);
 							final String [] keywords = {"WHERE", "GROUP BY", "HAVING", "UNION", "MINUS", "EXCEPT", "INTERSECT", ";"};
-							index = Integer.MAX_VALUE;
+							int index = Integer.MAX_VALUE;
 							final boolean[] booleans = {true, false};
 							for(boolean uppercase : booleans) {
 								for(String keyword : keywords) {
