@@ -1,4 +1,6 @@
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -52,6 +54,8 @@ public class DatabaseQuery {
 	private final static String FILE_NAME_SCHEME_PARAMETER_NAME = "fileNameScheme";
 	private final static String FILE_NAME_EXTENSION_PARAMETER_NAME = "fileNameExtension";
 	private final static String ENCODING_PARAMETER_NAME = "encoding";
+	private final static String APPEND_PARAMETER_NAME = "append";
+	private final static String AUTO_FLUSH_PARAMETER_NAME = "autoFlush";
 
 	/** The Excel Epoch (i.e. 1/1/1900) */
 	private static final LocalDate EXCEL_EPOCH = LocalDate.of(1900, 1, 1);
@@ -81,14 +85,17 @@ public class DatabaseQuery {
 	 * <li>printExcelDate: print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional)
 	 * <li>autoCommit: enable/disable auto-commit mode (optional, true or false, relies on driver default value)
 	 * <li>rollback: perform rollback after UPDATE/INSERT/DELETE (optional, default: commit)
+	 * <li>append: if the output file exists then append to it (optional, default: overwrite)
+	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
+	 * <li>autoFlush: auto-flush the output file (optional, default: false)
 	 * <ol>
 	 * <li>query ordinal
 	 * <li>timestamp
 	 * <li>universally unique identifier
+	 * <li>table name
 	 * </ol>
 	 * <li>fileNameExtension: file name extension (optional, default: csv)
-	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
 	 * </ul>
 	 * @param args SQL queries
 	 * @throws Exception in case of unexpected error
@@ -119,6 +126,8 @@ public class DatabaseQuery {
 		} else {
 			encoding = StandardCharsets.UTF_8;	
 		}
+		final boolean append = systemProperties.containsKey(APPEND_PARAMETER_NAME);
+		final boolean autoFlush = systemProperties.containsKey(AUTO_FLUSH_PARAMETER_NAME);
 		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		boolean success = true;
 
@@ -180,6 +189,7 @@ public class DatabaseQuery {
 			}
 			final boolean autoCommit = connection.getAutoCommit();
 			for (int i = 0; i < queries.size(); i++) {
+				final String sql = queries.get(i);
 				final String filename;
 				{
 					final String basename;
@@ -189,6 +199,39 @@ public class DatabaseQuery {
 						basename = DateTimeFormatter.ofPattern("yyyy-MM-dd\u00A0HH\u00F7mm\u00F7ss\u2027SSS").format(LocalDateTime.now());
 					} else if ("3".equals(fileNameScheme)) {
 						basename = UUID.randomUUID().toString();
+					} else if ("4".equals(fileNameScheme)) {
+						int index = sql.indexOf("FROM");
+						if(index != -1) {
+							// heuristic to obtain the table name
+							String table = sql.substring(index);
+							final String [] keywords = {"WHERE", "GROUP BY", "HAVING", "UNION", "MINUS", "EXCEPT", "INTERSECT", ";"};
+							index = Integer.MAX_VALUE;
+							final boolean[] booleans = {true, false};
+							for(boolean uppercase : booleans) {
+								for(String keyword : keywords) {
+									i = table.indexOf(uppercase?keyword:keyword.toLowerCase());
+									if(i != -1 && i < index) {
+										index = i;
+									}
+								}
+							}
+							if(index != Integer.MAX_VALUE) {
+								table = table.substring(0, index);
+							}
+							// keep only the table name, i.e. strip the schema/database name  
+							index = table.lastIndexOf('.');
+							if(index != -1) {
+								table = table.substring(index);
+							}
+							table = table.trim();
+							if(!table.isEmpty()) {
+								basename = table;
+							} else {
+								basename = Integer.toString(i); // fallback;
+							}
+						} else {
+							basename = Integer.toString(i); // fallback;
+						}
 					} else {
 						basename = null;
 					}
@@ -205,15 +248,24 @@ public class DatabaseQuery {
 					System.out.flush();
 				}
 
-				try (final PrintStream ps = filename != null ? new PrintStream(filename, encoding) : null) {
+				final File file;
+				final boolean exists;
+				if(filename != null) {
+					file = new File(filename);
+					exists = file.exists();
+				} else {
+					file = null;
+					exists = false;
+				}
+				
+				try (final FileOutputStream fos = file != null ? new FileOutputStream(file, append) : null; final PrintStream ps = fos != null ? new PrintStream(fos, autoFlush, encoding) : null) {
 					final PrintStream out = ps != null ? ps : System.out;
-					final String sql = queries.get(i);
 					if (sql.startsWith("SELECT")) {
 						try (final Statement statement = connection.createStatement(); final ResultSet rs = statement.executeQuery(sql)) {
 							final ResultSetMetaData metaData = rs.getMetaData();
 							final int n = metaData.getColumnCount();
 							// Header
-							if (printHeader) {
+							if (printHeader && !exists) {
 								for (int c = 1; c <= n; c++) {
 									if (c > 1) {
 										out.print(separator);
@@ -331,20 +383,22 @@ public class DatabaseQuery {
 		parametersDescriptions.put(URL_PARAMETER_NAME, "JDBC connection string (mandatory)");
 		parametersDescriptions.put(USER_PARAMETER_NAME, "database user (optional)");
 		parametersDescriptions.put(PASSWORD_PARAMETER_NAME, "database password (optional)");
+		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
+		parametersDescriptions.put(ROLLBACK_PARAMETER_NAME, "perform rollback after UPDATE/INSERT/DELETE (optional)");
 		parametersDescriptions.put(SEPARATOR_PARAMETER_NAME, "field separator (optional, default value: tab)");
 		parametersDescriptions.put(QUOTE_CHAR_PARAMETER_NAME, "quoting character for String, Date and Timestamp values (optional, default value: none)");
 		parametersDescriptions.put(ESCAPE_CHAR_PARAMETER_NAME, "escape character for the quoting parameter of a String, a Date or a Timestamp value (optional, default value: none)");
 		parametersDescriptions.put(ROW_SEPARATOR_PARAMETER_NAME, "row separator (optional, relies on system line separator value)");
 		parametersDescriptions.put(QUERY_SEPARATOR_PARAMETER_NAME, "query separator (optional, relies on system line separator value)");
-		parametersDescriptions.put(PRINT_HEADER_PARAMETER_NAME, "print-out the header (optional, true or false, default: true)");
-		parametersDescriptions.put(PRINT_NULL_PARAMETER_NAME, "print-out null values (optional, true or false, default: false)");
+		parametersDescriptions.put(PRINT_HEADER_PARAMETER_NAME, "print-out the header (optional)");
+		parametersDescriptions.put(PRINT_NULL_PARAMETER_NAME, "print-out null values (optional)");
 		parametersDescriptions.put(NULL_VALUE_PARAMETER_NAME, "null replacement value (optional, relies on system null representation)");
-		parametersDescriptions.put(PRINT_EXCEL_DATE_PARAMETER_NAME, "print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional, true or false, default: false)");
-		parametersDescriptions.put(AUTO_COMMIT_PARAMETER_NAME, "enable/disable auto-commit mode (optional, true or false, relies on driver default value)");
-		parametersDescriptions.put(ROLLBACK_PARAMETER_NAME, "perform rollback after UPDATE/INSERT/DELETE (optional)");
-		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, print to standard output by default)");
+		parametersDescriptions.put(PRINT_EXCEL_DATE_PARAMETER_NAME, "print-out both dates and timestamps as Excel dates, i.e. fractional days since January 1st 1900 (optional)");
+		parametersDescriptions.put(FILE_NAME_SCHEME_PARAMETER_NAME, "file name scheme (optional, 1 => query ordinal, 2 => timestamp, 3 => universally unique identifier, 4 => table name, print to standard output by default)");
 		parametersDescriptions.put(FILE_NAME_EXTENSION_PARAMETER_NAME, "file name extension (optional, default: csv)");
 		parametersDescriptions.put(ENCODING_PARAMETER_NAME, "the file encoding (optional, default=UTF-8)");
+		parametersDescriptions.put(APPEND_PARAMETER_NAME, "if the output file exists then append to it (optional, default: overwrite)");
+		parametersDescriptions.put(AUTO_FLUSH_PARAMETER_NAME, "auto-flush the output file (optional)");
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
 			System.out.print(MessageFormat.format("  -D{0}", entry.getKey()));
