@@ -2,9 +2,17 @@ import static java.sql.Types.BIGINT;
 import static java.sql.Types.BIT;
 import static java.sql.Types.BOOLEAN;
 import static java.sql.Types.CHAR;
+import static java.sql.Types.DATE;
+import static java.sql.Types.DECIMAL;
 import static java.sql.Types.DOUBLE;
+import static java.sql.Types.FLOAT;
 import static java.sql.Types.INTEGER;
+import static java.sql.Types.LONGVARCHAR;
+import static java.sql.Types.NUMERIC;
+import static java.sql.Types.SMALLINT;
+import static java.sql.Types.TIME;
 import static java.sql.Types.TIMESTAMP;
+import static java.sql.Types.TINYINT;
 import static java.sql.Types.VARCHAR;
 import static java.text.MessageFormat.format;
 
@@ -20,12 +28,14 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import  java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -246,23 +256,38 @@ public class DatabaseLoad {
 											final int sqlType = sqlTypes[c-1];
 											if (data.isEmpty()) {
 												pstmt.setNull(c, sqlType);
-											} else if (sqlType == VARCHAR || sqlType == CHAR) {
+											} else if (sqlType == VARCHAR || sqlType == CHAR || sqlType == LONGVARCHAR) {
 												pstmt.setString(c, data);
-											} else if (sqlType == DOUBLE) {
-												pstmt.setDouble(c, DECIMAL_FORMAT.parse(data).doubleValue());
 											} else if (sqlType == INTEGER) {
 												pstmt.setInt(c, Integer.parseInt(data));
+											} else if (sqlType == DOUBLE) {
+												pstmt.setDouble(c, DECIMAL_FORMAT.parse(data).doubleValue());
+											} else if (sqlType == FLOAT) {
+												pstmt.setFloat(c, DECIMAL_FORMAT.parse(data).floatValue());
+											} else if (sqlType == SMALLINT) {
+												pstmt.setShort(c, Short.parseShort(data));
 											} else if (sqlType == BOOLEAN || sqlType == BIT) {
 												pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
-											} else if (sqlType == TIMESTAMP) {
+											} else if (sqlType == TIMESTAMP || sqlType == DATE || sqlType == TIME) {
 												if(excelDate) {
-													final Timestamp timestamp = toTimestamp(DECIMAL_FORMAT.parse(data).doubleValue());	
-													pstmt.setTimestamp(c, timestamp);
+													final LocalDateTime localDateTime = toLocalDateTime(DECIMAL_FORMAT.parse(data).doubleValue());
+													if(sqlType == TIMESTAMP) {
+														final Timestamp timestamp = Timestamp.valueOf(localDateTime);
+														pstmt.setTimestamp(c, timestamp);
+													} else if (sqlType == DATE) {
+														final Date date = Date.valueOf(localDateTime.toLocalDate());
+														pstmt.setDate(c, date);
+													} else if (sqlType == TIME) {
+														final Time time = Time.valueOf(localDateTime.toLocalTime());
+														pstmt.setTime(c, time);	
+													}
 												} else {
 													pstmt.setObject(c, data);
 												}
-											} else if (sqlType == BIGINT) {
+											} else if (sqlType == BIGINT || sqlType == DECIMAL || sqlType == NUMERIC) {
 												pstmt.setBigDecimal(c, (BigDecimal) BIG_DECIMAL_FORMAT.parse(data));
+											} else if (sqlType == TINYINT) {
+												pstmt.setByte(c, (byte)Integer.parseInt(data));
 											} else {
 												pstmt.setObject(c, data);
 											}								
@@ -343,9 +368,12 @@ public class DatabaseLoad {
 				} else if (sqlType == DOUBLE) {
 					final Double value = DECIMAL_FORMAT.parse(data).doubleValue();
 					result.append(value);
-				} else if (sqlType == INTEGER) {
+				} else if (sqlType == FLOAT) {
+					final Float value = DECIMAL_FORMAT.parse(data).floatValue();
+					result.append(value);
+				} else if (sqlType == INTEGER || sqlType == SMALLINT || sqlType == TINYINT) {
 					result.append(data);
-				} else if (sqlType == BIGINT) {
+				} else if (sqlType == BIGINT || sqlType == DECIMAL || sqlType == NUMERIC) {
 					final BigDecimal value = (BigDecimal) BIG_DECIMAL_FORMAT.parse(data);
 					result.append(value);
 				} else if (sqlType == BOOLEAN) {
@@ -357,8 +385,8 @@ public class DatabaseLoad {
 				} else {
 					final String value;
 					if (sqlType == TIMESTAMP && excelDate) {
-						final Timestamp timestamp = toTimestamp(DECIMAL_FORMAT.parse(data).doubleValue());	
-						value = timestamp.toLocalDateTime().toString();
+						final LocalDateTime localDateTime = toLocalDateTime(DECIMAL_FORMAT.parse(data).doubleValue());
+						value = localDateTime.toString();
 					} else {
 						value = data.replaceAll("'", "''"); 
 					}
@@ -553,7 +581,7 @@ public class DatabaseLoad {
 	 * @param timestamp the excel time stamp
 	 * @return the java time stamp
 	 */
-	private static Timestamp toTimestamp(final double timestamp) {
+	private static LocalDateTime toLocalDateTime(final double timestamp) {
 		//
 		assert !Double.isNaN(timestamp);
 		assert timestamp >= 0d;
@@ -571,6 +599,6 @@ public class DatabaseLoad {
 		final long millisSinceExcelEpoch = Math.round(secondsSinceExcelEpoch) * 1000L;
 		final LocalDateTime result = epoch.plus(millisSinceExcelEpoch, ChronoUnit.MILLIS);
 
-		return Timestamp.valueOf(result);
+		return result;
 	}
 }
