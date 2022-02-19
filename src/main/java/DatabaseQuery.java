@@ -150,7 +150,7 @@ public class DatabaseQuery {
 		final String nullValue = getSystemProperty(NULL_VALUE_PARAMETER_NAME, String.valueOf((Object) null));
 		final boolean rollback = systemProperties.containsKey(ROLLBACK_PARAMETER_NAME);
 		final String fileNameScheme = System.getProperty(FILE_NAME_SCHEME_PARAMETER_NAME);
-		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, "csv");
+		final String fileNameExtension = System.getProperty(FILE_NAME_EXTENSION_PARAMETER_NAME, html?"html":"csv");
 		final Charset encoding;
 		if(systemProperties.containsKey(ENCODING_PARAMETER_NAME)) {
 			encoding = Charset.forName(System.getProperty(ENCODING_PARAMETER_NAME));
