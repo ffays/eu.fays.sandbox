@@ -1,12 +1,15 @@
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.text.MessageFormat.format;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -60,6 +63,7 @@ public class DatabaseQuery {
 	private final static String AUTO_FLUSH_PARAMETER_NAME = "autoFlush";
 	private static final String CSV_PARAMETER_NAME = "csv";
 	private static final String HTML_PARAMETER_NAME = "html";
+	private static final String HTML_SORT_TABLE_PARAMETER_NAME = "htmlSortTable";
 
 
 	/** The Excel Epoch (i.e. 1/1/1900) */
@@ -94,7 +98,8 @@ public class DatabaseQuery {
 	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
 	 * <li>autoFlush: auto-flush the output file (optional, default: false)
 	 * <li>csv: equivalent to [-Dseparator=, -DquoteChar=" -DescapeChar="] (optional)
-	 * <lI>html: output in HTML format (optional)
+	 * <li>html: output in HTML format (optional)
+	 * <li>htmlSortTable: output in HTML format with <a href="https://github.com/armaaar/sortable-tables">sort-table</a> embedded (optional)
 	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default), one of
 	 * <ol>
 	 * <li>query ordinal
@@ -112,8 +117,9 @@ public class DatabaseQuery {
 		final String url = System.getProperty(URL_PARAMETER_NAME);
 		final String user = System.getProperty(USER_PARAMETER_NAME);
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
-		final boolean csv = systemProperties.containsKey(CSV_PARAMETER_NAME);		
-		final boolean html = systemProperties.containsKey(HTML_PARAMETER_NAME);		
+		final boolean csv = systemProperties.containsKey(CSV_PARAMETER_NAME);	
+		final boolean htmlSortTable = systemProperties.containsKey(HTML_SORT_TABLE_PARAMETER_NAME);
+		final boolean html = systemProperties.containsKey(HTML_PARAMETER_NAME) || htmlSortTable;
 		String separator;
 		if(csv && !systemProperties.containsKey(SEPARATOR_PARAMETER_NAME)) {
 			final char decimalSeparator = new DecimalFormatSymbols().getDecimalSeparator();
@@ -214,6 +220,8 @@ public class DatabaseQuery {
 				final boolean autoCommit = Boolean.valueOf(System.getProperty(AUTO_COMMIT_PARAMETER_NAME));
 				connection.setAutoCommit(autoCommit);
 			}
+			String sortTableCascadingStyleSheet = null;
+			String sortTableJavaScript = null;
 			final boolean autoCommit = connection.getAutoCommit();
 			for (int q = 0; q < queries.size(); q++) {
 				final String sql = queries.get(q);
@@ -285,12 +293,26 @@ public class DatabaseQuery {
 					file = null;
 					exists = false;
 				}
-				
+
 				try (final FileOutputStream fos = file != null ? new FileOutputStream(file, append) : null; final PrintStream ps = fos != null ? new PrintStream(fos, autoFlush, encoding) : null) {
 					final PrintStream out = ps != null ? ps : System.out;
 					if (sql.startsWith("SELECT")) {
 						if(html) {
 							if(!htmlHeaderPrinted) {
+								if(htmlSortTable) {
+									try (final InputStream sortTableCascadingStyleSheetInputStream = new URL("https://raw.githubusercontent.com/armaaar/sortable-tables/master/dist/sortable-tables.min.css").openStream()) {
+										sortTableCascadingStyleSheet = new String(sortTableCascadingStyleSheetInputStream.readAllBytes(), UTF_8);
+									} catch (IOException e) {
+										// Do nothing
+									}
+									
+									try (final InputStream sortTableCascadingStyleSheetInputStream = new URL("https://raw.githubusercontent.com/armaaar/sortable-tables/master/dist/sortable-tables.min.js").openStream()) {
+										sortTableJavaScript = new String(sortTableCascadingStyleSheetInputStream.readAllBytes(), UTF_8);
+									} catch (IOException e) {
+										// Do nothing
+									}
+								}
+
 								out.print("<html>"); out.print(rowSeparator);
 								out.print("<head>"); out.print(rowSeparator);
 								out.print(format("<title>{0}</title>", filename != null ? filename : DatabaseQuery.class.getSimpleName())); out.print(rowSeparator);
@@ -300,6 +322,15 @@ public class DatabaseQuery {
 								out.print("table { border-width: 1px; border-color: black; border-style: solid; border-collapse: collapse }"); out.print(rowSeparator);
 								out.print("th,td { border-width: 1px; border-color: black;	border-style: solid; border-collapse: collapse; font-family: Inconsolata, Menlo, Consolas, monospace; padding: 3px; text-align: left }"); out.print(rowSeparator);
 								out.print("</style>"); out.print(rowSeparator);
+								
+								if(sortTableCascadingStyleSheet != null && sortTableJavaScript != null) {
+									out.print("<style>"); out.print(rowSeparator);
+									out.print(sortTableCascadingStyleSheet); out.print(rowSeparator);
+									out.print("</style>"); out.print(rowSeparator);
+									out.print("<script type=\"text/javascript\">"); out.print(rowSeparator);
+									out.print(sortTableJavaScript); out.print(rowSeparator);
+									out.print("</script>"); out.print(rowSeparator);
+								}
 								out.print("</head>"); out.print(rowSeparator);
 								out.print("<body>"); out.print(rowSeparator);
 								htmlHeaderPrinted = true;
@@ -311,9 +342,14 @@ public class DatabaseQuery {
 							out.print("<!--"); out.print(rowSeparator);
 							out.print(sql); out.print(rowSeparator);
 							out.print("-->"); out.print(rowSeparator);
-							out.print("<table>"); out.print(rowSeparator);
+							if(sortTableCascadingStyleSheet != null && sortTableJavaScript != null) {
+								out.print("<table class=\"sortable-table\">");
+							} else {
+								out.print("<table>");
+							}
+							out.print(rowSeparator);
 							if (printHeader) {
-								out.print("<tr><th>");
+								out.print("<thead><tr><th>");
 								separator = "</th><th>";
 							}
 						}
@@ -341,7 +377,8 @@ public class DatabaseQuery {
 									}
 								}
 								if(html) {
-									out.print("</tr></th>");
+									out.print("</tr></th></thead>"); out.print(rowSeparator);
+									out.print("<tbody>");
 								}
 								out.print(rowSeparator);
 							}
@@ -394,7 +431,8 @@ public class DatabaseQuery {
 							success = false;
 						} finally {
 							if(html && htmlHeaderPrinted) {
-								out.print("</table>"); out.print(rowSeparator);
+								out.print("</tbody>"); out.print(rowSeparator);
+								out.print("</tbody>"); out.print(rowSeparator);
 							} 	
 						}
 					} else {
@@ -489,6 +527,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(APPEND_PARAMETER_NAME, "if the output file exists then append to it (optional, default: overwrite)");
 		parametersDescriptions.put(AUTO_FLUSH_PARAMETER_NAME, "auto-flush the output file (optional)");
 		parametersDescriptions.put(HTML_PARAMETER_NAME, "output in HTML format (optional)");
+		parametersDescriptions.put(HTML_SORT_TABLE_PARAMETER_NAME, "output in HTML format with sort-table (cf. https://github.com/armaaar/sortable-tables) embedded (optional)");
 		parametersDescriptions.put(CSV_PARAMETER_NAME, format("equivalent to [-D{0}=, -D{1}=\", -D{2}=\"] (optional)", SEPARATOR_PARAMETER_NAME, QUOTE_CHAR_PARAMETER_NAME, ESCAPE_CHAR_PARAMETER_NAME));
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
