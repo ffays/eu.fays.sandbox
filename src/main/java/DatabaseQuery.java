@@ -12,6 +12,8 @@ import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -300,16 +302,38 @@ public class DatabaseQuery {
 						if(html) {
 							if(!htmlHeaderPrinted) {
 								if(htmlSortTable) {
-									try (final InputStream sortTableCascadingStyleSheetInputStream = new URL("https://raw.githubusercontent.com/armaaar/sortable-tables/master/dist/sortable-tables.min.css").openStream()) {
-										sortTableCascadingStyleSheet = new String(sortTableCascadingStyleSheetInputStream.readAllBytes(), UTF_8);
-									} catch (IOException e) {
-										// Do nothing
+									final String sortTableBaseUrl = "https://raw.githubusercontent.com/armaaar/sortable-tables/master/dist/";
+
+									if(sortTableCascadingStyleSheet == null) {
+										final String sortTableCascadingStyleSheetFilename = "sortable-tables.min.css";
+										final Path sortTableCascadingStyleSheetPath = Path.of(sortTableCascadingStyleSheetFilename);
+										if(!Files.exists(sortTableCascadingStyleSheetPath)) {
+											try (final InputStream sortTableCascadingStyleSheetInputStream = new URL(sortTableBaseUrl + sortTableCascadingStyleSheetFilename).openStream()) {
+												final byte[] buffer = sortTableCascadingStyleSheetInputStream.readAllBytes();
+												sortTableCascadingStyleSheet = new String(buffer, UTF_8);
+												Files.write(sortTableCascadingStyleSheetPath, buffer);
+											} catch (IOException e) {
+												// Do nothing
+											}
+										} else {
+											sortTableCascadingStyleSheet = new String(Files.readAllBytes(sortTableCascadingStyleSheetPath), UTF_8);
+										}
 									}
-									
-									try (final InputStream sortTableCascadingStyleSheetInputStream = new URL("https://raw.githubusercontent.com/armaaar/sortable-tables/master/dist/sortable-tables.min.js").openStream()) {
-										sortTableJavaScript = new String(sortTableCascadingStyleSheetInputStream.readAllBytes(), UTF_8);
-									} catch (IOException e) {
-										// Do nothing
+
+									if(sortTableJavaScript == null) {
+										final String sortTableJavaScriptFilename = "sortable-tables.min.js";
+										final Path sortTableJavaScriptInputPath = Path.of(sortTableJavaScriptFilename);
+										if(!Files.exists(sortTableJavaScriptInputPath)) {
+											try (final InputStream sortTableJavaScriptInputStream = new URL(sortTableBaseUrl + sortTableJavaScriptFilename).openStream()) {
+												final byte[] buffer = sortTableJavaScriptInputStream.readAllBytes();
+												sortTableJavaScript = new String(buffer, UTF_8);
+												Files.write(sortTableJavaScriptInputPath, buffer);
+											} catch (IOException e) {
+												// Do nothing
+											}
+										} else {
+											sortTableJavaScript = new String(Files.readAllBytes(sortTableJavaScriptInputPath), UTF_8);
+										}
 									}
 								}
 
