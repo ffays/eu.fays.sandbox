@@ -59,6 +59,7 @@ public class DatabaseQuery {
 	private final static String APPEND_PARAMETER_NAME = "append";
 	private final static String AUTO_FLUSH_PARAMETER_NAME = "autoFlush";
 	private static final String CSV_PARAMETER_NAME = "csv";
+	private static final String HTML_PARAMETER_NAME = "html";
 
 
 	/** The Excel Epoch (i.e. 1/1/1900) */
@@ -91,9 +92,10 @@ public class DatabaseQuery {
 	 * <li>rollback: perform rollback after UPDATE/INSERT/DELETE (optional, default: commit)
 	 * <li>append: if the output file exists then append to it (optional, default: overwrite)
 	 * <li>encoding: the file encoding (optional, default={@link StandardCharsets#UTF_8 UTF-8})
-	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default)
 	 * <li>autoFlush: auto-flush the output file (optional, default: false)
 	 * <li>csv: equivalent to [-Dseparator=, -DquoteChar=" -DescapeChar="] (optional)
+	 * <lI>html: output in HTML format (optional)
+	 * <li>fileNameScheme: file name scheme (optional, outputs to standard out by default), one of
 	 * <ol>
 	 * <li>query ordinal
 	 * <li>timestamp
@@ -111,7 +113,8 @@ public class DatabaseQuery {
 		final String user = System.getProperty(USER_PARAMETER_NAME);
 		final String password = System.getProperty(PASSWORD_PARAMETER_NAME);
 		final boolean csv = systemProperties.containsKey(CSV_PARAMETER_NAME);		
-		final String separator;
+		final boolean html = systemProperties.containsKey(HTML_PARAMETER_NAME);		
+		String separator;
 		if(csv && !systemProperties.containsKey(SEPARATOR_PARAMETER_NAME)) {
 			final char decimalSeparator = new DecimalFormatSymbols().getDecimalSeparator();
 			separator = decimalSeparator == ',' ? ";" : ","; // Infer list separator (e.g. ",") based on the decimal separator (e.g. ".")
@@ -152,6 +155,7 @@ public class DatabaseQuery {
 		final boolean autoFlush = systemProperties.containsKey(AUTO_FLUSH_PARAMETER_NAME);
 		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		boolean success = true;
+		boolean htmlHeaderPrinted = false;
 
 		// Command line arguments
 		final List<String> queries = new ArrayList<>();
@@ -275,7 +279,7 @@ public class DatabaseQuery {
 				final boolean exists;
 				if(filename != null) {
 					file = new File(filename);
-					exists = file.exists();
+					exists = file.exists() && !html;
 				} else {
 					file = null;
 					exists = false;
@@ -284,6 +288,22 @@ public class DatabaseQuery {
 				try (final FileOutputStream fos = file != null ? new FileOutputStream(file, append) : null; final PrintStream ps = fos != null ? new PrintStream(fos, autoFlush, encoding) : null) {
 					final PrintStream out = ps != null ? ps : System.out;
 					if (sql.startsWith("SELECT")) {
+						if(html) {
+							if(!htmlHeaderPrinted) {
+								out.print("<html>"); out.print(rowSeparator);
+								out.print("<head>"); out.print(rowSeparator);
+								out.print(format("<title>{0}</title>", filename != null ? filename : DatabaseQuery.class.getSimpleName())); out.print(rowSeparator);
+								out.print("</head>"); out.print(rowSeparator);
+								out.print("<body>"); out.print(rowSeparator);
+								htmlHeaderPrinted = true;
+							} 
+							out.print("<table>"); out.print(rowSeparator);
+							out.print(format("<caption>{0}</caption>", sql)); out.print(rowSeparator);
+							if (printHeader) {
+								out.print("<tr><th>");
+								separator = "</th><th>";
+							}
+						}
 						try (final Statement statement = connection.createStatement(); final ResultSet rs = statement.executeQuery(sql)) {
 							final ResultSetMetaData metaData = rs.getMetaData();
 							final int n = metaData.getColumnCount();
@@ -307,9 +327,18 @@ public class DatabaseQuery {
 										out.print(quoteChar);
 									}
 								}
+								if(html) {
+									out.print("</tr></th>");
+								}
 								out.print(rowSeparator);
 							}
+							if (html) {
+								separator = "</td><td>";
+							}
 							while (rs.next()) {
+								if (html) {
+									out.print("<tr><td>");			
+								}
 								for (int c = 1; c <= n; c++) {
 									if (c > 1) {
 										out.print(separator);
@@ -342,11 +371,18 @@ public class DatabaseQuery {
 										out.print(nullValue);
 									}
 								}
+								if (html) {
+									out.print("</td></tr>");			
+								}
 								out.print(rowSeparator);
 							}
 						} catch (final SQLException e) {
 							e.printStackTrace();
 							success = false;
+						} finally {
+							if(html && htmlHeaderPrinted) {
+								out.print("</table>"); out.print(rowSeparator);
+							} 	
 						}
 					} else {
 						out.print(sql);
@@ -374,6 +410,10 @@ public class DatabaseQuery {
 							success = false;
 						}
 					}
+					if(html && htmlHeaderPrinted) {
+						out.print("</body>"); out.print(rowSeparator);
+						out.print("</html>"); out.print(rowSeparator);
+					} 	
 				}
 				if (filename != null) {
 					System.out.println(filename);
@@ -429,6 +469,7 @@ public class DatabaseQuery {
 		parametersDescriptions.put(ENCODING_PARAMETER_NAME, "the file encoding (optional, default=UTF-8)");
 		parametersDescriptions.put(APPEND_PARAMETER_NAME, "if the output file exists then append to it (optional, default: overwrite)");
 		parametersDescriptions.put(AUTO_FLUSH_PARAMETER_NAME, "auto-flush the output file (optional)");
+		parametersDescriptions.put(HTML_PARAMETER_NAME, "output in HTML format (optional)");
 		parametersDescriptions.put(CSV_PARAMETER_NAME, format("equivalent to [-D{0}=, -D{1}=\", -D{2}=\"] (optional)", SEPARATOR_PARAMETER_NAME, QUOTE_CHAR_PARAMETER_NAME, ESCAPE_CHAR_PARAMETER_NAME));
 		// @formatter:on
 		for (final Entry<String, String> entry : parametersDescriptions.entrySet()) {
