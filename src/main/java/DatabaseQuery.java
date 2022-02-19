@@ -295,8 +295,10 @@ public class DatabaseQuery {
 								out.print("<head>"); out.print(rowSeparator);
 								out.print(format("<title>{0}</title>", filename != null ? filename : DatabaseQuery.class.getSimpleName())); out.print(rowSeparator);
 								out.print("<style>"); out.print(rowSeparator);
+								// https://fonts.google.com/specimen/Inconsolata#standard-styles
+								out.print("@import url('https://fonts.googleapis.com/css2?family=Inconsolata&display=swap');"); out.print(rowSeparator);
 								out.print("table { border-width: 1px; border-color: black; border-style: solid; border-collapse: collapse }"); out.print(rowSeparator);
-								out.print("th,td { border-width: 1px; border-color: black;	border-style: solid; border-collapse: collapse; font-family: Verdana; padding: 3px; text-align: left }"); out.print(rowSeparator);
+								out.print("th,td { border-width: 1px; border-color: black;	border-style: solid; border-collapse: collapse; font-family: Inconsolata, Menlo, Consolas, monospace; padding: 3px; text-align: left }"); out.print(rowSeparator);
 								out.print("</style>"); out.print(rowSeparator);
 								out.print("</head>"); out.print(rowSeparator);
 								out.print("<body>"); out.print(rowSeparator);
@@ -304,7 +306,7 @@ public class DatabaseQuery {
 							} 
 							
 							if(q > 0 && ps == null) {
-								out.print("<hr/>"); out.print(rowSeparator);	
+								out.print("<hr noshade/>"); out.print(rowSeparator);	
 							}
 							out.print("<!--"); out.print(rowSeparator);
 							out.print(sql); out.print(rowSeparator);
