@@ -156,6 +156,7 @@ public class DatabaseQuery {
 		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 		boolean success = true;
 		boolean htmlHeaderPrinted = false;
+		boolean htmlFooterPrinted = false;
 
 		// Command line arguments
 		final List<String> queries = new ArrayList<>();
@@ -293,12 +294,22 @@ public class DatabaseQuery {
 								out.print("<html>"); out.print(rowSeparator);
 								out.print("<head>"); out.print(rowSeparator);
 								out.print(format("<title>{0}</title>", filename != null ? filename : DatabaseQuery.class.getSimpleName())); out.print(rowSeparator);
+								out.print("<style>"); out.print(rowSeparator);
+								out.print("table { border-width: 1px; border-color: black; border-style: solid; border-collapse: collapse }"); out.print(rowSeparator);
+								out.print("th,td { border-width: 1px; border-color: black;	border-style: solid; border-collapse: collapse; font-family: Verdana; padding: 3px; text-align: left }"); out.print(rowSeparator);
+								out.print("</style>"); out.print(rowSeparator);
 								out.print("</head>"); out.print(rowSeparator);
 								out.print("<body>"); out.print(rowSeparator);
 								htmlHeaderPrinted = true;
 							} 
+							
+							if(q > 0 && ps == null) {
+								out.print("<hr/>"); out.print(rowSeparator);	
+							}
+							out.print("<!--"); out.print(rowSeparator);
+							out.print(sql); out.print(rowSeparator);
+							out.print("-->"); out.print(rowSeparator);
 							out.print("<table>"); out.print(rowSeparator);
-							out.print(format("<caption>{0}</caption>", sql)); out.print(rowSeparator);
 							if (printHeader) {
 								out.print("<tr><th>");
 								separator = "</th><th>";
@@ -410,15 +421,21 @@ public class DatabaseQuery {
 							success = false;
 						}
 					}
-					if(html && htmlHeaderPrinted) {
+					if(html && htmlHeaderPrinted && ps != null) {
 						out.print("</body>"); out.print(rowSeparator);
 						out.print("</html>"); out.print(rowSeparator);
+						htmlFooterPrinted = true;
 					} 	
 				}
 				if (filename != null) {
 					System.out.println(filename);
 				}
 			}
+			if(html && htmlHeaderPrinted && !htmlFooterPrinted) {
+				System.out.print("</body>"); System.out.print(rowSeparator);
+				System.out.print("</html>"); System.out.print(rowSeparator);
+				htmlFooterPrinted = true;
+			} 	
 		}
 
 		if (!success) {
