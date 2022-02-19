@@ -432,7 +432,7 @@ public class DatabaseQuery {
 						} finally {
 							if(html && htmlHeaderPrinted) {
 								out.print("</tbody>"); out.print(rowSeparator);
-								out.print("</tbody>"); out.print(rowSeparator);
+								out.print("</table>"); out.print(rowSeparator);
 							} 	
 						}
 					} else {
