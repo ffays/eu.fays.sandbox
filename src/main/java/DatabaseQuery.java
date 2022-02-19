@@ -349,7 +349,8 @@ public class DatabaseQuery {
 							}
 							out.print(rowSeparator);
 							if (printHeader) {
-								out.print("<thead><tr><th>");
+								out.print("<thead>"); out.print(rowSeparator);
+								out.print("<tr><th>");
 								separator = "</th><th>";
 							}
 						}
@@ -377,7 +378,8 @@ public class DatabaseQuery {
 									}
 								}
 								if(html) {
-									out.print("</tr></th></thead>"); out.print(rowSeparator);
+									out.print("</tr></th>"); out.print(rowSeparator);
+									out.print("</thead>"); out.print(rowSeparator);
 									out.print("<tbody>");
 								}
 								out.print(rowSeparator);
