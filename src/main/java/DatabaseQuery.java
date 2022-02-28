@@ -291,10 +291,12 @@ public class DatabaseQuery {
 				if(filename != null) {
 					file = new File(filename);
 					if(file.exists()) {
-						if(!append) {
+						if(html || append) {
+							exists = true;
+						} else {
 							file.delete();
+							exists = false;	
 						}
-						exists = !html;
 					} else {
 						exists = false;
 					}
