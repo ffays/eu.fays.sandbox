@@ -173,6 +173,7 @@ public class DatabaseLoad {
 			
 			for(final File file : files) {
 				try (final InputStream is =  file != null ? new FileInputStream(file) : System.in; final PushbackInputStream pis = new PushbackInputStream(is);) {
+					System.out.println(file);
 					removeByteOrderMark(pis);
 
 					try(final InputStreamReader isr = new InputStreamReader(pis, encoding)) {
