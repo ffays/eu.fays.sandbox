@@ -490,7 +490,7 @@ public class DatabaseLoad {
 
 		final StringBuilder builder = new StringBuilder(); // builder for the current field
 		int p = -1; // previous char
-		int c = reader.read(); // current char
+		char c = (char) reader.read(); // current char
 		boolean quoteless = true; // quote-less line flag
 		boolean quoting = false; // quoting flag
 		if(c == -1) {
@@ -536,7 +536,7 @@ public class DatabaseLoad {
 				}
 			}
 			p = c;
-			c = reader.read();
+			c = (char) reader.read();
 		}
 		record.add(builder.toString());
 		return record;
@@ -548,15 +548,43 @@ public class DatabaseLoad {
 	 * @throws IOException in case of unexpected error
 	 */
 	private static void removeByteOrderMark(final PushbackInputStream pushbackInputStream) throws IOException {
-		final int n=3;
-		byte[] bom = new byte[n];
-		if (pushbackInputStream.read(bom) != -1) {
-			if (bom[n - 3] == (byte) 0xEF && bom[n - 2] == (byte) 0xBB && bom[n - 1] == (byte) 0xBF) {
-				// BOM discarded !
-			} else {
-				// Not a BOM, send back the data to the stream and move forward
-				pushbackInputStream.unread(bom);
+		final int b1 = pushbackInputStream.read();
+		if(b1 == -1) {
+			return;
+		}
+		
+		if(b1 == 0xEF) {
+			final int b2 = pushbackInputStream.read();
+			if(b2 == -1) {
+				pushbackInputStream.unread(b1);
+				return;
 			}
+
+			if(b1 == 0xBB) {
+				final int b3 = pushbackInputStream.read();			
+				
+				if(b3 == -1) {
+					pushbackInputStream.unread(b2);				
+					pushbackInputStream.unread(b1);				
+					return;
+				}
+				if(b3 == 0xBF) {
+					return; // BOM discarded
+				} else {
+					pushbackInputStream.unread(b3);				
+					pushbackInputStream.unread(b2);				
+					pushbackInputStream.unread(b1);				
+					return;
+				}
+			} else {
+				pushbackInputStream.unread(b2);				
+				pushbackInputStream.unread(b1);				
+				return;
+			}
+
+		} else {
+			pushbackInputStream.unread(b1);
+			return;
 		}
 	}
 
