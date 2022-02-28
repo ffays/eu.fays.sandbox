@@ -490,7 +490,7 @@ public class DatabaseLoad {
 
 		final StringBuilder builder = new StringBuilder(); // builder for the current field
 		int p = -1; // previous char
-		char c = (char) reader.read(); // current char
+		int c = reader.read(); // current char
 		boolean quoteless = true; // quote-less line flag
 		boolean quoting = false; // quoting flag
 		if(c == -1) {
@@ -536,7 +536,7 @@ public class DatabaseLoad {
 				}
 			}
 			p = c;
-			c = (char) reader.read();
+			c = reader.read();
 		}
 		record.add(builder.toString());
 		return record;
