@@ -259,7 +259,7 @@ public class DatabaseQuery {
 							// keep only the table name, i.e. strip the schema/database name  
 							index = table.lastIndexOf('.');
 							if(index != -1) {
-								table = table.substring(index);
+								table = table.substring(index+1);
 							}
 							table = table.trim();
 							if(!table.isEmpty()) {
