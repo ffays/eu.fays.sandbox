@@ -295,6 +295,10 @@ public class DatabaseQuery {
 					file = null;
 					exists = false;
 				}
+				
+				if(file.exists() && !append) {
+					file.delete();
+				}
 
 				try (final FileOutputStream fos = file != null ? new FileOutputStream(file, append) : null; final PrintStream ps = fos != null ? new PrintStream(fos, autoFlush, encoding) : null) {
 					final PrintStream out = ps != null ? ps : System.out;
