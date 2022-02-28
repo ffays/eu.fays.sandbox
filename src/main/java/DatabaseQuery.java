@@ -290,14 +290,17 @@ public class DatabaseQuery {
 				final boolean exists;
 				if(filename != null) {
 					file = new File(filename);
-					exists = file.exists() && !html;
+					if(file.exists()) {
+						if(!append) {
+							file.delete();
+						}
+						exists = !html;
+					} else {
+						exists = false;
+					}
 				} else {
 					file = null;
 					exists = false;
-				}
-				
-				if(file.exists() && !append) {
-					file.delete();
 				}
 
 				try (final FileOutputStream fos = file != null ? new FileOutputStream(file, append) : null; final PrintStream ps = fos != null ? new PrintStream(fos, autoFlush, encoding) : null) {
