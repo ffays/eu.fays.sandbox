@@ -402,11 +402,11 @@ public enum Color {
 	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
 	 * @return the closest color
 	 */
-	public static Color findClosestColorByRedGreenBlueDistance(final int rgb) {
+	public static Color findClosestColorByRedGreenBlueDistance(final int rgb, Color[] values) {
 		final int[] redGreenBlue = rgb(rgb);
 		double shortest = Double.MAX_VALUE;
 		Color result = BLACK;
-		for(final Color color : values()) {
+		for(final Color color : values) {
 			if(color.rgb == rgb) {
 				// Exact match
 				return color;
@@ -427,13 +427,13 @@ public enum Color {
 	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
 	 * @return the closest color
 	 */
-	public static Color findClosestColorByHueSaturationValueDistance(final int rgb) {
+	public static Color findClosestColorByHueSaturationValueDistance(final int rgb, Color[] values) {
 		final int[] hueSaturationValue0 = hsv(rgb2hsv(rgb(rgb)));
 		final int hsv = hsv(hueSaturationValue0);
 		
 		double shortest = Double.MAX_VALUE;
 		Color result = BLACK;
-		for(final Color color : values()) {
+		for(final Color color : values) {
 			final int[] hueSaturationValue1 = color.getHueSaturationValueEightBits();
 			if(hsv(hueSaturationValue1) == hsv) {
 				// Exact match
