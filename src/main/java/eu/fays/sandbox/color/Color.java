@@ -322,22 +322,48 @@ public enum Color {
 	 * @return the blue component
 	 */
 	public int getBlue() {
-		return (rgb >> 0) & 0xFF;
+		return rgb & 0xFF;
 	}
 	
+	/**
+	 * Returns red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return red, green and blue components as an unique integer
+	 */
+	public int getRGB() {
+		return rgb;
+	}
+
+	/**
+	 * Returns hue (bits 16..23), saturation (bits 8..15) and value (bits 0..7) as an unique integer
+	 * @return hue, saturation and value as an unique integer
+	 */
+	public int getHSV() {
+		final float[] hsv = getHueSaturationValue();
+		return (((int)(hsv[0] * 255F / 360F)) << 16 ) | (((int)(hsv[1] * 255F)) << 8 ) | (((int)(hsv[2] * 255F)));
+	}
+
 	/**
 	 * Returns red, green and blue components
 	 * @return red, green and blue components
 	 */
-	public int[] getRGB() {
+	public int[] getRedGreenBlue() {
 		return new int[] {getRed(), getGreen(), getBlue()};
 	}
 
 	/**
-	 * Returns the hue (degrees), saturation (ratio) and value (ratio)
-	 * @return the hue (degrees), saturation (ratio) and value (ratio)
+	 * Returns the hue (8 bits), saturation (8 bits) and value (8 bits)
+	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
 	 */
-	public float[] getHSV() {
+	public int[] getHueSaturationValueEightBits() {
+		final float[] hsv = getHueSaturationValue();
+		return new int[] {(int)(hsv[0] * 255F / 360F), (int)(hsv[1] * 255F), (int)(hsv[2] * 255F)};		
+	}
+
+	/**
+	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 */
+	public float[] getHueSaturationValue() {
 		final int red = getRed();
 		final int green = getGreen();
 		final int blue = getBlue();
@@ -406,7 +432,7 @@ public enum Color {
 	 * @return the hue in degrees 
 	 */
 	public float getHue() {
-		return getHSV()[0];
+		return getHueSaturationValue()[0];
 	}
 	
 	/**
@@ -414,7 +440,7 @@ public enum Color {
 	 * @return the saturation [0..1] 
 	 */
 	public float getSaturation() {
-		return getHSV()[1];
+		return getHueSaturationValue()[1];
 	}
 	
 	/**
@@ -422,7 +448,7 @@ public enum Color {
 	 * @return the value [0..1]
 	 */
 	public float getValue() {
-		return getHSV()[2];
+		return getHueSaturationValue()[2];
 	}
 	
 	/**
