@@ -39,6 +39,7 @@ public class ColorTest {
 			{ TEAL, 180F, 1F, 0.5F },
 			{ NAVY, 240F, 1F, 0.5F }
 		});
+		// @formatter:on
 	}
 
 	public ColorTest(final Color color, final float hue, final float saturation, final float value) {
