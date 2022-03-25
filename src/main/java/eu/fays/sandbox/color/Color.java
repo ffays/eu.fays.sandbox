@@ -302,6 +302,14 @@ public enum Color {
 	public final int rgb;
 
 	/**
+	 * Constructor
+	 * @param value RGB input
+	 */
+	private Color(final int rgb) {
+		this.rgb = rgb;
+	}
+	
+	/**
 	 * Returns the red component
 	 * @return the red component
 	 */
@@ -338,8 +346,7 @@ public enum Color {
 	 * @return hue, saturation and value as an unique integer
 	 */
 	public int getHSV() {
-		final float[] hsv = getHueSaturationValue();
-		return (((int)(hsv[0] * 255F / 360F)) << 16 ) | (((int)(hsv[1] * 255F)) << 8 ) | (((int)(hsv[2] * 255F)));
+		return hsv(getHueSaturationValueEightBits());
 	}
 
 	/**
@@ -347,7 +354,7 @@ public enum Color {
 	 * @return red, green and blue components
 	 */
 	public int[] getRedGreenBlue() {
-		return new int[] {getRed(), getGreen(), getBlue()};
+		return rgb(rgb);
 	}
 
 	/**
@@ -355,8 +362,7 @@ public enum Color {
 	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
 	 */
 	public int[] getHueSaturationValueEightBits() {
-		final float[] hsv = getHueSaturationValue();
-		return new int[] {(int)(hsv[0] * 255F / 360F), (int)(hsv[1] * 255F), (int)(hsv[2] * 255F)};		
+		return hsv(getHueSaturationValue());		
 	}
 
 	/**
@@ -364,10 +370,134 @@ public enum Color {
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
 	public float[] getHueSaturationValue() {
-		final int red = getRed();
-		final int green = getGreen();
-		final int blue = getBlue();
+		return rgb2hsv(rgb(rgb));
+	}
+	
+	/**
+	 * Returns the hue in degrees
+	 * @return the hue in degrees 
+	 */
+	public float getHue() {
+		return getHueSaturationValue()[0];
+	}
+	
+	/**
+	 * Returns the saturation [0..1] 
+	 * @return the saturation [0..1] 
+	 */
+	public float getSaturation() {
+		return getHueSaturationValue()[1];
+	}
+	
+	/**
+	 * Returns the value [0..1] 
+	 * @return the value [0..1]
+	 */
+	public float getValue() {
+		return getHueSaturationValue()[2];
+	}
+
+	/**
+	 * Find the closest color by RGB distance
+	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return the closest color
+	 */
+	public static Color findClosestColorByRedGreenBlueDistance(final int rgb) {
+		final int[] redGreenBlue = rgb(rgb);
+		double shortest = Double.MAX_VALUE;
+		Color result = BLACK;
+		for(final Color color : values()) {
+			if(color.rgb == rgb) {
+				// Exact match
+				return color;
+			}
 		
+			final double distance = distance(color.getRedGreenBlue(), redGreenBlue);
+			if(distance < shortest) {
+				shortest = distance;
+				result = color;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Find the closest color by HSV distance
+	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return the closest color
+	 */
+	public static Color findClosestColorByHueStaturationValueDistance(final int rgb) {
+		final int[] hueSaturationValue0 = hsv(rgb2hsv(rgb(rgb)));
+		final int hsv = hsv(hueSaturationValue0);
+		
+		double shortest = Double.MAX_VALUE;
+		Color result = BLACK;
+		for(final Color color : values()) {
+			final int[] hueSaturationValue1 = color.getHueSaturationValueEightBits();
+			if(hsv(hueSaturationValue1) == hsv) {
+				// Exact match
+				return color;
+			}
+		
+			final double distance = distance(hueSaturationValue0, hueSaturationValue1);
+			if(distance < shortest) {
+				shortest = distance;
+				result = color;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Computes the distance between two 3-dimension points
+	 * @param a first point coordinates
+	 * @param b second point coordinates
+	 * @return the distance
+	 */
+	private static double distance(int[] a, int [] b) {
+		final int deltaSquarasSum = ((a[0] - b[0])*(a[0] - b[0]))+((a[1] - b[1])*(a[1] - b[1]))+((a[2] - b[2])*(a[2] - b[2])); 
+		final double result = Math.sqrt((double)deltaSquarasSum);
+		return result;
+	}
+	
+	/**
+	 * Returns red, green and blue components
+	 * @param rgb red, green and blue components as an unique integer
+	 * @return red, green and blue components
+	 */
+	private static int[] rgb(final int rgb) {
+		return new int [] { (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF } ; 		
+	}
+	
+	/**
+	 * Returns the hue (8 bits), saturation (8 bits) and value (8 bits)
+	 * @param hueSaturationValue hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
+	 */
+	private static int[] hsv(final float[] hueSaturationValue) {
+		return new int [] { (int)(hueSaturationValue[0] * 255F / 360F), (int)(hueSaturationValue[1] * 255F), (int)(hueSaturationValue[2] * 255F) };
+	}
+	
+	/**
+	 * Returns hue (bits 16..23), saturation (bits 8..15) and value (bits 0..7) as an unique integer
+	 * @param hueSaturationValue hue (8 bits), saturation (8 bits) and value (8 bits)
+	 * @return hue, saturation and value as an unique integer
+	 */
+	private static final int hsv(final int [] hueSaturationValue) {
+		return (hueSaturationValue[0] << 16) | (hueSaturationValue[1] << 8) | hueSaturationValue[2];
+	}
+
+	/**
+	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 * @param redGreenBlue red, green and blue components
+	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 */
+	private static float[] rgb2hsv(final int[] redGreenBlue) {
+		final int red = redGreenBlue[0];
+		final int green = redGreenBlue[1];
+		final int blue = redGreenBlue[2];
 		final float r = ((float) red) / 255F;
 		final float g = ((float) green) / 255F;
 		final float b = ((float) blue) / 255F;
@@ -425,37 +555,5 @@ public enum Color {
 		final float value = ((float)max) / 255F;
 
 		return new float [] {hue, saturation, value}  ;
-	}
-
-	/**
-	 * Returns the hue in degrees
-	 * @return the hue in degrees 
-	 */
-	public float getHue() {
-		return getHueSaturationValue()[0];
-	}
-	
-	/**
-	 * Returns the saturation [0..1] 
-	 * @return the saturation [0..1] 
-	 */
-	public float getSaturation() {
-		return getHueSaturationValue()[1];
-	}
-	
-	/**
-	 * Returns the value [0..1] 
-	 * @return the value [0..1]
-	 */
-	public float getValue() {
-		return getHueSaturationValue()[2];
-	}
-	
-	/**
-	 * Constructor
-	 * @param value RGB input
-	 */
-	private Color(final int rgb) {
-		this.rgb = rgb;
 	}
 }
