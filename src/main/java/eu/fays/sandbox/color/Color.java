@@ -427,7 +427,7 @@ public enum Color {
 	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
 	 * @return the closest color
 	 */
-	public static Color findClosestColorByHueStaturationValueDistance(final int rgb) {
+	public static Color findClosestColorByHueSaturationValueDistance(final int rgb) {
 		final int[] hueSaturationValue0 = hsv(rgb2hsv(rgb(rgb)));
 		final int hsv = hsv(hueSaturationValue0);
 		
