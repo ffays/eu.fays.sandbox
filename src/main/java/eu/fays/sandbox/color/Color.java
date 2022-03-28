@@ -492,7 +492,8 @@ public enum Color {
 	}
 
 	/**
-	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)<br>
+	 * <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSL and HSV</a>
 	 * @param redGreenBlue red, green and blue components
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
@@ -543,9 +544,9 @@ public enum Color {
 		} else /* if (max == blue) */ {
 			hue = 60F * (((r - g) / d) + 4F);
 		}
-		if(hue < 0d) {
-			hue += 360d;
-		}
+//		if(hue < 0d) {
+//			hue += 360d;
+//		}
 		
 		final float saturation;
 		if(max == 0) {
