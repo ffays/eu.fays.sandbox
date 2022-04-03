@@ -1,5 +1,6 @@
 package eu.fays.sandbox.color;
 
+import static java.text.MessageFormat.format;
 /**
  * <a href="https://www.easyrgb.com/en/math.php#m_xyz_ref">XYZ (Tristimulus) Reference values of a perfect reflecting diffuser</a> 
  */
@@ -61,6 +62,56 @@ public enum Tristimulus {
 	/** Note */
 	public final String note;
 
+	/**
+	 * Returns X at either 2° or 10°
+	 * 
+	 * @param degrees either 2° or 10°
+	 * @return X at either 2° or 10°
+	 * @throws IllegalArgumentException in case degrees is neither 2 nor 10
+	 */
+	public double x(final int degrees) {
+		if (degrees == 2) {
+			return x2;
+		} else if (degrees == 10) {
+			return x10;
+		} else {
+			throw new IllegalArgumentException(format("Argumment degrees {0,number,0} is neither 2 nor 10!", degrees));
+		}
+	}
+
+	/**
+	 * Returns Y at either 2° or 10°
+	 * 
+	 * @param degrees either 2° or 10°
+	 * @return Y at either 2° or 10°
+	 * @throws IllegalArgumentException in case degrees is neither 2 nor 10
+	 */
+	public double y(final int degrees) {
+		if (degrees == 2) {
+			return y2;
+		} else if (degrees == 10) {
+			return y10;
+		} else {
+			throw new IllegalArgumentException(format("Argumment degrees {0,number,0} is neither 2 nor 10!", degrees));
+		}
+	}
+
+	/**
+	 * Returns Z at either 2° or 10°
+	 * 
+	 * @param degrees either 2° or 10°
+	 * @return Z at either 2° or 10°
+	 * @throws IllegalArgumentException in case degrees is neither 2 nor 10
+	 */
+	public double z(final int degrees) {
+		if (degrees == 2) {
+			return z2;
+		} else if (degrees == 10) {
+			return z10;
+		} else {
+			throw new IllegalArgumentException(format("Argumment degrees {0,number,0} is neither 2 nor 10!", degrees));
+		}
+	}
 	
 	/**
 	 * Constructor
