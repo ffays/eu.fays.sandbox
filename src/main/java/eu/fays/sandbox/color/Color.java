@@ -1,5 +1,6 @@
 package eu.fays.sandbox.color;
 
+import static eu.fays.sandbox.color.Tristimulus.D65;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
@@ -378,15 +379,23 @@ public enum Color {
 	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
-	public float[] getHueSaturationValue() {
+	public double[] getHueSaturationValue() {
 		return rgb2hsv(rgb(rgb));
+	}
+	
+	/**
+	 * Returns CIE-L*ab (D65/2° standard illuminant)
+	 * @return CIE-L*ab (D65/2° standard illuminant)
+	 */
+	public double[] getLab() {
+		return xyz2Lab(rgb2xyz(rgb(rgb)));
 	}
 	
 	/**
 	 * Returns the hue in degrees
 	 * @return the hue in degrees 
 	 */
-	public float getHue() {
+	public double getHue() {
 		return getHueSaturationValue()[0];
 	}
 	
@@ -394,7 +403,7 @@ public enum Color {
 	 * Returns the saturation [0..1] 
 	 * @return the saturation [0..1] 
 	 */
-	public float getSaturation() {
+	public double getSaturation() {
 		return getHueSaturationValue()[1];
 	}
 	
@@ -402,7 +411,7 @@ public enum Color {
 	 * Returns the value [0..1] 
 	 * @return the value [0..1]
 	 */
-	public float getValue() {
+	public double getValue() {
 		return getHueSaturationValue()[2];
 	}
 
@@ -430,26 +439,50 @@ public enum Color {
 
 		return result;
 	}
-
+	
 	/**
 	 * Find the closest color by HSV distance
 	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
 	 * @return the closest color
 	 */
 	public static Color findClosestColorByHueSaturationValueDistance(final int rgb, Color[] values) {
-		final int[] hueSaturationValue0 = hsv(rgb2hsv(rgb(rgb)));
-		final int hsv = hsv(hueSaturationValue0);
+		final double[] hsv = rgb2hsv(rgb(rgb));
 		
 		double shortest = Double.MAX_VALUE;
 		Color result = BLACK;
 		for(final Color color : values) {
-			final int[] hueSaturationValue1 = color.getHueSaturationValueEightBits();
-			if(hsv(hueSaturationValue1) == hsv) {
+			if(rgb == color.rgb) {
 				// Exact match
 				return color;
 			}
 		
-			final double distance = distance(hueSaturationValue0, hueSaturationValue1);
+			final double distance = distance(hsv, color.getHueSaturationValue());
+			if(distance < shortest) {
+				shortest = distance;
+				result = color;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Find the closest color by CIE-L*ab distance
+	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return the closest color
+	 */
+	public static Color findClosestColorByLabDistance(final int rgb, Color[] values) {
+		final double[] lab = xyz2Lab(rgb2xyz(rgb(rgb)));
+		
+		double shortest = Double.MAX_VALUE;
+		Color result = BLACK;
+		for(final Color color : values) {
+			if(rgb == color.rgb) {
+				// Exact match
+				return color;
+			}
+		
+			final double distance = distance(lab, color.getLab());
 			if(distance < shortest) {
 				shortest = distance;
 				result = color;
@@ -465,8 +498,20 @@ public enum Color {
 	 * @param b second point coordinates
 	 * @return the distance
 	 */
-	private static double distance(int[] a, int [] b) {
+	private static double distance(int[] a, int[] b) {
 		final int deltaSquarasSum = ((a[0] - b[0])*(a[0] - b[0]))+((a[1] - b[1])*(a[1] - b[1]))+((a[2] - b[2])*(a[2] - b[2])); 
+		final double result = sqrt((double)deltaSquarasSum);
+		return result;
+	}
+
+	/**
+	 * Computes the distance between two 3-dimension points
+	 * @param a first point coordinates
+	 * @param b second point coordinates
+	 * @return the distance
+	 */
+	private static double distance(double[] a, double[] b) {
+		final double deltaSquarasSum = ((a[0] - b[0])*(a[0] - b[0]))+((a[1] - b[1])*(a[1] - b[1]))+((a[2] - b[2])*(a[2] - b[2])); 
 		final double result = sqrt((double)deltaSquarasSum);
 		return result;
 	}
@@ -485,8 +530,8 @@ public enum Color {
 	 * @param hueSaturationValue hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
 	 */
-	private static int[] hsv(final float[] hueSaturationValue) {
-		return new int [] { (int)(hueSaturationValue[0] * 255F / 360F), (int)(hueSaturationValue[1] * 255F), (int)(hueSaturationValue[2] * 255F) };
+	private static int[] hsv(final double[] hueSaturationValue) {
+		return new int [] { (int)(hueSaturationValue[0] * 255d / 360d), (int)(hueSaturationValue[1] * 255d), (int)(hueSaturationValue[2] * 255d) };
 	}
 	
 	/**
@@ -504,13 +549,13 @@ public enum Color {
 	 * @param redGreenBlue red, green and blue components
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
-	private static float[] rgb2hsv(final int[] redGreenBlue) {
+	private static double[] rgb2hsv(final int[] redGreenBlue) {
 		final int red = redGreenBlue[0];
 		final int green = redGreenBlue[1];
 		final int blue = redGreenBlue[2];
-		final float r = ((float) red) / 255F;
-		final float g = ((float) green) / 255F;
-		final float b = ((float) blue) / 255F;
+		final double r = ((double) red) / 255d;
+		final double g = ((double) green) / 255d;
+		final double b = ((double) blue) / 255d;
 		
 		final int max;
 		if(red >= green) {
@@ -539,38 +584,38 @@ public enum Color {
 		}
 	
 		final int delta = max - min;
-		final float d = ((float)delta)/255F;
+		final double d = ((double) delta) / 255d;
 		
-		float hue;
+		double hue;
 		if(delta == 0) {
-			hue = 0F;
+			hue = 0d;
 		} else if (max == red) {
-			hue = 60F * ((g - b) / d);
+			hue = 60d * ((g - b) / d);
 		} else if (max == green) {
-			hue = 60F * (((b - r) / d) + 2F);
+			hue = 60d * (((b - r) / d) + 2d);
 		} else /* if (max == blue) */ {
-			hue = 60F * (((r - g) / d) + 4F);
+			hue = 60d * (((r - g) / d) + 4d);
 		}
-//		if(hue < 0d) {
-//			hue += 360d;
-//		}
+		if(hue < 0d) {
+			hue += 360d;
+		}
 		
-		final float saturation;
+		final double saturation;
 		if(max == 0) {
-			saturation = 0F;
+			saturation = 0d;
 		} else {
 			saturation = (float)delta / (float)max;
 		}
 
-		final float value = ((float)max) / 255F;
+		final double value = ((float)max) / 255d;
 
-		return new float [] {hue, saturation, value}  ;
+		return new double [] {hue, saturation, value}  ;
 	}
 	
 	/**
-	 * Returns X, Y and Z refering to a D65/2° standard illuminant.
+	 * Returns X, Y and Z referring to a D65/2° standard illuminant.
 	 * @param redGreenBlue red, green and blue components
-	 * @return X, Y and Z refering to a D65/2° standard illuminant.
+	 * @return X, Y and Z referring to a D65/2° standard illuminant.
 	 */
 	private static double[] rgb2xyz(final int[] redGreenBlue) {
 		final int red = redGreenBlue[0];
@@ -583,29 +628,63 @@ public enum Color {
 		if (r > 0.04045d) {
 			r = pow((r + 0.055d) / 1.055d, 2.4d);
 		} else {
-			r = r / 12.92;
+			r = r / 12.92d;
 		}
 
 		if (g > 0.04045d) {
 			g = pow((g + 0.055d) / 1.055d, 2.4d);
 		} else {
-			g = g / 12.92;
+			g = g / 12.92d;
 		}
 
 		if (b > 0.04045d) {
 			b = pow((b + 0.055d) / 1.055d, 2.4d);
 		} else {
-			b = b / 12.92;
+			b = b / 12.92d;
 		}
 
 		r *= 100d;
 		g *= 100d;
 		b *= 100d;
 
-		double X = r * 0.4124 + g * 0.3576 + b * 0.1805d;
-		double Y = r * 0.2126 + g * 0.7152 + b * 0.0722d;
-		double Z = r * 0.0193 + g * 0.1192 + b * 0.9505d;
+		double X = r * 0.4124d + g * 0.3576d + b * 0.1805d;
+		double Y = r * 0.2126d + g * 0.7152d + b * 0.0722d;
+		double Z = r * 0.0193d + g * 0.1192d + b * 0.9505d;
 
 		return new double[] { X, Y, Z };
+	}
+	
+	
+	/**
+	 * X, Y, Z to CIE-L*ab using D65/2° standard illuminant
+	 * @param xyz X, Y, Z
+	 * @return CIE-L*ab (D65/2° standard illuminant)
+	 */
+	private static double[] xyz2Lab(final double[] xyz) {
+		double varX = xyz[0] / D65.x2;
+		double varY = xyz[1] / D65.y2;
+		double varZ = xyz[2] / D65.z2;
+
+		if (varX > 0.008856d) {
+			varX = pow(varX, 1d / 3d);
+		} else {
+			varX = (7.787d * varX) + (16d / 116d);
+		}
+		if (varY > 0.008856d) {
+			varY = pow(varY, 1d / 3d);
+		} else {
+			varY = (7.787 * varY) + (16d / 116d);
+		}
+		if (varZ > 0.008856d) {
+			varZ = pow(varZ, 1d / 3d);
+		} else {
+			varZ = (7.787d * varZ) + (16d / 116d);
+		}
+
+		final double l = (116d * varY) - 16d;
+		final double a = 500d * (varX - varY);
+		final double b = 200d * (varY - varZ);
+
+		return new double[] { l, a, b };
 	}
 }
