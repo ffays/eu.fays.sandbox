@@ -447,6 +447,36 @@ public enum Color {
 
 		return result;
 	}
+
+	/**
+	 * Find the closest color by RGB distance #2
+	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return the closest color
+	 */
+	public static Color findClosestColorByRedGreenBlueDistanceWeighted(final int rgb, Color[] values) {
+		final int[] rgb0 = rgb(rgb);
+		double shortest = Double.MAX_VALUE;
+		Color result = BLACK;
+		for(final Color color : values) {
+			if(color.rgb == rgb) {
+				// Exact match
+				return color;
+			}
+			
+			int[] rgb1 = color.getRedGreenBlue();
+			final int meanR = (rgb0[0] + rgb1[0]) >> 1;
+			final int[] w = (meanR < 128) ? new int[] { 2, 4, 3 } : new int[] { 3, 4, 2 }; // color weights
+			final int weightedDeltaSquarasSum = (w[0] * (rgb0[0] - rgb1[0])*(rgb0[0] - rgb1[0]))+(w[1] * (rgb0[1] - rgb1[1])*(rgb0[1] - rgb1[1]))+(w[2] * (rgb0[2] - rgb1[2])*(rgb0[2] - rgb1[2])); 
+			final double distance = sqrt((double)weightedDeltaSquarasSum);
+
+			if(distance < shortest) {
+				shortest = distance;
+				result = color;
+			}
+		}
+		
+		return result;
+	}
 	
 	/**
 	 * Find the closest color by HSV distance
@@ -454,7 +484,10 @@ public enum Color {
 	 * @return the closest color
 	 */
 	public static Color findClosestColorByHueSaturationValueDistance(final int rgb, Color[] values) {
-		final double[] hsv = rgb2hsv(rgb(rgb));
+		double[] hsv0 = rgb2hsv(rgb(rgb));
+		double hue0 = hsv0[0];
+		
+		
 		
 		double shortest = Double.MAX_VALUE;
 		Color result = BLACK;
@@ -464,7 +497,28 @@ public enum Color {
 				return color;
 			}
 		
-			final double distance = distance(hsv, color.getHueSaturationValue());
+			double[] hsv1 = color.getHueSaturationValue();
+			double hue1 = hsv1[0];
+			
+			double deltaH;
+			if(hue1 > hue0) {
+				deltaH = hue1 - hue0;
+			} else {
+				deltaH = hue0 - hue1;
+			}
+			
+			if(deltaH > 180d) {
+				deltaH = 360d - deltaH;
+			}
+			
+			if(deltaH > 0d) {
+				deltaH /= 360d;
+			}
+
+			hsv0[0] = 0d;
+			hsv1[0] = deltaH;
+			
+			final double distance = distance(hsv0, hsv1);
 			if(distance < shortest) {
 				shortest = distance;
 				result = color;
