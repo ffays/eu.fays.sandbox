@@ -388,7 +388,7 @@ public enum Color {
 	 * @return CIE-L*ab (D65/2° standard illuminant)
 	 */
 	public double[] getLab() {
-		return xyz2Lab(rgb2xyz(rgb(rgb)));
+		return xyz2Lab(D65, 2, rgb2xyz(rgb(rgb)));
 	}
 	
 	/**
@@ -472,7 +472,7 @@ public enum Color {
 	 * @return the closest color
 	 */
 	public static Color findClosestColorByLabDistance(final int rgb, Color[] values) {
-		final double[] lab = xyz2Lab(rgb2xyz(rgb(rgb)));
+		final double[] lab = xyz2Lab(D65, 2, rgb2xyz(rgb(rgb)));
 		
 		double shortest = Double.MAX_VALUE;
 		Color result = BLACK;
@@ -549,7 +549,7 @@ public enum Color {
 	 * @param redGreenBlue red, green and blue components
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
-	private static double[] rgb2hsv(final int[] redGreenBlue) {
+	public static double[] rgb2hsv(final int[] redGreenBlue) {
 		final int red = redGreenBlue[0];
 		final int green = redGreenBlue[1];
 		final int blue = redGreenBlue[2];
@@ -617,7 +617,7 @@ public enum Color {
 	 * @param redGreenBlue red, green and blue components
 	 * @return X, Y and Z referring to a D65/2° standard illuminant.
 	 */
-	private static double[] rgb2xyz(final int[] redGreenBlue) {
+	public static double[] rgb2xyz(final int[] redGreenBlue) {
 		final int red = redGreenBlue[0];
 		final int green = redGreenBlue[1];
 		final int blue = redGreenBlue[2];
@@ -653,17 +653,18 @@ public enum Color {
 
 		return new double[] { X, Y, Z };
 	}
-	
-	
+
 	/**
-	 * X, Y, Z to CIE-L*ab using D65/2° standard illuminant
+	 * X, Y, Z to CIE-L*ab
+	 * @param illuminant illuminant
+	 * @param degrees either 2° or 10°
 	 * @param xyz X, Y, Z
-	 * @return CIE-L*ab (D65/2° standard illuminant)
+	 * @return CIE-L*ab
 	 */
-	private static double[] xyz2Lab(final double[] xyz) {
-		double varX = xyz[0] / D65.x2;
-		double varY = xyz[1] / D65.y2;
-		double varZ = xyz[2] / D65.z2;
+	public static double[] xyz2Lab(final Tristimulus illuminant, final int degrees, final double[] xyz) {
+		double varX = xyz[0] / illuminant.x(degrees);
+		double varY = xyz[1] / illuminant.y(degrees);
+		double varZ = xyz[2] / illuminant.z(degrees);
 
 		if (varX > 0.008856d) {
 			varX = pow(varX, 1d / 3d);
