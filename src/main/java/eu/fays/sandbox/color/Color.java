@@ -390,6 +390,14 @@ public enum Color {
 	public double[] getLab() {
 		return xyz2Lab(D65, 2, rgb2xyz(rgb(rgb)));
 	}
+
+	/**
+	 * Returns CIE-L*uv (D65/2° standard illuminant)
+	 * @return CIE-L*uv (D65/2° standard illuminant)
+	 */
+	public double[] getLuv() {
+		return xyz2Luv(D65, 2, rgb2xyz(rgb(rgb)));
+	}
 	
 	/**
 	 * Returns the hue in degrees
@@ -489,6 +497,32 @@ public enum Color {
 			}
 		}
 
+		return result;
+	}
+
+	/**
+	 * Find the closest color by CIE-L*uv distance
+	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return the closest color
+	 */
+	public static Color findClosestColorByLuvDistance(final int rgb, Color[] values) {
+		final double[] luv = xyz2Luv(D65, 2, rgb2xyz(rgb(rgb)));
+		
+		double shortest = Double.MAX_VALUE;
+		Color result = BLACK;
+		for(final Color color : values) {
+			if(rgb == color.rgb) {
+				// Exact match
+				return color;
+			}
+			
+			final double distance = distance(luv, color.getLuv());
+			if(distance < shortest) {
+				shortest = distance;
+				result = color;
+			}
+		}
+		
 		return result;
 	}
 
@@ -687,5 +721,41 @@ public enum Color {
 		final double b = 200d * (varY - varZ);
 
 		return new double[] { l, a, b };
+	}
+	
+	/**
+	 * X, Y, Z to CIE-L*uv
+	 * @param illuminant illuminant
+	 * @param degrees either 2° or 10°
+	 * @param xyz X, Y, Z
+	 * @return CIE-L*uv
+	 */
+	public static double[] xyz2Luv(final Tristimulus illuminant, final int degrees, final double[] xyz) {
+		final double x = xyz[0];
+		final double y = xyz[1];
+		final double z = xyz[2];
+		
+		final double varU = (4d * x) / (x + (15d * y) + (3d * z));
+		final double varV = (9d * y) / (x + (15d * y) + (3d * z));
+
+		double varY = y / 100d;
+		if (varY > 0.008856d) {
+			varY = pow(varY, (1d / 3d));
+		} else {
+			varY = (7.787d * varY) + (16d / 116d);
+		}
+		
+		final double refX = illuminant.x(degrees);
+		final double refY = illuminant.y(degrees);
+		final double refz = illuminant.z(degrees);
+		
+		final double refU = ( 4d * refX ) / ( refX + ( 15d * refY ) + ( 3d * refz ) );
+		final double refV = ( 9d * refY ) / ( refX + ( 15d * refY ) + ( 3d * refz ) );
+		
+		final double l = ( 116d * varY ) - 16d;
+		final double u = 13d * l * ( varU - refU );
+		final double v = 13d * l * ( varV - refV );
+		
+		return new double[] { l, u, v };
 	}
 }
