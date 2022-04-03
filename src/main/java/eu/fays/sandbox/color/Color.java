@@ -1,9 +1,16 @@
 package eu.fays.sandbox.color;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 /**
  * W3C Colors<br>
  * <br>
- * Cf. <a href="https://www.w3.org/wiki/CSS/Properties/color/keywords">CSS/Properties/color/keywords</a>
+ * Cf.
+ * <ul>
+ * <li><a href="https://www.w3.org/wiki/CSS/Properties/color/keywords">CSS/Properties/color/keywords</a>
+ * <li><a href="https://www.easyrgb.com/en/math.php">Color math and programming code examples</a>
+ * </ul>
  */
 public enum Color {
 	/** Aliceblue <div style="background-color: aliceblue; padding: 10px; border: 1px solid black"> */
@@ -460,7 +467,7 @@ public enum Color {
 	 */
 	private static double distance(int[] a, int [] b) {
 		final int deltaSquarasSum = ((a[0] - b[0])*(a[0] - b[0]))+((a[1] - b[1])*(a[1] - b[1]))+((a[2] - b[2])*(a[2] - b[2])); 
-		final double result = Math.sqrt((double)deltaSquarasSum);
+		final double result = sqrt((double)deltaSquarasSum);
 		return result;
 	}
 	
@@ -558,5 +565,47 @@ public enum Color {
 		final float value = ((float)max) / 255F;
 
 		return new float [] {hue, saturation, value}  ;
+	}
+	
+	/**
+	 * Returns X, Y and Z refering to a D65/2° standard illuminant.
+	 * @param redGreenBlue red, green and blue components
+	 * @return X, Y and Z refering to a D65/2° standard illuminant.
+	 */
+	private static double[] rgb2xyz(final int[] redGreenBlue) {
+		final int red = redGreenBlue[0];
+		final int green = redGreenBlue[1];
+		final int blue = redGreenBlue[2];
+		double r = ((double) red) / 255d;
+		double g = ((double) green) / 255d;
+		double b = ((double) blue) / 255d;
+
+		if (r > 0.04045d) {
+			r = pow((r + 0.055d) / 1.055d, 2.4d);
+		} else {
+			r = r / 12.92;
+		}
+
+		if (g > 0.04045d) {
+			g = pow((g + 0.055d) / 1.055d, 2.4d);
+		} else {
+			g = g / 12.92;
+		}
+
+		if (b > 0.04045d) {
+			b = pow((b + 0.055d) / 1.055d, 2.4d);
+		} else {
+			b = b / 12.92;
+		}
+
+		r *= 100d;
+		g *= 100d;
+		b *= 100d;
+
+		double X = r * 0.4124 + g * 0.3576 + b * 0.1805d;
+		double Y = r * 0.2126 + g * 0.7152 + b * 0.0722d;
+		double Z = r * 0.0193 + g * 0.1192 + b * 0.9505d;
+
+		return new double[] { X, Y, Z };
 	}
 }
