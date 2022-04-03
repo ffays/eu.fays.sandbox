@@ -17,14 +17,17 @@ public class ColorEssay {
 	public static void main(String[] args) throws Exception {
 		final File file = File.createTempFile(ColorEssay.class.getSimpleName() + "-", ".html");
 		
-		final String[] headers = {"REF", "LAB", "RGB", "HSV" };
+		final String[] headers = {"REF", "HSVW", "RGBW", "RGB", "LAB", "LUV", "HSV" };
 		
 		// Color findClosestColorByRedGreenBlueDistance(final int rgb, Color[] values)
 		final List<BiFunction<Integer, Color[], Color>> functions = new ArrayList<>();
 		
 		functions.add(ColorEssay::reference);
-		functions.add(Color::findClosestColorByLabDistance);
+		functions.add(Color::findClosestColorByHueSaturationValueDistanceWeighted);
+		functions.add(Color::findClosestColorByRedGreenBlueDistanceWeighted);
 		functions.add(Color::findClosestColorByRedGreenBlueDistance);
+		functions.add(Color::findClosestColorByLabDistance);
+		functions.add(Color::findClosestColorByLuvDistance);
 		functions.add(Color::findClosestColorByHueSaturationValueDistance);
 		
 //		{findClosestColorByRedGreenBlueDistance, findClosestColorByLabDistance,  findClosestColorByHueSaturationValueDistance};
@@ -37,7 +40,7 @@ public class ColorEssay {
 			writer.println("</title>");
 			writer.println("<style>");
 			writer.println("table { border-width: 1px; border-color: black; border-style: solid; border-collapse: collapse; } ");
-			writer.println("th,td { border-width: 1px; border-color: black; border-style: solid; border-collapse: collapse; font-family: Verdana; padding: 3px; text-align: left }");
+			writer.println("th,td { border-width: 1px; border-color: black; border-style: solid; border-collapse: collapse; font-family: Verdana; padding: 3px; text-align: left; font-size: 10pt }");
 			writer.println("</style>");
 			writer.println("</head>");
 			writer.println("<body>");
@@ -50,18 +53,18 @@ public class ColorEssay {
 			for(final String header : headers) {
 				writer.println("\t<th>COLOR_"  + header +  "</th>");
 			}
-			for(final Color color : Color.values()) {
-				final Color[] colors = Arrays.stream(Color.values()).filter(c -> c.rgb != color.rgb).collect(Collectors.toList()).toArray(new Color[] {});
-				final List<Color> colors4 = functions.stream().map(f -> f.apply(color.rgb, colors)).collect(toList());
+			for(final Color referenceColor : Color.values()) {
+				final Color[] otherColors = Arrays.stream(Color.values()).filter(c -> c.rgb != referenceColor.rgb).collect(Collectors.toList()).toArray(new Color[] {});
+				final List<Color> matchingColors = functions.stream().map(f -> f.apply(referenceColor.rgb, otherColors)).collect(toList());
 				writer.print("<tr>");
-				for(final Color color3 : colors4) {
+				for(final Color matchingColor : matchingColors) {
 					writer.print("<td>");
-					writer.print(color3.name());
+					writer.print(matchingColor.name());
 					writer.print("</td>");
 				}
-				for(final Color color3 : colors4) {
+				for(final Color matchingColor : matchingColors) {
 					writer.print("<td style=\"background-color: ");
-					writer.print(color3.name().toLowerCase());
+					writer.print(matchingColor.name().toLowerCase());
 					writer.print("\">&nbsp;</td>");
 				}
 				writer.println("</tr>");

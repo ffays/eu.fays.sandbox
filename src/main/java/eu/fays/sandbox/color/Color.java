@@ -486,9 +486,7 @@ public enum Color {
 	public static Color findClosestColorByHueSaturationValueDistance(final int rgb, Color[] values) {
 		double[] hsv0 = rgb2hsv(rgb(rgb));
 		double hue0 = hsv0[0];
-		
-		
-		
+
 		double shortest = Double.MAX_VALUE;
 		Color result = BLACK;
 		for(final Color color : values) {
@@ -525,6 +523,58 @@ public enum Color {
 			}
 		}
 
+		return result;
+	}
+	
+	/**
+	 * Find the closest color by HSV weighted distance
+	 * @param rgb red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
+	 * @return the closest color
+	 */
+	public static Color findClosestColorByHueSaturationValueDistanceWeighted(final int rgb, Color[] values) {
+		double[] hsv0 = rgb2hsv(rgb(rgb));
+		double hue0 = hsv0[0];
+
+		double shortest = Double.MAX_VALUE;
+		Color result = BLACK;
+		for(final Color color : values) {
+			if(rgb == color.rgb) {
+				// Exact match
+				return color;
+			}
+			
+			double[] hsv1 = color.getHueSaturationValue();
+			double hue1 = hsv1[0];
+			
+			double deltaH;
+			if(hue1 > hue0) {
+				deltaH = hue1 - hue0;
+			} else {
+				deltaH = hue0 - hue1;
+			}
+			
+			if(deltaH > 180d) {
+				deltaH = 360d - deltaH;
+			}
+			
+			if(deltaH > 0d) {
+				deltaH /= 360d;
+			}
+			
+			hsv0[0] = 0d;
+			hsv1[0] = deltaH;
+			
+			// cf. https://stackoverflow.com/questions/1720528/what-is-the-best-algorithm-for-finding-the-closest-color-in-an-array-to-another#comment-25927083
+			final double[] w = {0.475d, 0.2875d, 0.2375d};
+			final double weightedDeltaSquarasSum = (w[0] * (hsv0[0] - hsv1[0])*(hsv0[0] - hsv1[0]))+(w[1] * (hsv0[1] - hsv1[1])*(hsv0[1] - hsv1[1]))+(w[2] * (hsv0[2] - hsv1[2])*(hsv0[2] - hsv1[2])); 
+			final double distance = sqrt(weightedDeltaSquarasSum);
+
+			if(distance < shortest) {
+				shortest = distance;
+				result = color;
+			}
+		}
+		
 		return result;
 	}
 
