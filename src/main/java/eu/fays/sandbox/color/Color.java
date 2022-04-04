@@ -749,6 +749,75 @@ public enum Color {
 
 		return new double [] {hue, saturation, value}  ;
 	}
+
+	/**
+	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)<br>
+	 * <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSL and HSV</a>
+	 * @param redGreenBlue red, green and blue components
+	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 */
+	public static float[] rgb2hsvFloats(final int[] redGreenBlue) {
+		final int red = redGreenBlue[0];
+		final int green = redGreenBlue[1];
+		final int blue = redGreenBlue[2];
+		final float r = ((float) red) / 255F;
+		final float g = ((float) green) / 255F;
+		final float b = ((float) blue) / 255F;
+		
+		final int max;
+		if(red >= green) {
+			if(red >= blue) {
+				max = red;
+			} else {
+				max = blue;
+			}
+		} else if (green >= blue) {
+			max = green;
+		} else {
+			max = blue;
+		}
+		
+		final int min;
+		if(red <= green) {
+			if(red <= blue) {
+				min = red;
+			} else {
+				min = blue;
+			}
+		} else if (green <= blue) {
+			min = green;
+		} else {
+			min = blue;
+		}
+		
+		final int delta = max - min;
+		final float d = ((float) delta) / 255F;
+		
+		float hue;
+		if(delta == 0) {
+			hue = 0F;
+		} else if (max == red) {
+			hue = 60F * ((g - b) / d);
+		} else if (max == green) {
+			hue = 60F * (((b - r) / d) + 2F);
+		} else /* if (max == blue) */ {
+			hue = 60F * (((r - g) / d) + 4F);
+		}
+		if(hue < 0d) {
+			hue += 360F;
+		}
+		
+		final float saturation;
+		if(max == 0) {
+			saturation = 0F;
+		} else {
+			saturation = (float)delta / (float)max;
+		}
+		
+		final float value = ((float)max) / 255F;
+		
+		return new float [] {hue, saturation, value}  ;
+	}
 	
 	/**
 	 * Returns X, Y and Z referring to a D65/2° standard illuminant.
