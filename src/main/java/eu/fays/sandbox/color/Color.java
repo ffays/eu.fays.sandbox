@@ -742,10 +742,10 @@ public enum Color {
 		if(max == 0) {
 			saturation = 0d;
 		} else {
-			saturation = (float)delta / (float)max;
+			saturation = (double)delta / (double)max;
 		}
 
-		final double value = ((float)max) / 255d;
+		final double value = ((double)max) / 255d;
 
 		return new double [] {hue, saturation, value}  ;
 	}
