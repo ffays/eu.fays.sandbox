@@ -957,32 +957,32 @@ public enum Color {
 	 * @return Red Green Blue components
 	 */
 	public static int[] hsv2rgb(final float[] hueSaturationValue) {
-		final float h = hueSaturationValue[0];
-		final float s = hueSaturationValue[0];
-		final float l = hueSaturationValue[0];
+		final float h = hueSaturationValue[0] / 360F;
+		final float s = hueSaturationValue[1];
+		final float v = hueSaturationValue[2];
 
 		final int r, g, b;
 		if (s == 0F) {
-			r = (int) (l * 255F);
-			g = (int) (l * 255F);
-			b = (int) (l * 255F);
+			r = (int) (v * 255F);
+			g = (int) (v * 255F);
+			b = (int) (v * 255F);
 		} else {
 
 			final float v2;
-			if (l < 0.5F) {
-				v2 = l * (1 + s);
+			if (v < 0.5F) {
+				v2 = v * (1F + s);
 			} else {
-				v2 = (l + s) - (s * l);
+				v2 = (v + s) - (s * v);
 			}
 
-			final float v1 = 2 * l - v2;
+			final float v1 = 2F * v - v2;
 
 			r = (int) (255F * hue2rgb(v1, v2, h + (1F / 3F)));
 			g = (int) (255F * hue2rgb(v1, v2, h));
 			b = (int) (255F * hue2rgb(v1, v2, h - (1F / 3F)));
 		}
 
-		return new int[] { r, b, g };
+		return new int[] { r, g, b };
 	}
 	
 	/**

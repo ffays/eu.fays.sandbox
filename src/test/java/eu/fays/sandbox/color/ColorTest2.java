@@ -36,4 +36,13 @@ public class ColorTest2 {
 		assertEquals("Saturation mismatch", hsv0[1], hsv1[1], 0.001F);
 		assertEquals("Value mismatch", hsv0[2], hsv1[2], 0.001F);
 	}
+	
+	@Test
+	public void hsv2rgb() {
+		final float[] hsv = _color.getHueSaturationValueFloats();
+		final int[] rgb = Color.hsv2rgb(hsv);
+		assertEquals("Red missmatch", _color.getRed(), rgb[0]);
+		assertEquals("Green missmatch", _color.getGreen(), rgb[1]);
+		assertEquals("Blue missmatch", _color.getBlue(), rgb[2]);
+	}
 }
