@@ -822,7 +822,7 @@ public enum Color {
 		} else /* if (max == blue) */ {
 			hue = 60F * (((r - g) / d) + 4F);
 		}
-		if(hue < 0d) {
+		if(hue < 0F) {
 			hue += 360F;
 		}
 		
