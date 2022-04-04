@@ -356,7 +356,7 @@ public enum Color {
 	 * @return hue, saturation and value as an unique integer
 	 */
 	public int getHSV() {
-		return hsv(getHueSaturationValueEightBits());
+		return hsv(getHueSaturationValueInts());
 	}
 
 	/**
@@ -367,13 +367,7 @@ public enum Color {
 		return rgb(rgb);
 	}
 
-	/**
-	 * Returns the hue (8 bits), saturation (8 bits) and value (8 bits)
-	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
-	 */
-	public int[] getHueSaturationValueEightBits() {
-		return hsv(getHueSaturationValue());		
-	}
+
 
 	/**
 	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
@@ -382,7 +376,23 @@ public enum Color {
 	public double[] getHueSaturationValue() {
 		return rgb2hsv(rgb(rgb));
 	}
+
+	/**
+	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
+	 */
+	public float[] getHueSaturationValueFloats() {
+		return rgb2hsvFloats(rgb(rgb));
+	}
 	
+	/**
+	 * Returns the hue (8 bits), saturation (8 bits) and value (8 bits)
+	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
+	 */
+	public int[] getHueSaturationValueInts() {
+		return hsv(getHueSaturationValueFloats());		
+	}
+
 	/**
 	 * Returns CIE-L*ab (D65/2° standard illuminant)
 	 * @return CIE-L*ab (D65/2° standard illuminant)
@@ -668,8 +678,8 @@ public enum Color {
 	 * @param hueSaturationValue hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 * @return the hue (8 bits), saturation (8 bits) and value (8 bits)
 	 */
-	private static int[] hsv(final double[] hueSaturationValue) {
-		return new int [] { (int)(hueSaturationValue[0] * 255d / 360d), (int)(hueSaturationValue[1] * 255d), (int)(hueSaturationValue[2] * 255d) };
+	private static int[] hsv(final float[] hueSaturationValue) {
+		return new int [] { (int)(hueSaturationValue[0] * 255F / 360F), (int)(hueSaturationValue[1] * 255F), (int)(hueSaturationValue[2] * 255F) };
 	}
 	
 	/**
