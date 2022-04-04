@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class ColorTest {
+public class ColorTest2 {
 
 	private final Color _color;
 
@@ -22,7 +22,7 @@ public class ColorTest {
 		return Arrays.stream(Color.values()).map(c -> new Object[] { c }).collect(toList());
 	}
 
-	public ColorTest(final Color color) {
+	public ColorTest2(final Color color) {
 		_color = color;
 	}
 
