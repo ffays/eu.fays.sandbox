@@ -14,35 +14,35 @@ import org.junit.runners.Parameterized.Parameters;
 public class ColorTest {
 
 	final Color _color;
-	final float _hue;
-	final float _saturation;
-	final float _value;
+	final double _hue;
+	final double _saturation;
+	final double _value;
 	
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		// @formatter:off
 		return Arrays.asList(new Object[][] {
-			{ BLACK, 0F, 0F, 0F },
-			{ WHITE, 0F, 0F, 1F },
-			{ RED, 0F, 1F, 1F },
-			{ LIME, 120F, 1F, 1F },
-			{ BLUE, 240F, 1F, 1F },
-			{ YELLOW, 60F, 1F, 1F },
-			{ CYAN, 180F, 1F, 1F },
-			{ MAGENTA, 300F, 1F, 1F },
-			{ SILVER, 0F, 0F, 0.75F },
-			{ GRAY, 0F, 0F, 0.5F },
-			{ MAROON, 0F, 1F, 0.5F },
-			{ OLIVE, 60F, 1F, 0.5F },
-			{ GREEN, 120F, 1F, 0.5F },
-			{ PURPLE, 300F, 1F, 0.5F },
-			{ TEAL, 180F, 1F, 0.5F },
-			{ NAVY, 240F, 1F, 0.5F }
+			{ BLACK, 0d, 0d, 0d },
+			{ WHITE, 0d, 0d, 1d },
+			{ RED, 0d, 1d, 1d },
+			{ LIME, 120d, 1d, 1d },
+			{ BLUE, 240d, 1d, 1d },
+			{ YELLOW, 60d, 1d, 1d },
+			{ CYAN, 180d, 1d, 1d },
+			{ MAGENTA, 300d, 1d, 1d },
+			{ SILVER, 0d, 0d, 0.75d },
+			{ GRAY, 0d, 0d, 0.5d },
+			{ MAROON, 0d, 1d, 0.5d },
+			{ OLIVE, 60d, 1d, 0.5d },
+			{ GREEN, 120d, 1d, 0.5d },
+			{ PURPLE, 300d, 1d, 0.5d },
+			{ TEAL, 180d, 1d, 0.5d },
+			{ NAVY, 240d, 1d, 0.5d }
 		});
 		// @formatter:on
 	}
 
-	public ColorTest(final Color color, final float hue, final float saturation, final float value) {
+	public ColorTest(final Color color, final double hue, final double saturation, final double value) {
 		_color = color;
 		_hue = hue;
 		_saturation = saturation;
@@ -51,16 +51,16 @@ public class ColorTest {
 	
 	@Test
 	public void getHue() {
-		assertEquals(_hue, _color.getHue(), 0.003F);
+		assertEquals(_hue, _color.getHue(), 0.003d);
 	}
 
 	@Test
 	public void getSaturation() {
-		assertEquals(_saturation, _color.getSaturation(), 0.003F);
+		assertEquals(_saturation, _color.getSaturation(), 0.003d);
 	}
 
 	@Test
 	public void getValue() {
-		assertEquals(_value, _color.getValue(), 0.003F);
+		assertEquals(_value, _color.getValue(), 0.003d);
 	}
  }
