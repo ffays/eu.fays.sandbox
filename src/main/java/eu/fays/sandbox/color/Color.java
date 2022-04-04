@@ -669,8 +669,17 @@ public enum Color {
 	 * @param rgb red, green and blue components as an unique integer
 	 * @return red, green and blue components
 	 */
-	private static int[] rgb(final int rgb) {
+	public static int[] rgb(final int rgb) {
 		return new int [] { (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF } ; 		
+	}
+
+	/**
+	 * Returns red, green and blue components
+	 * @param rgb red, green and blue components as an unique integer
+	 * @return red, green and blue components
+	 */
+	public static int rgb(final int[] rgb) {
+		return (rgb[0] << 16) | (rgb[1] << 8) |rgb[2] ; 		
 	}
 	
 	/**
@@ -940,5 +949,57 @@ public enum Color {
 		final double v = 13d * l * ( varV - refV );
 		
 		return new double[] { l, u, v };
+	}
+	
+	/**
+	 * Converts Hue Saturation Value components to Red Green Blue components
+	 * @param hueSaturationValue Hue Saturation Value components
+	 * @return Red Green Blue components
+	 */
+	public static int[] hsv2rgb(final float[] hueSaturationValue) {
+		final float h = hueSaturationValue[0];
+		final float s = hueSaturationValue[0];
+		final float l = hueSaturationValue[0];
+
+		final int r, g, b;
+		if (s == 0F) {
+			r = (int) (l * 255F);
+			g = (int) (l * 255F);
+			b = (int) (l * 255F);
+		} else {
+
+			final float v2;
+			if (l < 0.5F) {
+				v2 = l * (1 + s);
+			} else {
+				v2 = (l + s) - (s * l);
+			}
+
+			final float v1 = 2 * l - v2;
+
+			r = (int) (255F * hue2rgb(v1, v2, h + (1F / 3F)));
+			g = (int) (255F * hue2rgb(v1, v2, h));
+			b = (int) (255F * hue2rgb(v1, v2, h - (1F / 3F)));
+		}
+
+		return new int[] { r, b, g };
+	}
+	
+	/**
+	 * Hue to RGB conversion factor computation
+	 * @param v1 variable #1
+	 * @param v2 variable #2
+	 * @param vH variable Hue
+	 * @return conversion factor
+	 */
+	private static float hue2rgb(float v1, float v2, float vH) {
+		// @formatter:off
+		if ( vH < 0F ) vH += 1F;
+		if ( vH > 1F ) vH -= 1F;
+		if ( ( 6F * vH ) < 1F ) return ( v1 + ( v2 - v1 ) * 6F * vH );
+		if ( ( 2F * vH ) < 1F ) return v2 ;
+		if ( ( 3F * vH ) < 2F ) return ( v1 + ( v2 - v1 ) * ( ( 2F / 3F ) - vH ) * 6F );
+		return v1; 
+		// @formatter:on
 	}
 }
