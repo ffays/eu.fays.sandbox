@@ -346,7 +346,7 @@ public enum Color {
 	
 	/**
 	 * Returns red (bits 16..23), green (bits 8..15) and blue (bits 0..7) components as an unique integer
-	 * @return red, green and blue components as an unique integer
+	 * @return Red, Green and Blue components as an unique integer
 	 */
 	public int getRGB() {
 		return rgb;
@@ -361,8 +361,8 @@ public enum Color {
 	}
 
 	/**
-	 * Returns red, green and blue components
-	 * @return red, green and blue components
+	 * Returns Red, Green and Blue components
+	 * @return Red, Green and Blue components
 	 */
 	public int[] getRedGreenBlue() {
 		return rgb(rgb);
@@ -666,18 +666,18 @@ public enum Color {
 	}
 	
 	/**
-	 * Returns red, green and blue components
-	 * @param rgb red, green and blue components as an unique integer
-	 * @return red, green and blue components
+	 * Returns Red, Green and Blue components
+	 * @param rgb Red, Green and Blue components as an unique integer
+	 * @return Red, Green and Blue components
 	 */
 	public static int[] rgb(final int rgb) {
 		return new int [] { (rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF } ; 		
 	}
 
 	/**
-	 * Returns red, green and blue components
-	 * @param rgb red, green and blue components as an unique integer
-	 * @return red, green and blue components
+	 * Returns Red, Green and Blue components
+	 * @param rgb Red, Green and Blue components as an unique integer
+	 * @return Red, Green and Blue components
 	 */
 	public static int rgb(final int[] rgb) {
 		return (rgb[0] << 16) | (rgb[1] << 8) |rgb[2] ; 		
@@ -704,7 +704,7 @@ public enum Color {
 	/**
 	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)<br>
 	 * <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSL and HSV</a>
-	 * @param redGreenBlue red, green and blue components
+	 * @param redGreenBlue Red, Green and Blue components
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
 	public static double[] rgb2hsv(final int[] redGreenBlue) {
@@ -773,7 +773,7 @@ public enum Color {
 	/**
 	 * Returns the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)<br>
 	 * <a href="https://en.wikipedia.org/wiki/HSL_and_HSV">HSL and HSV</a>
-	 * @param redGreenBlue red, green and blue components
+	 * @param redGreenBlue Red, Green and Blue components
 	 * @return the hue (degrees), saturation (ratio between 0 and 1) and value (ratio between 0 and 1)
 	 */
 	public static float[] rgb2hsvFloats(final int[] redGreenBlue) {
@@ -847,7 +847,7 @@ public enum Color {
 	
 	/**
 	 * Returns X, Y and Z referring to a D65/2° standard illuminant.
-	 * @param redGreenBlue red, green and blue components
+	 * @param redGreenBlue Red, Green and Blue components
 	 * @return X, Y and Z referring to a D65/2° standard illuminant.
 	 */
 	public static double[] rgb2xyz(final int[] redGreenBlue) {
@@ -959,9 +959,9 @@ public enum Color {
 	}
 	
 	/**
-	 * Converts Hue Saturation Value components to Red Green Blue components
-	 * @param hueSaturationLightness Hue Saturation Value components
-	 * @return Red Green Blue components
+	 * Converts Hue, Saturation and Value (i.e. Brightness) components to Red, Green and Blue components
+	 * @param hueSaturationLightness Hue, Saturation and Value (i.e. Brightness) components
+	 * @return Red, Green and Blue components
 	 */
 	public static int[] hsv2rgb(final float[] hueSaturationValue) {
 		final float h = hueSaturationValue[0] / 360F;
@@ -1018,9 +1018,9 @@ public enum Color {
 		return new int[] { r, g, b };
 	}
 	/**
-	 * Converts Hue Saturation Lightness components to Red Green Blue components
-	 * @param hueSaturationLightness Hue Saturation Lightness components
-	 * @return Red Green Blue components
+	 * Converts Hue, Saturation and Lightness components to Red, Green and Blue components
+	 * @param hueSaturationLightness Hue, Saturation and Lightness components
+	 * @return Red, Green and Blue components
 	 */
 	public static int[] hsl2rgb(final float[] hueSaturationLightness) {
 		final float h = hueSaturationLightness[0] / 360F;
