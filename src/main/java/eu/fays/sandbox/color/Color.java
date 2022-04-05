@@ -1017,6 +1017,7 @@ public enum Color {
 		}
 		return new int[] { r, g, b };
 	}
+
 	/**
 	 * Converts Hue, Saturation and Lightness components to Red, Green and Blue components
 	 * @param hueSaturationLightness Hue, Saturation and Lightness components
