@@ -2,6 +2,7 @@ package eu.fays.sandbox.color;
 
 import static eu.fays.sandbox.color.Tristimulus.D65;
 import static java.lang.Math.pow;
+import static java.lang.Math.round;
 import static java.lang.Math.sqrt;
 
 /**
@@ -835,6 +836,12 @@ public enum Color {
 		
 		final float value = ((float)max) / 255F;
 		
+		//
+		assert hue >= 0F;
+		assert hue < 360F;
+		assert saturation <= 1F;
+		assert value <= 1F;
+		//
 		return new float [] {hue, saturation, value}  ;
 	}
 	
@@ -953,7 +960,7 @@ public enum Color {
 	
 	/**
 	 * Converts Hue Saturation Value components to Red Green Blue components
-	 * @param hueSaturationValue Hue Saturation Value components
+	 * @param hueSaturationLightness Hue Saturation Value components
 	 * @return Red Green Blue components
 	 */
 	public static int[] hsv2rgb(final float[] hueSaturationValue) {
@@ -967,15 +974,74 @@ public enum Color {
 			g = (int) (v * 255F);
 			b = (int) (v * 255F);
 		} else {
+			float varH = h * 6F;
+			if (varH == 6F) {
+				varH = 0F;
+			}
+			final int i = (int) varH;
+			final float var1 = v * (1 - s);
+			final float var2 = v * (1 - s * (varH - i));
+			final float var3 = v * (1 - s * (1 - (varH - i)));
 
-			final float v2;
-			if (v < 0.5F) {
-				v2 = v * (1F + s);
+			final float varR, varG, varB;
+			if (i == 0) {
+				varR = v;
+				varG = var3;
+				varB = var1;
+			} else if (i == 1) {
+				varR = var2;
+				varG = v;
+				varB = var1;
+			} else if (i == 2) {
+				varR = var1;
+				varG = v;
+				varB = var3;
+			} else if (i == 3) {
+				varR = var1;
+				varG = var2;
+				varB = v;
+			} else if (i == 4) {
+				varR = var3;
+				varG = var1;
+				varB = v;
 			} else {
-				v2 = (v + s) - (s * v);
+				varR = v;
+				varG = var1;
+				varB = var2;
 			}
 
-			final float v1 = 2F * v - v2;
+			r = (int) round(varR * 255F);
+			g = (int) round(varG * 255F);
+			b = (int) round(varB * 255F);
+
+		}
+		return new int[] { r, g, b };
+	}
+	/**
+	 * Converts Hue Saturation Lightness components to Red Green Blue components
+	 * @param hueSaturationLightness Hue Saturation Lightness components
+	 * @return Red Green Blue components
+	 */
+	public static int[] hsl2rgb(final float[] hueSaturationLightness) {
+		final float h = hueSaturationLightness[0] / 360F;
+		final float s = hueSaturationLightness[1];
+		final float l = hueSaturationLightness[2];
+
+		final int r, g, b;
+		if (s == 0F) {
+			r = (int) (l * 255F);
+			g = (int) (l * 255F);
+			b = (int) (l * 255F);
+		} else {
+
+			final float v2;
+			if (l < 0.5F) {
+				v2 = l * (1F + s);
+			} else {
+				v2 = (l + s) - (s * l);
+			}
+
+			final float v1 = 2F * l - v2;
 
 			r = (int) (255F * hue2rgb(v1, v2, h + (1F / 3F)));
 			g = (int) (255F * hue2rgb(v1, v2, h));
