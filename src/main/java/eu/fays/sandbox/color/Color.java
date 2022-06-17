@@ -5,6 +5,11 @@ import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static java.lang.Math.sqrt;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 /**
  * W3C Colors<br>
  * <br>
@@ -1068,5 +1073,25 @@ public enum Color {
 		if ( ( 3F * vH ) < 2F ) return ( v1 + ( v2 - v1 ) * ( ( 2F / 3F ) - vH ) * 6F );
 		return v1; 
 		// @formatter:on
+	}
+	
+	/**
+	 * Return color aliases
+	 * @return the color aliases
+	 */
+	public static SortedMap<Color, Color> aliases() {
+		final SortedMap<Color, Color>  result = new TreeMap<>();
+		
+		final Map<Integer, Color> visited = new HashMap<>();
+		for(final Color color : values()) {
+			if(visited.containsKey(color.getRGB())) {
+				result.put(visited.get(color.getRGB()), color);
+			} else {
+				visited.put(color.getRGB(), color);
+			}
+		}
+		
+		return result;
+		
 	}
 }
