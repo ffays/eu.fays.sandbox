@@ -8,6 +8,7 @@ import static java.text.MessageFormat.format;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,10 +18,15 @@ import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 // -ea -Djava.util.logging.SimpleFormatter.format="%1$tFT%1$tT,%1$tL	%4$s	%3$s	%5$s%6$s%n"
 public class TargetPlatformUpgrade {
@@ -30,15 +36,22 @@ public class TargetPlatformUpgrade {
 	
 	@SuppressWarnings("nls")
 	public static void main(String[] args) throws Exception {
-		final String targetPlatformDefinitionFilename = System.getProperty("file");
-		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		final DocumentBuilder db = dbf.newDocumentBuilder();
-		final File targetPlatformDefinitionFile = new File(targetPlatformDefinitionFilename);
-		final Document dom = db.parse(targetPlatformDefinitionFile);
+		final String targetPlatformDefinitionFileLocation = System.getProperty("file");
+		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		final File targetPlatformDefinitionFile = new File(targetPlatformDefinitionFileLocation);
+		final Document dom = documentBuilder.parse(targetPlatformDefinitionFile);
 		final Element rootNode = dom.getDocumentElement();
-
-		final Map<String, File> repositoryContentFileMap = new HashMap<>();
 		
+		// Bundle synonyms dictionary
+		final Map<String,String> synonymsMap = new HashMap<>();
+		synonymsMap.put("org.apiguardian", "org.apiguardian.api");
+		
+		// Missing bundles 
+		final Map<String,Element> missingMap = new HashMap<>();
+
+		// Repository content file dictionary
+		final Map<String, File> repositoryContentFileMap = new HashMap<>();
 		for(final File repositoryContentFile : targetPlatformDefinitionFile.getParentFile().listFiles()) {
 			if(repositoryContentFile.getName().endsWith(".txt")) {
 				repositoryContentFileMap.put(repositoryContentFile.getName(), repositoryContentFile);
@@ -56,13 +69,13 @@ public class TargetPlatformUpgrade {
 				String repositoryUrl = null;
 				Node repositoryNode = null;
 				final LinkedHashMap<String, String> bundleVersionMap = new LinkedHashMap<>();
-				final LinkedHashMap<String, Node> bundleNodeMap = new LinkedHashMap<>();
+				final LinkedHashMap<String, Element> unitElementMap = new LinkedHashMap<>();
 				for (Node childElement = locationElement.getFirstChild(); childElement != null; childElement = childElement.getNextSibling()) {
 					if("unit".equals(childElement.getNodeName())) {
 						final String bundleSymbolicName = childElement.getAttributes().getNamedItem("id").getNodeValue();
 						final String version = childElement.getAttributes().getNamedItem("version").getNodeValue();
 						bundleVersionMap.put(bundleSymbolicName, version);
-						bundleNodeMap.put(bundleSymbolicName, childElement);
+						unitElementMap.put(bundleSymbolicName, (Element) childElement);
 					} else if("repository".equals(childElement.getNodeName())) {
 						repositoryUrl = childElement.getAttributes().getNamedItem("location").getNodeValue();
 						repositoryNode = childElement;
@@ -90,22 +103,59 @@ public class TargetPlatformUpgrade {
 				final File newRepositoryContentFile = repositoryContentFileMap.get(newRepositoryContentFilename);
 				try(final FileReader reader = new FileReader(newRepositoryContentFile, UTF_8)) {
 					bundleNewVersionMap.load(reader);
-					for(final Entry<String, Node> entry : bundleNodeMap.entrySet()) {
+					for(final Entry<String, Element> entry : unitElementMap.entrySet()) {
 						final String bundleSymbolicName = entry.getKey();
+						final Element unitElement = entry.getValue();
 						final String oldVersion = bundleVersionMap.get(bundleSymbolicName);
-						final String newVersion = bundleNewVersionMap.getProperty(bundleSymbolicName);
-						if(newVersion != null) {
-							entry.getValue().getAttributes().getNamedItem("version").setNodeValue(newVersion);
+						if(bundleNewVersionMap.containsKey(bundleSymbolicName)) {
+							final String newVersion = bundleNewVersionMap.getProperty(bundleSymbolicName);
+							unitElement.getAttributes().getNamedItem("version").setNodeValue(newVersion);
 							int upgraded = newVersion.equals(oldVersion)?0:newVersion.compareTo(oldVersion)>0?1:-1;
 							LOGGER.info(format("bundle{0,choice,0# |1#\u2191|2#?} {1} : {2} \u2794 {3}", upgraded, bundleSymbolicName, oldVersion, newVersion));
+						} else if (synonymsMap.containsKey(bundleSymbolicName) && bundleNewVersionMap.containsKey(synonymsMap.get(bundleSymbolicName))) {
+							final String newBundleSymbolicName = synonymsMap.get(bundleSymbolicName);
+							final String newVersion = bundleNewVersionMap.getProperty(newBundleSymbolicName);
+							unitElement.getAttributes().getNamedItem("id").setNodeValue(newBundleSymbolicName);
+							unitElement.getAttributes().getNamedItem("version").setNodeValue(newVersion);
+							int upgraded = newVersion.equals(oldVersion)?0:newVersion.compareTo(oldVersion)>0?1:-1;
+							LOGGER.info(format("bundle{0,choice,0# |1#\u2191|2#?} {1} \u2794 {2} : {3} \u2794 {4}", upgraded, bundleSymbolicName, newBundleSymbolicName, oldVersion, newVersion));
 						} else {
-							LOGGER.warning(format("bundle  {0} : {1} \u2794 {2}", bundleSymbolicName, oldVersion, newVersion));
+							missingMap.put(bundleSymbolicName, unitElement);
+							unitElement.getParentNode().removeChild(unitElement);
 						}
 					}
 				}
+
+				// insert a new unit
+				final Element newUnitElement = (Element) unitElementMap.entrySet().iterator().next().getValue().cloneNode(true);
+				newUnitElement.getAttributes().getNamedItem("id").setNodeValue("test");
+				newUnitElement.getAttributes().getNamedItem("version").setNodeValue("1.0.0");
+				final Text newText = (Text) locationElement.getPreviousSibling().cloneNode(true);
+				newText.appendData("\t");
+				locationElement.insertBefore(newUnitElement, repositoryNode);
+				locationElement.insertBefore(newText, repositoryNode);
+
+
 				repositoryNode.getAttributes().getNamedItem("location").setNodeValue(newRepositoryUrl);
 			}
 		}
+		
+		for(final Entry<String, Element> entry : missingMap.entrySet()) {
+			LOGGER.warning(format("bundle  {0} : {1} \u2794 {2}", entry.getKey(), entry.getValue().getAttributes().getNamedItem("version"), null));
+		}
+		
+		// Write to output
+		final DOMSource domSource = new DOMSource(dom);
+		final String targetPlatformDefinitionFilename = targetPlatformDefinitionFile.getName();
+		final String targetPlatformDefinitionBasename = targetPlatformDefinitionFilename.substring(0,targetPlatformDefinitionFilename.lastIndexOf('.'));
+		final File newTargetPlatformDefinitionFile = new File(targetPlatformDefinitionFile.getParentFile(), targetPlatformDefinitionBasename + ".txt");
+		try(final FileWriter writer = new FileWriter(newTargetPlatformDefinitionFile)) {
+			StreamResult result = new StreamResult(writer);
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = tf.newTransformer();
+			transformer.transform(domSource, result);
+		}
+		LOGGER.info(newTargetPlatformDefinitionFile.toString());
 	}
 	
 	private static int findFirstMismatch(final String a, final String b) {
