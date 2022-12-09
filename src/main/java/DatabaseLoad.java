@@ -408,7 +408,7 @@ public class DatabaseLoad {
 		final String className = DatabaseLoad.class.getSimpleName();
 		final String pathSeparator = System.getProperty("path.separator");
 		final int windowsWordOffset = System.getProperty("os.name").indexOf("Windows") + 1;
-		System.out.println(format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <file> ...", URL_PARAMETER_NAME, USER_PARAMETER_NAME, PASSWORD_PARAMETER_NAME, DatabaseQuery.class.getSimpleName()));
+		System.out.println(format("Usage: java -D{0}=<jdbcConnectionString> -D{1}=<{1}> -D{2}=<{2}> {3} <file> ...", URL_PARAMETER_NAME, USER_PARAMETER_NAME, PASSWORD_PARAMETER_NAME, className));
 		System.out.println();
 		System.out.println("Examples");
 		System.out.println();
