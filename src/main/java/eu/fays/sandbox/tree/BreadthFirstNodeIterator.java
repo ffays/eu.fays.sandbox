@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
  * Level order tree walker
  * @param <D> data type
  */
-public class BreathFirstNodeIterator<D> extends NodeIterator<D> {
+public class BreadthFirstNodeIterator<D> extends NodeIterator<D> {
 
 	final Deque<Node<D>> _stack = new ArrayDeque<>();
 
@@ -16,7 +16,7 @@ public class BreathFirstNodeIterator<D> extends NodeIterator<D> {
 	 * Constructor
 	 * @param root root node
 	 */
-	public BreathFirstNodeIterator(final Node<D> root) {
+	public BreadthFirstNodeIterator(final Node<D> root) {
 		push(root);
 	}
 

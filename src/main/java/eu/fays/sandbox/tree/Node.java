@@ -221,7 +221,7 @@ public class Node<D> implements Iterable<Node<D>> {
 	 * @return the iterator
 	 */
 	public Iterator<Node<D>> breadthFirstIterator() {
-		return new BreathFirstNodeIterator<D>(this);
+		return new BreadthFirstNodeIterator<D>(this);
 	}
 
 	/**
