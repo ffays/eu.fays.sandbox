@@ -14,6 +14,7 @@ import static java.sql.Types.TIME;
 import static java.sql.Types.TIMESTAMP;
 import static java.sql.Types.TINYINT;
 import static java.sql.Types.VARCHAR;
+import static java.sql.Types.BINARY;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -184,6 +186,7 @@ public class DatabaseLoad {
 							final String insertIntoPrefix;
 							final String insertIntoParametrized;
 							int[] sqlTypes = {};
+							String[] sqlTypeNames = {};
 							{
 								final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
 								final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
@@ -235,8 +238,11 @@ public class DatabaseLoad {
 								try(final Statement stmt = connection.createStatement(); final ResultSet resultSet = stmt.executeQuery(selectStatmementBuilder.toString())) {
 									final ResultSetMetaData metaData = resultSet.getMetaData();
 									sqlTypes = new int[metaData.getColumnCount()];
+									sqlTypeNames = new String[metaData.getColumnCount()];
+									
 									for(int c=1; c <= sqlTypes.length; c++) {
-										sqlTypes[c-1]  = metaData.getColumnType(c);
+										sqlTypes[c-1] = metaData.getColumnType(c);
+										sqlTypeNames[c-1] = metaData.getColumnTypeName(c);
 									}
 								}
 							}
@@ -289,6 +295,14 @@ public class DatabaseLoad {
 												pstmt.setBigDecimal(c, (BigDecimal) BIG_DECIMAL_FORMAT.parse(data));
 											} else if (sqlType == TINYINT) {
 												pstmt.setByte(c, (byte)Integer.parseInt(data));
+											} else if (sqlType == BINARY && "UUID".equals(sqlTypeNames[c-1])) {
+												if (data.length() == 36) {
+													pstmt.setObject(c, UUID.fromString(data));
+												} else if (data.length() == 38) {
+													pstmt.setObject(c, UUID.fromString(data.substring(1, 37)));
+												} else {
+													pstmt.setObject(c, data);
+												}
 											} else {
 												pstmt.setObject(c, data);
 											}								
