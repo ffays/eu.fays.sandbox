@@ -2,7 +2,8 @@ package eu.fays.sandbox.format;
 
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
-
+import static java.util.stream.Collectors.toMap;
+import static java.util.function.Function.identity;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
@@ -20,7 +21,9 @@ import java.time.zone.ZoneRules;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Lists all available locales for date format<br>
@@ -46,32 +49,46 @@ public class DateFormatLocaleEssay {
 	 */
 	@SuppressWarnings({ "nls", "unused" })
 	static public void main(String[] args) {
-		// Zones
-		{
-			System.out.println(ZoneId.class.getSimpleName());
-			ZoneId.getAvailableZoneIds().stream().map(z -> z.toString()).sorted().forEach(z -> System.out.println(z));
-			System.out.println();
-		}
-		
 		// Locales #1
-		{
+		try {
 			System.out.println(Locale.class.getSimpleName() + " #1");
-			
+
 			for(final Field field : Locale.class.getDeclaredFields()) {
 				final String name = field.getName();
 				final int modifiers = field.getModifiers();
 				if(isPublic(modifiers) && isStatic(modifiers) && Locale.class.equals(field.getType())) {
-					System.out.println(field.getType().getSimpleName() + "." + field.getName());
+					System.out.println(field.getType().getSimpleName() + "." + field.getName() + "=" + field.get(null).toString());
 				}
 			}
-			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
 			System.out.println();
+		}catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new AssertionError(e.getMessage(), e);
 		}
 
 		// Locales #2
 		{
 			System.out.println(Locale.class.getSimpleName() + " #2");
+			
+			// @formatter:off
+			final Map<Locale, Locale> defaultlocaleMap = Arrays.stream(Locale.class.getDeclaredFields()).filter(f -> isPublic(f.getModifiers()) && isStatic(f.getModifiers()) && Locale.class.equals(f.getType())).map(f -> {try {return (Locale) f.get(null);} catch (IllegalArgumentException | IllegalAccessException e) {throw new AssertionError(e.getMessage(), e);}}).collect(toMap(identity(), identity(), (a, b) -> a, LinkedHashMap::new));
+			// @formatter:on
+			for(final Locale locale : defaultlocaleMap.keySet()) {
+				System.out.println(locale.getClass().getSimpleName() + ": " + locale.toString());
+			}
+			System.out.println();
+		}
+
+		// Locales #3
+		{
+			System.out.println(Locale.class.getSimpleName() + " #3");
 			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
+			System.out.println();
+		}
+
+		// Zones
+		{
+			System.out.println(ZoneId.class.getSimpleName());
+			ZoneId.getAvailableZoneIds().stream().map(z -> z.toString()).sorted().forEach(z -> System.out.println(z));
 			System.out.println();
 		}
 
