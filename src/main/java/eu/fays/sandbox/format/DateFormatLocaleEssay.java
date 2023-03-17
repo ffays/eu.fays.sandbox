@@ -1,5 +1,9 @@
 package eu.fays.sandbox.format;
 
+import static java.lang.reflect.Modifier.isPublic;
+import static java.lang.reflect.Modifier.isStatic;
+
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
@@ -48,9 +52,25 @@ public class DateFormatLocaleEssay {
 			ZoneId.getAvailableZoneIds().stream().map(z -> z.toString()).sorted().forEach(z -> System.out.println(z));
 			System.out.println();
 		}
-		// Locales
+		
+		// Locales #1
 		{
-			System.out.println(Locale.class.getSimpleName());
+			System.out.println(Locale.class.getSimpleName() + " #1");
+			
+			for(final Field field : Locale.class.getDeclaredFields()) {
+				final String name = field.getName();
+				final int modifiers = field.getModifiers();
+				if(isPublic(modifiers) && isStatic(modifiers) && Locale.class.equals(field.getType())) {
+					System.out.println(field.getType().getSimpleName() + "." + field.getName());
+				}
+			}
+			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
+			System.out.println();
+		}
+
+		// Locales #2
+		{
+			System.out.println(Locale.class.getSimpleName() + " #2");
 			Arrays.stream(DateFormat.getAvailableLocales()).map(l -> l.toString()).sorted().forEach(s -> System.out.println(s));
 			System.out.println();
 		}
