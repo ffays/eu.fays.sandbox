@@ -17,6 +17,5 @@ public interface VariableNamingConverter {
 	public static Function<String, String> CAMEL_TO_SNAKE_LOWER_CASE_FUNCTION = s -> CAMEL_TO_SNAKE_CASE_FUNCTION.apply(s, String::toLowerCase);
 
 	/** CamelCase to SNAKE_CASE, e.g. "theQuickBrownFoxJumpsOverTheLazyDog" becomes "THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG" */
-	public static Function<String, String> CAMEL_TO_SNAKE_UPPER_CASE_FUNCTION = s -> CAMEL_TO_SNAKE_CASE_FUNCTION.apply(s, String::toLowerCase);
-
+	public static Function<String, String> CAMEL_TO_SNAKE_UPPER_CASE_FUNCTION = s -> CAMEL_TO_SNAKE_CASE_FUNCTION.apply(s, String::toUpperCase);
 }
