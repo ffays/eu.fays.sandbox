@@ -1,5 +1,7 @@
 package eu.fays.sandbox.logging;
 
+import static eu.fays.sandbox.logging.S.t;
+import static java.lang.Boolean.TRUE;
 import static java.util.logging.Level.CONFIG;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
@@ -11,12 +13,11 @@ import static java.util.logging.Level.WARNING;
 import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static java.lang.Boolean.TRUE;
-import static eu.fays.sandbox.logging.S.t;
 public class LoggingEssay {
 
 	// -Djava.util.logging.SimpleFormatter.format="%1$tFT%1$tT,%1$tL	%4$s	%3$s	%5$s%6$s%n"
 	// -Djava.util.logging.config.file=${env_var:HOME}/git/eu.fays.sandbox/logging-simple.properties
+	@SuppressWarnings("nls")
 	public static void main(String[] args) {
 		final Level[] levels = { FINEST, FINER, FINE, CONFIG, INFO, WARNING, SEVERE };
 		
@@ -37,8 +38,10 @@ public class LoggingEssay {
 		}
 		
 		for(final Level level : levels) {
-			assert (LOGGER.isLoggable(level) && t((S)()->LOGGER.log(level, "Assert " + level.getName().substring(0, 1) + level.getName().substring(1).toLowerCase()))) || TRUE;
+			assert (LOGGER.isLoggable(level) && t(()->LOGGER.log(level, "Assert " + level.getName().substring(0, 1) + level.getName().substring(1).toLowerCase()))) || TRUE;
 		}
+		
+		assert (LOGGER.isLoggable(FINE) && t(()->LOGGER.fine("FINE Template"))) || TRUE;
 	}
 	
 	public static final Logger LOGGER = Logger.getLogger(LoggingEssay.class.getName());
