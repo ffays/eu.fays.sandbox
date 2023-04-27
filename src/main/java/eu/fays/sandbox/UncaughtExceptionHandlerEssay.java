@@ -23,19 +23,22 @@ public class UncaughtExceptionHandlerEssay extends Thread implements UncaughtExc
 		final LocalDateTime t0 = now();
 		LocalDateTime t = t0;
 		while(essay.isAlive() && Duration.between(t0, t).get(SECONDS) < 3L) {
-			LOGGER.info("Thread is still running");
+			LOGGER.info("Thread is running");
 			Thread.sleep(1000L);
 			t = now();
 		}
 		
 		if(essay.isAlive()) {
+			LOGGER.info("Thread is still alive");
 			essay.interrupt();
 			essay.join(1000L);
+		} else {
+			LOGGER.info("Thread is over");
 		}
 		
 		if(essay.getException() != null) {
-			LOGGER.log(Level.SEVERE, format("Thread has stopped with an exception: ''{0}''", essay.getException().getMessage()));
-//			LOGGER.log(Level.SEVERE, format("Thread has stopped with an exception: ''{0}''!", essay.getException().getMessage()), essay.getException());
+//			LOGGER.log(Level.SEVERE, format("Thread has stopped with an exception: ''{0}''", essay.getException().getMessage()));
+			LOGGER.log(Level.SEVERE, format("Thread has stopped with an exception: ''{0}''!", essay.getException().getMessage()), essay.getException());
 		} else {
 			LOGGER.info("Thread has stopped without exceptions");	
 		}
@@ -48,14 +51,17 @@ public class UncaughtExceptionHandlerEssay extends Thread implements UncaughtExc
 	
 	@Override
 	public void run() {
+		int[] x = new int[10];
+		int i = 0, a = 0;
 		try {
 			while(!isInterrupted()) {
-				sleep(200L);
-				throw new AssertionError("Unexpected error!");
+				a += x[i++]; // Triggering an ArrayIndexOutOfBoundsException
+				sleep(50L);
 			}
 		} catch (final InterruptedException e) {
 			// Do nothing
 		}
+		LOGGER.info("a=" + a);
 	}
 
 	@Override
