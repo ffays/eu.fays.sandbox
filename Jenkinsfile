@@ -8,65 +8,8 @@ pipeline {
   agent none
   
   stages {
-	/*
-		if("linux".equals(projectBuildOs)) {
-			triggers { pollSCM('00 03 * * 1-5') }
-		} else if("macosx".equals(projectBuildOs)) {
-			triggers { pollSCM('00 02 * * 1-5') }
-		} else if("win32".equals(projectBuildOs)) {
-			triggers { pollSCM('00 01 * * 1-5') }
-		}
-	*/
-	
-		def mvnHome = tool 'M3'
-		def jdkHome = tool 'JDK11'
-		def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
-		def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
-		def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
-		def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
-		def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
-		def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
-		// --offline : Work offline - remove this option if a Maven plugin version has been modified
-		def mvnOpts = "--offline -f ${projectName}${fileSeparator}pom.xml"
-		def mvnGoals = 'clean verify'
-		
-		// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
-		def credentialsId
-		if(isUnix()) {
-			credentialsId = sh(returnStdout: true, script: 'ssh-keygen -l -E md5 -f $HOME/.ssh/id_rsa.pub | sed "s/^.*MD5://;s/ .*$//;s/://g"').trim()
-		} else {
-			credentialsId = powershell(returnStdout: true, script: '''
-$pub = "$env:USERPROFILE/.ssh/id_rsa.pub"
-$b64 = (Get-Content -Path $pub -Raw) -replace "^[^ ]* ","" -replace " .*$",""
-$md5 = new-object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
-$bd  = [System.Convert]::FromBase64String($b64);
-[System.BitConverter]::ToString($md5.ComputeHash($bd)).Replace("-","").ToLower()
-			''').trim()
-		}
-		
-		def osName
-		if(isUnix()) {
-			osName = sh(returnStdout: true, script: 'uname').trim() // "Darwin" => MacOS, "Linux" => "Linux"
-		} else {
-			osName = 'Windows'
-			def username = powershell(returnStdout: true, script: 'whoami').trim()
-			echo "username=$username"
-		}
-	
-		echo "jdkHome=${jdkHome}"
-		echo "osName=${osName}"
-		echo "scmUrl=${scmUrl}"
-		echo "projectName=${projectName}"
-		echo "jenkinsProjectName=${jenkinsProjectName}"
-		echo "projectBuildOs=${projectBuildOs}"
-		
-		echo sh(script: 'env|sort', returnStdout: true)
-	
-		env.JAVA_HOME = jdkHome
-		env.PROJECT_NAME = projectName
-	
-		def scmVars // Map keys: GIT_BRANCH, GIT_COMMIT, GIT_PREVIOUS_COMMIT, GIT_PREVIOUS_SUCCESSFUL_COMMIT, GIT_URL
 		stage('Checkout') {
+			def scmVars // Map keys: GIT_BRANCH, GIT_COMMIT, GIT_PREVIOUS_COMMIT, GIT_PREVIOUS_SUCCESSFUL_COMMIT, GIT_URL
 			deleteDir()
 			dir(env.PROJECT_NAME) {
 				scmVars  = checkout scm
@@ -76,6 +19,63 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		}
 	
 		stage('Build') {
+		/*
+			if("linux".equals(projectBuildOs)) {
+				triggers { pollSCM('00 03 * * 1-5') }
+			} else if("macosx".equals(projectBuildOs)) {
+				triggers { pollSCM('00 02 * * 1-5') }
+			} else if("win32".equals(projectBuildOs)) {
+				triggers { pollSCM('00 01 * * 1-5') }
+			}
+		*/
+		
+			def mvnHome = tool 'M3'
+			def jdkHome = tool 'JDK11'
+			def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
+			def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
+			def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
+			def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
+			def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
+			def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
+			// --offline : Work offline - remove this option if a Maven plugin version has been modified
+			def mvnOpts = "--offline -f ${projectName}${fileSeparator}pom.xml"
+			def mvnGoals = 'clean verify'
+			
+			// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
+			def credentialsId
+			if(isUnix()) {
+				credentialsId = sh(returnStdout: true, script: 'ssh-keygen -l -E md5 -f $HOME/.ssh/id_rsa.pub | sed "s/^.*MD5://;s/ .*$//;s/://g"').trim()
+			} else {
+				credentialsId = powershell(returnStdout: true, script: '''
+$pub = "$env:USERPROFILE/.ssh/id_rsa.pub"
+$b64 = (Get-Content -Path $pub -Raw) -replace "^[^ ]* ","" -replace " .*$",""
+$md5 = new-object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
+$bd  = [System.Convert]::FromBase64String($b64);
+[System.BitConverter]::ToString($md5.ComputeHash($bd)).Replace("-","").ToLower()
+				''').trim()
+			}
+			
+			def osName
+			if(isUnix()) {
+				osName = sh(returnStdout: true, script: 'uname').trim() // "Darwin" => MacOS, "Linux" => "Linux"
+			} else {
+				osName = 'Windows'
+				def username = powershell(returnStdout: true, script: 'whoami').trim()
+				echo "username=$username"
+			}
+		
+			echo "jdkHome=${jdkHome}"
+			echo "osName=${osName}"
+			echo "scmUrl=${scmUrl}"
+			echo "projectName=${projectName}"
+			echo "jenkinsProjectName=${jenkinsProjectName}"
+			echo "projectBuildOs=${projectBuildOs}"
+			
+			echo sh(script: 'env|sort', returnStdout: true)
+		
+			env.JAVA_HOME = jdkHome
+			env.PROJECT_NAME = projectName
+					
 			if("linux".equals(projectBuildOs)) {
 			    mvnOpts = '-Dproject.build.os=linux -Dproject.build.ws=gtk ' + mvnOpts
 			} else if("macosx".equals(projectBuildOs)) {
