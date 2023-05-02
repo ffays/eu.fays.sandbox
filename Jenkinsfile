@@ -7,7 +7,12 @@
 node {
 	properties(
 	    [
-	        pipelineTriggers([cron('0 * * * *')]),
+	        pipelineTriggers([
+	                [
+	                    $class: 'TimerTrigger',
+	                    spec: '0 * * * *'
+	                ]
+	         ])
 	    ]
 	)
 
