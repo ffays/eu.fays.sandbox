@@ -55,6 +55,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	def osName
 	if(isUnix()) {
 		osName = sh(returnStdout: true, script: 'uname').trim() // "Darwin" => MacOS, "Linux" => "Linux"
+		echo sh(script: 'env|sort', returnStdout: true)
 	} else {
 		osName = 'Windows'
 		def username = powershell(returnStdout: true, script: 'whoami').trim()
@@ -67,8 +68,6 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "projectName=${projectName}"
 	echo "jenkinsProjectName=${jenkinsProjectName}"
 	echo "projectBuildOs=${projectBuildOs}"
-	
-	echo sh(script: 'env|sort', returnStdout: true)
 
 	env.JAVA_HOME = jdkHome
 	env.PROJECT_NAME = projectName
