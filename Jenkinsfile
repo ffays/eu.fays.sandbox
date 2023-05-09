@@ -125,7 +125,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			//   C:\Windows\System32\config\systemprofile\.m2\repository
 
 			// Maven build
-			mvnOpts = mvnOpts + / --global-settings C:\Users\devops\.m2\settings.xml/
+			// mvnOpts = mvnOpts + / --global-settings C:\Users\devops\.m2\settings.xml/
 			bat(/cd ${workspaceFolder} & mvn ${mvnOpts} ${mvnGoals}/)
 		}
 		step([
