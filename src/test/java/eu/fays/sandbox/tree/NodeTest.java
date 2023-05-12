@@ -1,33 +1,25 @@
 package eu.fays.sandbox.tree;
 
 import static java.util.stream.Collectors.joining;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+@SuppressWarnings("nls")
 public class NodeTest {
 
-	private final TestNode _node;
-	private final String _preOrder;
-	private final String _postOrder;
-	private final String _breadthFirst;
-
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> data() {
+	public static Stream<Arguments> data() {
 		// @formatter:off
-		return Arrays.asList(new Object[][] {
-				// c.f. https://www.ius.edu.ba/sites/default/files/u1251/6._tree-traversals.pdf
-				{ 0, buildTestTree0(), "ABDFGELCRS", "FGDLEBRSCA", "ABCDERSFGL"},
-				// c.f. https://www.geeksforgeeks.org/number-of-ways-to-traverse-an-n-ary-tree/
-				{ 1, buildTestTree1(), "ABKNMJFDGECHIL", "NMKJBFGDCHLIEA", "ABFDEKJGCHINML"}
-		});
+		return Stream.of(
+			// c.f. https://www.ius.edu.ba/sites/default/files/u1251/6._tree-traversals.pdf
+			Arguments.of(buildTestTree0(), "ABDFGELCRS", "FGDLEBRSCA", "ABCDERSFGL"),
+			// c.f. https://www.geeksforgeeks.org/number-of-ways-to-traverse-an-n-ary-tree/
+			Arguments.of(buildTestTree1(), "ABKNMJFDGECHIL", "NMKJBFGDCHLIEA", "ABFDEKJGCHINML")
+		);
 		// @formatter:on
 	}
 
@@ -68,30 +60,25 @@ public class NodeTest {
 		return a;
 	}
 
-	
-	public NodeTest(final int n, final TestNode node, final String preOrder, final String postOrder, final String breadthFirst) {
-		_node = node;
-		_preOrder = preOrder;
-		_postOrder = postOrder;
-		_breadthFirst = breadthFirst;
+	@ParameterizedTest(name = "{index}")
+	@MethodSource("data")
+	public void preOrdrerTraversal(final TestNode node, final String preOrder, final String postOrder, final String breadthFirst) {
+		final String actual = node.preOrderStream().map(Node::getData).collect(joining());
+		assertEquals(preOrder, actual);
 	}
 
-	@Test
-	public void preOrdrerTraversal() {
-		final String actual = _node.preOrderStream().map(Node::getData).collect(joining());
-		assertEquals(_preOrder, actual);
+	@ParameterizedTest(name = "{index}")
+	@MethodSource("data")
+	public void postOrdrerTraversal(final TestNode node, final String preOrder, final String postOrder, final String breadthFirst) {
+		final String actual = node.postOrderStream().map(Node::getData).collect(joining());
+		assertEquals(postOrder, actual);
 	}
 
-	@Test
-	public void postOrdrerTraversal() {
-		final String actual = _node.postOrderStream().map(Node::getData).collect(joining());
-		assertEquals(_postOrder, actual);
-	}
-
-	@Test
-	public void breadthFirstTraversal() {
-		final String actual = _node.breadthFirstStream().map(Node::getData).collect(joining());
-		assertEquals(_breadthFirst, actual);
+	@ParameterizedTest(name = "{index}")
+	@MethodSource("data")
+	public void breadthFirstTraversal(final TestNode node, final String preOrder, final String postOrder, final String breadthFirst) {
+		final String actual = node.breadthFirstStream().map(Node::getData).collect(joining());
+		assertEquals(breadthFirst, actual);
 	}
 
 }

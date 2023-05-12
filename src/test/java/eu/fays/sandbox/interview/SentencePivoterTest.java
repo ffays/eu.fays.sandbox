@@ -1,104 +1,90 @@
 package eu.fays.sandbox.interview;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals ;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 @SuppressWarnings("nls")
 public class SentencePivoterTest {
 
-	private String[] _sentences;
-	private String[] _expected;
-
-	@Parameters(name = "{index}: pivot2()")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ new String[0], new String[0] },
-				{
-						new String[] {
-								"This is the first sentence to print"
-						},
-						new String[] {
-								"This      ",
-								"is        ",
-								"the       ",
-								"first     ",
-								"sentence  ",
-								"to        ",
-								"print     "
-						}
+	public static Stream<Arguments> data() {
+		return Stream.of(
+			Arguments.of( new String[0], new String[0] ),
+			Arguments.of(
+				new String[] {
+					"This is the first sentence to print"
 				},
-				{
-						new String[] {
-								"This is the first sentence to print",
-								"The second phrase",
-								"Third one"
-						},
-						new String[] {
-								"This      The       Third     ",
-								"is        second    one       ",
-								"the       phrase              ",
-								"first                         ",
-								"sentence                      ",
-								"to                            ",
-								"print                         "
-						}
-				},
-				{
-						new String[] {
-								"The second phrase",
-								"This is the first sentence to print",
-								"Third one"
-						},
-						new String[] {
-								"The       This      Third     ",
-								"second    is        one       ",
-								"phrase    the                 ",
-								"          first               ",
-								"          sentence            ",
-								"          to                  ",
-								"          print               "
-						}
-				},
-				{
-						new String[] {
-								"The second phrase",
-								"Third one",
-								"This is the first sentence to print"
-						},
-						new String[] {
-								"The       Third     This      ",
-								"second    one       is        ",
-								"phrase              the       ",
-								"                    first     ",
-								"                    sentence  ",
-								"                    to        ",
-								"                    print     "
-						}
+				new String[] {
+					"This      ",
+					"is        ",
+					"the       ",
+					"first     ",
+					"sentence  ",
+					"to        ",
+					"print     "
 				}
-		});
+			),
+			Arguments.of(
+				new String[] {
+					"This is the first sentence to print",
+					"The second phrase",
+					"Third one"
+				},
+				new String[] {
+					"This      The       Third     ",
+					"is        second    one       ",
+					"the       phrase              ",
+					"first                         ",
+					"sentence                      ",
+					"to                            ",
+					"print                         "
+				}
+			),
+			Arguments.of(
+				new String[] {
+					"The second phrase",
+					"This is the first sentence to print",
+					"Third one"
+				},
+				new String[] {
+					"The       This      Third     ",
+					"second    is        one       ",
+					"phrase    the                 ",
+					"          first               ",
+					"          sentence            ",
+					"          to                  ",
+					"          print               "
+				}
+			),
+			Arguments.of(
+				new String[] {
+					"The second phrase",
+					"Third one",
+					"This is the first sentence to print"
+				},
+				new String[] {
+					"The       Third     This      ",
+					"second    one       is        ",
+					"phrase              the       ",
+					"                    first     ",
+					"                    sentence  ",
+					"                    to        ",
+					"                    print     "
+				}
+			)
+		);
 	}
 
-	public SentencePivoterTest(final String[] sentences, final String[] expected) {
-		_sentences = sentences;
-		_expected = expected;
-
-	}
-
-	@Test
-	public void pivotTest() throws Exception {
-		final String[] computed = SentencePivoter.pivot2(_sentences);
-		assertEquals(_expected.length, computed.length);
-		for (int i = 0; i < _expected.length; i++) {
-			assertEquals(_expected[i], computed[i]);
-		}
-
+	@ParameterizedTest(name = "{index}")
+	@MethodSource("data")	
+	public void pivotTest(final String[] sentences, final String[] expected) throws Exception {
+		final String[] computed = SentencePivoter.pivot2(sentences);
+		assertEquals(expected.length, computed.length);
+		assertArrayEquals (expected, computed);
 	}
 }
