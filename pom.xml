@@ -25,7 +25,7 @@ mvn dependency:tree -Dverbose
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>dd MMM yyyy HH:mm:ss</maven.build.timestamp.format>
-		<junit.version>4.13.2</junit.version>		
+		<junit.version>5.10.0</junit.version>
 		<maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
 		<adoptopenjdk.jre.x64.windows.zip>OpenJDK11U-jre_x64_windows_hotspot_11.0.11_9.zip</adoptopenjdk.jre.x64.windows.zip>
 		<adoptopenjdk.jre.folder.name>jdk-11.0.11+9-jre</adoptopenjdk.jre.folder.name>
@@ -50,11 +50,20 @@ mvn dependency:tree -Dverbose
 	-->
 	
 	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
 			<version>${junit.version}</version>
-		</dependency>	
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
