@@ -6,14 +6,14 @@
 
 node {
 	properties(
-	    [
-	        pipelineTriggers([
-	                [
-	                    $class: 'TimerTrigger',
-	                    spec: '0 * * * *'
-	                ]
-	         ])
-	    ]
+		[
+			pipelineTriggers([
+				[
+					$class: 'TimerTrigger',
+					spec: 'H 0 * * *'
+				]
+			 ])
+		]
 	)
 
 /*
