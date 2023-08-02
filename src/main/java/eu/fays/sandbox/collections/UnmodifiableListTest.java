@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 
 public class UnmodifiableListTest {
 
-	
 	@Test
 	public void unmodifiableListTest() {
 		final List<String> arrayList = new ArrayList<>();
@@ -21,12 +20,11 @@ public class UnmodifiableListTest {
 		final List<String> unmodifiableLinkedList = unmodifiableList(linkedList);
 		final List<String> unmodifiableArrayList2 = unmodifiableList(unmodifiableArrayList);
 		final List<String> unmodifiableLinkedList2 = unmodifiableList(unmodifiableLinkedList);
-		
-		
+
 		assertFalse(arrayList == unmodifiableList(arrayList));
 		assertFalse(linkedList == unmodifiableList(linkedList));
-		assertTrue(unmodifiableArrayList == unmodifiableArrayList2);
-		assertTrue(unmodifiableLinkedList == unmodifiableLinkedList2);
+//		assertTrue(unmodifiableArrayList == unmodifiableArrayList2); // only true with Java 17
+//		assertTrue(unmodifiableLinkedList == unmodifiableLinkedList2); // only true with Java 17
 	}
 
 }
