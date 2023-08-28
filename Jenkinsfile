@@ -10,7 +10,7 @@ node {
 			pipelineTriggers([
 				[
 					$class: 'TimerTrigger',
-					spec: 'H 0 * * *'
+					spec: '@midnight'
 				]
 			 ])
 		]
@@ -37,7 +37,7 @@ node {
 	// --offline : Work offline - remove this option if a Maven plugin version has been modified
 	def mvnOpts = "--offline -f ${projectName}${fileSeparator}pom.xml"
 	def mvnGoals = 'clean verify'
-	
+
 	// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
 	def credentialsId
 	if(isUnix()) {
@@ -51,7 +51,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 [System.BitConverter]::ToString($md5.ComputeHash($bd)).Replace("-","").ToLower()
 		''').trim()
 	}
-	
+
 	def osName
 	if(isUnix()) {
 		osName = sh(returnStdout: true, script: 'uname').trim() // "Darwin" => MacOS, "Linux" => "Linux"
@@ -77,8 +77,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		deleteDir()
 		dir(env.PROJECT_NAME) {
 			scmVars  = checkout scm
-			echo "scmVars" 
-			print scmVars			
+			echo "scmVars"
+			print scmVars
 		}
 	}
 
@@ -93,7 +93,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 
 		if("Linux".equals(osName)) {
 			if(!"linux".equals(projectBuildOs)) {
-				mvnOpts = '-DskipTests ' + mvnOpts  
+				mvnOpts = '-DskipTests ' + mvnOpts
 			}
 			wrap([$class: 'Xvfb', displayName: 1, screen: '1920x1080x24']) {
 				withEnv(['DISPLAY=:1']) {
@@ -102,14 +102,14 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			}
 		} else if("Darwin".equals(osName)) {
 			if(!"macosx".equals(projectBuildOs)) {
-				mvnOpts = '-DskipTests ' + mvnOpts  
+				mvnOpts = '-DskipTests ' + mvnOpts
 			}
 			env.MAVEN_OPTS = '-XstartOnFirstThread'
 			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
 			sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 		} else if("Windows".equals(osName)) {
 			if(!"win32".equals(projectBuildOs)) {
-				mvnOpts = '-DskipTests ' + mvnOpts  
+				mvnOpts = '-DskipTests ' + mvnOpts
 			}
 
 			def userHome = bat(returnStdout: true, script: '@echo %USERPROFILE%').trim()
