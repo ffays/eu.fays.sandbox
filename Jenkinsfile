@@ -95,8 +95,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			if(!"linux".equals(projectBuildOs)) {
 				mvnOpts = '-DskipTests ' + mvnOpts
 			}
-			wrap([$class: 'Xvfb', displayName: 1, screen: '1920x1080x24']) {
-				withEnv(['DISPLAY=:1']) {
+			wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
+				withEnv(['DISPLAY=:9']) {
 					sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 				}
 			}
