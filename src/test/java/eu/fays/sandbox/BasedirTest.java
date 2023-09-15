@@ -22,17 +22,16 @@ public class BasedirTest {
 	public static Stream<Arguments> data() {
 		// @formatter:off
 		return Stream.of(
-			Arguments.of("basedir")
+			Arguments.of("basedir", Path.of(System.getProperty("basedir", "")))
 		);
 		// @formatter:on
 	}
 
-	@ParameterizedTest(name = "{0}")
+	@ParameterizedTest(name = "{0} \u21D2 {1}")
 	@MethodSource("data")
-	public void basedirTest(final String property) {
+	public void basedirTest(final String property, final Path path) {
 		final String value = System.getProperty(property);
 		assertNotNull(value);
-		final Path path = Path.of(value);
 		assertTrue(Files.exists(path));
 		assertTrue(Files.isDirectory(path));
 	}
