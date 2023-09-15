@@ -85,7 +85,8 @@ mvn dependency:tree -Dverbose
 				<executions>
 					<execution>
 						<id>echo-properties</id>
-						<phase>pre-integration-test</phase>
+						<!-- "pre-integration-test" phase can be used as "post-package" phase (not-existing in Maven Build Lifecycle) -->
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>run</goal>
 						</goals>
