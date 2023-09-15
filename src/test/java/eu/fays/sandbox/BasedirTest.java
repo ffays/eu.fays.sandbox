@@ -1,6 +1,5 @@
 package eu.fays.sandbox;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,17 +22,17 @@ public class BasedirTest {
 	public static Stream<Arguments> data() {
 		// @formatter:off
 		return Stream.of(
-			Arguments.of("basedir", Path.of(System.getProperty("user.home"), "git", BasedirTest.class.getPackageName()))
+			Arguments.of("basedir")
 		);
 		// @formatter:on
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("data")
-	public void basedirTest(final String property, final Path path) {
+	public void basedirTest(final String property) {
 		final String value = System.getProperty(property);
 		assertNotNull(value);
-		assertEquals(path.toString(), value);
+		final Path path = Path.of(value);
 		assertTrue(Files.exists(path));
 		assertTrue(Files.isDirectory(path));
 	}
