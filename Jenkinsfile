@@ -92,13 +92,15 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		}
 
 		if("Linux".equals(osName)) {
-			if(!"linux".equals(projectBuildOs)) {
-				mvnOpts = '-DskipTests ' + mvnOpts
-			}
-			wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
-				withEnv(['DISPLAY=:9']) {
-					sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
+			if("linux".equals(projectBuildOs)) {
+				wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
+					withEnv(['DISPLAY=:9']) {
+						sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
+					}
 				}
+			} else {
+				mvnOpts = '-DskipTests ' + mvnOpts
+				sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 			}
 		} else if("Darwin".equals(osName)) {
 			if(!"macosx".equals(projectBuildOs)) {
