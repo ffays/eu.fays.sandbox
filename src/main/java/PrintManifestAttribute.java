@@ -71,7 +71,6 @@ public class PrintManifestAttribute {
 							} else if(values.size() == 1) {
 								System.out.println(format("{0}={1}", key, value));
 							} else {
-								System.out.print(format("{0}=", key));
 								int i = 1;
 								for(final String v : values) {
 									if(i == 1) {
@@ -108,8 +107,23 @@ public class PrintManifestAttribute {
 		while(matcher.find()) {
 			int end = matcher.end() - 3;
 			String v = s.substring(0, end);
+			int dq = v.indexOf('"');
+			if(dq != -1) {
+				end = s.indexOf('"', dq + 1);
+				int c = s.indexOf(',', end + 1);
+				if(c != -1) {
+					end = c;
+					v = s.substring(0, c);
+				} else {
+					v = s.substring(0, end + 1);	
+				}
+				
+			}
 			result.add(v);
 			s = s.substring(end + 1);
+			if(s.startsWith(",")) {
+				s = s.substring(1);
+			}
 			matcher = pattern.matcher(s);
 		}
 		
