@@ -25,6 +25,10 @@ Require valid-user
 EOF
 */
 
+// curl -u 'sesame:changeit' 'https://fays.eu/?p1=alpha&p2=bravo&p3=charlie' 
+// Invoke-WebRequest -Uri 'https://fays.eu/?p1=alpha&p2=bravo&p3=charlie' -Headers @{ Authorization = $('Basic ' + [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes('sesame:changeit'))) }
+
+
 public class BasicAuthEssay {
 
 	/** Standard Logger */
