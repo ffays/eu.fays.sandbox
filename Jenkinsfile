@@ -130,9 +130,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			// mvnOpts = mvnOpts + / --global-settings C:\Users\devops\.m2\settings.xml/
 			bat(/cd ${workspaceFolder} & mvn ${mvnOpts} ${mvnGoals}/)
 		}
-		scmVars = null
 		def commitHash = null
-		dir(env.PROJECT_NAME) {
+		dir($projectName) {
 			commitHash = scmVars == null ? sh(returnStdout: true, script: 'git rev-parse HEAD').trim() : scmVars.GIT_COMMIT
 			echo "commitHash=${commitHash}"
 		}
