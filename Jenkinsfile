@@ -27,7 +27,7 @@ node {
 */
 
 	def mvnHome = tool 'M3'
-	def jdkHome = tool 'JDK11'
+	def jdkHome = tool 'JDK17'
 	def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
 	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
 	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
