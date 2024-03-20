@@ -22,9 +22,12 @@ public class RegQueryEssay {
 	public static void main(String[] args) {
 		// @formatter:off
 		final List<Entry<String, String>> list = List.of(
+			new SimpleEntry<>("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders", "{374DE290-123F-4565-9164-39C4925E467B}"),
 			new SimpleEntry<>("HKCU\\Control Panel\\International", "sDecimal"),
 			new SimpleEntry<>("HKCU\\Control Panel\\International", "sList"),
-			new SimpleEntry<>("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "LongPathsEnabled")
+			new SimpleEntry<>("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ProductName"),
+			new SimpleEntry<>("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "DigitalProductId"),
+			new SimpleEntry<>("HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "LongPathsEnabled")
 		);
 		// @formatter:on
 		
