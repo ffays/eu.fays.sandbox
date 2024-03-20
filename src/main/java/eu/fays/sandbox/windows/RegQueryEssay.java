@@ -74,4 +74,30 @@ public class RegQueryEssay {
 
 		return result;
 	}
+	
+	/**
+	 * <a href="https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/reg-add">reg add</a>
+	 * @param keyname Specifies the full path of the subkey or entry to be added
+	 * @param valuename Specifies the name of the add registry entry
+	 * @param data Specifies the data for the new registry entry
+	 * @return either true: success or false: failure
+	 */
+	public static boolean regAdd(final String keyname, final String valuename, final String data) {
+		boolean result = false;
+		try {
+			final String[] command = {"reg", "add", keyname, "/v", valuename, "/d", data, "/f"};
+			final Process process = new ProcessBuilder().command(command).start();
+			process.waitFor(5L, TimeUnit.SECONDS);
+			result = process.exitValue() == 0;
+			try (final InputStream is = process.getInputStream(); final InputStreamReader isr = new InputStreamReader(is, UTF_8); final BufferedReader reader = new BufferedReader(isr)) {
+				for (String l = reader.readLine(); l != null; l = reader.readLine()) {
+				}
+			}
+			
+		} catch (final IOException | InterruptedException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+
+		return result;
+	}
 }
