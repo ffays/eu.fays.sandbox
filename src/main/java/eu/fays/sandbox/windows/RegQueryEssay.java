@@ -46,7 +46,7 @@ public class RegQueryEssay {
 			final Process process = new ProcessBuilder().command(command).start();
 			process.waitFor(5L, TimeUnit.SECONDS);
 
-			String lastLine = "";
+			String lastLine = null;
 			try (final InputStream is = process.getInputStream(); final InputStreamReader isr = new InputStreamReader(is, UTF_8); final BufferedReader reader = new BufferedReader(isr)) {
 				for (String l = reader.readLine(); l != null; l = reader.readLine()) {
 					if(!l.isEmpty()) {
@@ -55,12 +55,14 @@ public class RegQueryEssay {
 				}
 			}
 			
-			final String[] registryTypes = { "REG_SZ", "REG_MULTI_SZ", "REG_EXPAND_SZ", "REG_DWORD", "REG_BINARY", "REG_NONE"};
-			for(final String registryType : registryTypes) {
-				final int o = lastLine.indexOf(registryType);
-				if(o != -1) {
-					result =  lastLine.substring(o+registryType.length()).stripLeading();
-					break;
+			if(lastLine != null) {
+				final String[] registryTypes = { "REG_SZ", "REG_MULTI_SZ", "REG_EXPAND_SZ", "REG_DWORD", "REG_BINARY", "REG_NONE"};
+				for(final String registryType : registryTypes) {
+					final int o = lastLine.indexOf(registryType);
+					if(o != -1) {
+						result =  lastLine.substring(o+registryType.length()).stripLeading();
+						break;
+					}
 				}
 			}
 		} catch (final IOException | InterruptedException e) {
