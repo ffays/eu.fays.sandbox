@@ -16,16 +16,9 @@ node {
 		]
 	)
 
-/*
-	if("linux".equals(projectBuildOs)) {
-		triggers { pollSCM('00 03 * * 1-5') }
-	} else if("macosx".equals(projectBuildOs)) {
-		triggers { pollSCM('00 02 * * 1-5') }
-	} else if("win32".equals(projectBuildOs)) {
-		triggers { pollSCM('00 01 * * 1-5') }
-	}
-*/
-
+	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
+	def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
+	// def hostOs = isUnix()?sh(returnStdout: true, script: 'uname').trim().toLowerCase().replace("darwin", macosx):win32
 	def mvnHome = tool 'M3'
 	def jdkHome = tool 'JDK17'
 	def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
@@ -52,27 +45,27 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		''').trim()
 	}
 
-	def osName
-	if(isUnix()) {
-		osName = sh(returnStdout: true, script: 'uname').trim() // "Darwin" => MacOS, "Linux" => "Linux"
-		echo sh(script: 'env|sort', returnStdout: true)
-	} else {
-		osName = 'Windows'
-		def username = powershell(returnStdout: true, script: 'whoami').trim()
-		echo "username=$username"
-	}
-
-	echo "jdkHome=${jdkHome}"
-	echo "osName=${osName}"
-	echo "scmUrl=${scmUrl}"
 	echo "projectName=${projectName}"
 	echo "jenkinsProjectName=${jenkinsProjectName}"
+	echo "hostOs=${hostOs}"
 	echo "projectBuildOs=${projectBuildOs}"
+	echo "jdkHome=${jdkHome}"
+	echo "scmUrl=${scmUrl}"
 
 	env.JAVA_HOME = jdkHome
 	env.PROJECT_NAME = projectName
 
-	def scmVars // Map keys: GIT_BRANCH, GIT_COMMIT, GIT_PREVIOUS_COMMIT, GIT_PREVIOUS_SUCCESSFUL_COMMIT, GIT_URL
+/*
+	if(linux.equals(projectBuildOs)) {
+		triggers { pollSCM('00 03 * * 1-5') }
+	} else if(macosx.equals(projectBuildOs)) {
+		triggers { pollSCM('00 02 * * 1-5') }
+	} else if(win32.equals(projectBuildOs)) {
+		triggers { pollSCM('00 01 * * 1-5') }
+	}
+*/
+
+	def scmVars // Map keys: GIT_BRANCH, GIT_COMMIT, GIT_PREVIOUS_COMMIT, GIT_PREVIOUS_SUCCESSFUL_COMMIT, GIT_URL	
 	stage('Checkout') {
 		deleteDir()
 		dir(env.PROJECT_NAME) {
@@ -83,16 +76,16 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Build') {
-		if("linux".equals(projectBuildOs)) {
+		if(linux.equals(projectBuildOs)) {
 		    mvnOpts = '-Dproject.build.os=linux -Dproject.build.ws=gtk ' + mvnOpts
-		} else if("macosx".equals(projectBuildOs)) {
+		} else if(macosx.equals(projectBuildOs)) {
 			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
-		} else if("win32".equals(projectBuildOs)) {
+		} else if(win32.equals(projectBuildOs)) {
 			mvnOpts = '-Dproject.build.os=win32 -Dproject.build.ws=win32 ' + mvnOpts
 		}
 
-		if("Linux".equals(osName)) {
-			if("linux".equals(projectBuildOs)) {
+		if(linux.equals(hostOs)) {
+			if(linux.equals(projectBuildOs)) {
 				wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
 					withEnv(['DISPLAY=:9']) {
 						sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
@@ -102,15 +95,15 @@ $bd  = [System.Convert]::FromBase64String($b64);
 				mvnOpts = '-DskipTests ' + mvnOpts
 				sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 			}
-		} else if("Darwin".equals(osName)) {
-			if(!"macosx".equals(projectBuildOs)) {
+		} else if(macosx.equals(hostOs)) {
+			if(!macosx.equals(projectBuildOs)) {
 				mvnOpts = '-DskipTests ' + mvnOpts
 			}
 			env.MAVEN_OPTS = '-XstartOnFirstThread'
 			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
 			sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
-		} else if("Windows".equals(osName)) {
-			if(!"win32".equals(projectBuildOs)) {
+		} else if(win32.equals(hostOs)) {
+			if(!win32.equals(projectBuildOs)) {
 				mvnOpts = '-DskipTests ' + mvnOpts
 			}
 
