@@ -34,7 +34,7 @@ public class FibonacciTest {
 		return IntStream.range(-3, 1);
 	}
 	
-	@ParameterizedTest(name = "{0}")
+	@ParameterizedTest(name = "{index}")
 	@MethodSource("data")
 	public void fibonacciTest(final int n, final List<Integer> expected) {
 		final List<Integer> computed = Fibonacci.fibonacci(n);
@@ -42,7 +42,7 @@ public class FibonacciTest {
 		assertIterableEquals(expected, computed);
 	}
 	
-	@ParameterizedTest(name = "{0}")
+	@ParameterizedTest(name = "{index}")
 	@MethodSource("data2")
 	public void fibonacciExceptionTest(final int n) {
 		final IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> Fibonacci.fibonacci(n));
