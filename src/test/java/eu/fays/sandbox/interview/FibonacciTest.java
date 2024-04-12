@@ -42,7 +42,7 @@ public class FibonacciTest {
 		assertIterableEquals(expected, computed);
 	}
 	
-	@ParameterizedTest(name = "{index}")
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("data2")
 	public void fibonacciExceptionTest(final int n) {
 		final IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> Fibonacci.fibonacci(n));
