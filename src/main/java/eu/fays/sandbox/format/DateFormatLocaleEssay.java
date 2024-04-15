@@ -1,10 +1,14 @@
 package eu.fays.sandbox.format;
 
-import static java.util.Collections.unmodifiableMap;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
-import static java.util.stream.Collectors.toMap;
+import static java.text.MessageFormat.format;
+import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
+import static java.time.format.FormatStyle.SHORT;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
@@ -50,6 +54,8 @@ public class DateFormatLocaleEssay {
 	 */
 	@SuppressWarnings({ "nls", "unused" })
 	static public void main(String[] args) {
+		final Locale defaultLocale = Locale.getDefault();
+		
 		// Locales #1
 		try {
 			System.out.println(Locale.class.getSimpleName() + " #1");
@@ -74,8 +80,12 @@ public class DateFormatLocaleEssay {
 			final Map<Locale, Locale> defaultlocaleMap = unmodifiableMap(Arrays.stream(Locale.class.getDeclaredFields()).filter(f -> isPublic(f.getModifiers()) && isStatic(f.getModifiers()) && Locale.class.equals(f.getType())).map(f -> {try {return (Locale) f.get(null);} catch (IllegalArgumentException | IllegalAccessException e) {throw new AssertionError(e.getMessage(), e);}}).collect(toMap(identity(), identity(), (a, b) -> a, LinkedHashMap::new)));
 			// @formatter:on
 			for(final Locale locale : defaultlocaleMap.keySet()) {
-				System.out.println(locale.getClass().getSimpleName() + ": " + locale.toString());
+				Locale.setDefault(locale);
+				final DateTimeFormatter dateTimeFormatter = ofLocalizedDateTime(SHORT, SHORT);
+				final LocalDateTime ldt = LocalDateTime.of(2001, 12, 31, 23, 59);
+				System.out.println(format("{0}: {1} ''{2}''" ,locale.getClass().getSimpleName(), locale.toString(), dateTimeFormatter.format(ldt)));
 			}
+			Locale.setDefault(defaultLocale);
 			System.out.println();
 		}
 
