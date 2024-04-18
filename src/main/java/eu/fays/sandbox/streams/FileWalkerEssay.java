@@ -21,6 +21,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -37,7 +38,7 @@ public class FileWalkerEssay {
 	 * VM args :
 	 * 
 	 * <pre>
-	 * -ea -Djava.util.logging.config.file=logging.properties
+	 * -ea -Djava.util.logging.SimpleFormatter.format="%1$tF %1$tT	%4$s	%3$s	%5$s%6$s%n"
 	 * </pre>
 	 * 
 	 * @param args unused
@@ -47,6 +48,7 @@ public class FileWalkerEssay {
 		listFiles1(new File("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #1: {0}", f.getPath())));
 		listFiles2(Paths.get("."), FileNameExtension.class).forEach(f -> LOGGER.info(format("listFiles #2: {0}", f.getPath())));
 		listFiles3(Paths.get("."), new SuffixFilenameFilter(FileNameExtension.class)).forEach(f -> LOGGER.info(format("listFiles #3: {0}", f.getPath())));
+		listFiles(new File("."), "java").forEach(f -> LOGGER.info(f.getPath()));
 	}
 
 	/**
@@ -103,6 +105,29 @@ public class FileWalkerEssay {
 		});
 
 		return unmodifiableList(result);
+	}
+	
+	
+	/**
+	 * Search recursively all files matching the given filename extension under the given root directory.
+	 * @param root the root directory
+	 * @param extension filename extension to match 
+	 * @return the list of matching files.
+	 * @throws IOException if an I/O error is thrown when accessing the starting file.
+	 */
+	public static List<File> listFiles(final File root, final String extension) throws IOException {
+		//
+		assert root != null;
+		assert root.exists();
+		assert root.isDirectory();
+		assert extension != null;
+		assert !extension.isEmpty();
+		//
+		try (final Stream<Path> stream = Files.walk(root.toPath())) {
+			final PathMatcher filter = root.toPath().getFileSystem().getPathMatcher("glob:**." + extension);
+			final List<File> result = stream.filter(filter::matches).map(Path::toFile).collect(Collectors.toList());
+			return result;
+		}
 	}
 
 	/** Standard logger */
