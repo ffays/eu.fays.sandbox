@@ -213,12 +213,14 @@ public class DatabaseLoad {
 											flagComma = true;
 										}
 										if(firstRowHeader) {
-											selectStatmementBuilder.append(column);
 											if(quoteColumns) {
+												selectStatmementBuilder.append(columnLeftQuote);
 												insertIntoStatementBuilder.append(columnLeftQuote);
 											}
+											selectStatmementBuilder.append(column);
 											insertIntoStatementBuilder.append(column);
 											if(quoteColumns) {
+												selectStatmementBuilder.append(columnRightQuote);
 												insertIntoStatementBuilder.append(columnRightQuote);
 											}
 										}
