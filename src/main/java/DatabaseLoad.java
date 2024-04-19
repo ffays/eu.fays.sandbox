@@ -170,8 +170,9 @@ public class DatabaseLoad {
 			}
 			final boolean autoCommit = connection.getAutoCommit();
 			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
-			final char columnLeftQuote = sqlServer?'[':'"';
-			final char columnRightQuote = sqlServer?']':'"';
+			final char columnLeftQuote = sqlServer?'`':'"';
+			final char columnRightQuote = sqlServer?'`':'"';
+			final StringBuilder insertIntoStatementBuilder = new StringBuilder();
 			
 			try {
 				for(final File file : files) {
@@ -192,7 +193,8 @@ public class DatabaseLoad {
 									final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
 									final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
 									final StringBuilder selectStatmementBuilder = new StringBuilder("SELECT ");
-									final StringBuilder insertIntoStatementBuilder = new StringBuilder("INSERT INTO ");
+									insertIntoStatementBuilder.setLength(0);
+									insertIntoStatementBuilder.append("INSERT INTO ");
 									final StringBuilder insertValuesStatementBuilder = new StringBuilder(" VALUES (");
 									insertIntoStatementBuilder.append(qualifiedTable);
 	
@@ -364,7 +366,11 @@ public class DatabaseLoad {
 				}
 			} catch (final SQLException e) {
 				connection.rollback();
-				throw e;
+				if(insertIntoStatementBuilder.length() > 0) {
+					throw new SQLException(insertIntoStatementBuilder.toString() ,e);	
+				} else {
+					throw e;
+				}
 			}
 		}
 
