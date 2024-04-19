@@ -1,4 +1,6 @@
+import static java.sql.ResultSetMetaData.columnNullable;
 import static java.sql.Types.BIGINT;
+import static java.sql.Types.BINARY;
 import static java.sql.Types.BIT;
 import static java.sql.Types.BOOLEAN;
 import static java.sql.Types.CHAR;
@@ -14,7 +16,6 @@ import static java.sql.Types.TIME;
 import static java.sql.Types.TIMESTAMP;
 import static java.sql.Types.TINYINT;
 import static java.sql.Types.VARCHAR;
-import static java.sql.Types.BINARY;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
@@ -189,6 +190,7 @@ public class DatabaseLoad {
 								final String insertIntoParametrized;
 								int[] sqlTypes = {};
 								String[] sqlTypeNames = {};
+								boolean[] sqlNullables = {};
 								{
 									final String table = System.getProperty(TABLE_PARAMETER_NAME, file != null ? getBaseName(file.getName()): null);
 									final String qualifiedTable = (schema != null) ? format("{0}.{1}",schema, table) : table;
@@ -244,10 +246,12 @@ public class DatabaseLoad {
 										final ResultSetMetaData metaData = resultSet.getMetaData();
 										sqlTypes = new int[metaData.getColumnCount()];
 										sqlTypeNames = new String[metaData.getColumnCount()];
+										sqlNullables = new boolean[metaData.getColumnCount()];
 										
 										for(int c=1; c <= sqlTypes.length; c++) {
 											sqlTypes[c-1] = metaData.getColumnType(c);
 											sqlTypeNames[c-1] = metaData.getColumnTypeName(c);
+											sqlNullables[c-1] = metaData.isNullable(c) == columnNullable;
 										}
 									}
 								}
@@ -266,7 +270,7 @@ public class DatabaseLoad {
 											int c = 1;
 											for(final String data : record) {
 												final int sqlType = sqlTypes[c-1];
-												if (data.isEmpty()) {
+												if (data.isEmpty() && sqlNullables[c-1]) {
 													pstmt.setNull(c, sqlType);
 												} else if (sqlType == VARCHAR || sqlType == CHAR || sqlType == LONGVARCHAR) {
 													pstmt.setString(c, data);
