@@ -170,8 +170,8 @@ public class DatabaseLoad {
 			}
 			final boolean autoCommit = connection.getAutoCommit();
 			final boolean sqlServer = connection.getMetaData().getDriverName().contains("Microsoft") && connection.getMetaData().getDriverName().contains("SQL Server");
-			final char columnLeftQuote = sqlServer?'`':'"';
-			final char columnRightQuote = sqlServer?'`':'"';
+			final char columnLeftQuote = sqlServer?'[':'"';
+			final char columnRightQuote = sqlServer?']':'"';
 			final StringBuilder insertIntoStatementBuilder = new StringBuilder();
 			
 			try {
