@@ -18,13 +18,16 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>dd MMM yyyy HH:mm:ss</maven.build.timestamp.format>
-		<junit.version>5.10.0</junit.version>
-		<maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
-		<adoptopenjdk.jre.x64.windows.zip>OpenJDK11U-jre_x64_windows_hotspot_11.0.11_9.zip</adoptopenjdk.jre.x64.windows.zip>
-		<adoptopenjdk.jre.folder.name>jdk-11.0.11+9-jre</adoptopenjdk.jre.folder.name>
+		<adoptium.jre.x64.windows.zip>OpenJDK17U-jre_x64_windows_hotspot_17.0.11_9.zip</adoptium.jre.x64.windows.zip>
+		<adoptium.jre.folder.name>jdk-17.0.11+9-jre</adoptium.jre.folder.name>
 	<!--  
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
 	-->
+		<junit.version>5.10.2</junit.version>
+		<maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+		<maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+		<maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
+		<buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
 	</properties>
 	
 	<scm>
@@ -60,17 +63,19 @@
 	</dependencies>
 
 	<build>
-		<!-- https://maven.apache.org/surefire/maven-surefire-plugin/usage.html -->
 		<pluginManagement>
 			<plugins>
+				<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+				<!-- https://maven.apache.org/surefire/maven-surefire-plugin/usage.html -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>${maven-surefire-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -91,10 +96,11 @@
 					</execution>				
 				</executions>
 			</plugin>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>${maven-jar-plugin.version}</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -110,11 +116,12 @@
 					</archive>
 				</configuration>
     		</plugin>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-plugin-api -->
 			<plugin>
 				<!-- plugin used to extract the git hash and store it in ${buildNumber} -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.4</version>
+				<version>${buildnumber-maven-plugin.version}</version>
 				<executions>
 					<execution>
 						<phase>validate</phase>
@@ -134,10 +141,10 @@
 	</build>
 	<profiles>
 		<profile>
-			<id>unzip-adoptopenjdk-jre-x64-windows</id>
+			<id>unzip-adoptium-jre-x64-windows</id>
 			<activation>
 				<file>
-					<exists>${user.home}/Downloads/${adoptopenjdk.jre.x64.windows.zip}</exists>
+					<exists>${user.home}/Downloads/${adoptium.jre.x64.windows.zip}</exists>
 				</file>
 			</activation>
 			<build>
@@ -148,17 +155,17 @@
 						<version>${maven-antrun-plugin.version}</version>
 						<executions>
 							<execution>
-								<id>unzip-adoptopenjdk-jre</id>
+								<id>unzip-adoptium-jre</id>
 								<phase>pre-integration-test</phase>
 								<goals>
 									<goal>run</goal>
 								</goals>
 								<configuration>
 									<target>
-										<echo message="(cd ${project.build.directory}; unzip ${user.home}/Downloads/${adoptopenjdk.jre.x64.windows.zip})" level="info" />
-										<unzip src="${user.home}/Downloads/${adoptopenjdk.jre.x64.windows.zip}" dest="${project.build.directory}" />
-										<echo message="mv ${project.build.directory}/${adoptopenjdk.jre.folder.name} ${project.build.directory}/jre" level="info" />
-										<move file="${project.build.directory}/${adoptopenjdk.jre.folder.name}" tofile="${project.build.directory}/jre"/>
+										<echo message="(cd ${project.build.directory}; unzip ${user.home}/Downloads/${adoptium.jre.x64.windows.zip})" level="info" />
+										<unzip src="${user.home}/Downloads/${adoptium.jre.x64.windows.zip}" dest="${project.build.directory}" />
+										<echo message="mv ${project.build.directory}/${adoptium.jre.folder.name} ${project.build.directory}/jre" level="info" />
+										<move file="${project.build.directory}/${adoptium.jre.folder.name}" tofile="${project.build.directory}/jre"/>
 									</target>
 								</configuration>
 							</execution>					
