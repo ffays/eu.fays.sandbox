@@ -202,6 +202,14 @@
 									</and>
 								</condition>
 								<!-- project.build.arch -->
+								<condition property="project.build.arch" value="x86_64">
+									<and>
+										<not>
+											<isset property="project.build.arch" />
+										</not>
+										<equals arg1="${os.arch}" arg2="amd64"/>
+									</and>
+								</condition>
 								<condition property="project.build.arch" value="${os.arch}">
 									<not>
 										<isset property="project.build.arch" />
