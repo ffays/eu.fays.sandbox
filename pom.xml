@@ -76,74 +76,14 @@
 		</pluginManagement>
 		<plugins>
 			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
+			<!-- "pre-integration-test" phase can be used as "post-package" phase (not-existing in Maven Build Lifecycle) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>${maven-antrun-plugin.version}</version>
 				<executions>
 					<execution>
-						<id>echo-properties</id>
-						<!-- "pre-integration-test" phase can be used as "post-package" phase (not-existing in Maven Build Lifecycle) -->
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<echoproperties />
-							</target>
-						</configuration>
-					</execution>				
-				</executions>
-			</plugin>
-			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>${maven-jar-plugin.version}</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-						<manifestEntries>
-							<Implementation-Version>${project.version}.${buildNumber}</Implementation-Version>
-							<Java-VM-Version>${java.vm.version} (${java.vm.vendor})</Java-VM-Version>
-							<Software-Version>${project.version}</Software-Version>
-							<Built-By>${user.name}</Built-By>
-							<Built-Date>${timestamp}</Built-Date>
-						</manifestEntries>
-					</archive>
-				</configuration>
-    		</plugin>
-			<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-plugin-api -->
-			<plugin>
-				<!-- plugin used to extract the git hash and store it in ${buildNumber} -->
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>${buildnumber-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<doCheck>false</doCheck>
-					<doUpdate>false</doUpdate>
-					<!-- place a lower number if you want shorter commit numbers in the archive filenames -->
-					<shortRevisionLength>40</shortRevisionLength>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>${maven-antrun-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>set-both-project.build.os-and-project.build.ws-properties</id>
+						<id>set-project.build.os-project.build.ws-project.build.arch-properties</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>run</goal>
@@ -232,13 +172,58 @@
 										</and>
 									</or>
 								</condition>
+								<!--
 								<echoproperties />
-								<available property="local.update-sites.exists" file="/mnt/data/update-sites" type="dir"/>
+								-->
+								<echo level="info" message="project.build.os=${project.build.os}" />
+								<echo level="info" message="project.build.ws=${project.build.ws}" />
+								<echo level="info" message="project.build.arch=${project.build.arch}" />
 							</target>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>					
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven-jar-plugin.version}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Version>${project.version}.${buildNumber}</Implementation-Version>
+							<Java-VM-Version>${java.vm.version} (${java.vm.vendor})</Java-VM-Version>
+							<Software-Version>${project.version}</Software-Version>
+							<Built-By>${user.name}</Built-By>
+							<Built-Date>${timestamp}</Built-Date>
+						</manifestEntries>
+					</archive>
+				</configuration>
+    		</plugin>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-plugin-api -->
+			<plugin>
+				<!-- plugin used to extract the git hash and store it in ${buildNumber} -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>${buildnumber-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+					<!-- place a lower number if you want shorter commit numbers in the archive filenames -->
+					<shortRevisionLength>40</shortRevisionLength>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
