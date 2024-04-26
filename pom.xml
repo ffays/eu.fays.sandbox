@@ -4,13 +4,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-<!-- Regular build
-mvn -Djava.util.logging.config.file=logging.properties clean package
--->
-
-<!-- Print dependency tree
-mvn dependency:tree -Dverbose
--->
 
 	<groupId>eu.fays</groupId>
 	<artifactId>eu.fays.sandbox</artifactId>
@@ -175,4 +168,11 @@ mvn dependency:tree -Dverbose
 			</build>
 		</profile>
 	</profiles>
+<description><![CDATA[
+# Regular build
+mvn -Djava.util.logging.config.file=logging.properties clean package
+
+# Print dependency tree
+mvn dependency:tree -Dverbose
+]]></description>	
 </project>
