@@ -116,6 +116,7 @@
 										<os family="windows"/>
 									</and>
 								</condition>
+								<echo level="info" message="project.build.os=${project.build.os}" />
 								<!-- project.build.ws -->
 								<condition property="project.build.ws" value="cocoa">
 									<and>
@@ -141,6 +142,7 @@
 										<equals arg1="${project.build.os}" arg2="win32"/>
 									</and>
 								</condition>
+								<echo level="info" message="project.build.ws=${project.build.ws}" />
 								<!-- project.build.arch -->
 								<condition property="project.build.arch" value="x86_64">
 									<and>
@@ -155,6 +157,7 @@
 										<isset property="project.build.arch" />
 									</not>
 								</condition>
+								<echo level="info" message="project.build.arch=${project.build.arch}" />
 								<!-- project.build.os.matches.host.os -->
 								<condition property="project.build.os.matches.host.os" value="true">
 									<or>
@@ -172,12 +175,10 @@
 										</and>
 									</or>
 								</condition>
+								<echo level="info" message="project.build.os.matches.host.os=${project.build.os.matches.host.os}" />
 								<!--
-								<echoproperties />
+								<echoproperties/>
 								-->
-								<echo level="info" message="project.build.os=${project.build.os}" />
-								<echo level="info" message="project.build.ws=${project.build.ws}" />
-								<echo level="info" message="project.build.arch=${project.build.arch}" />
 							</target>
 						</configuration>
 					</execution>
