@@ -93,8 +93,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 							sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 						} catch(e) {
 							def currentResult = currentBuild.currentResult
-							echo "projectName=${projectName}"
-							echo "currentResult=${currentResult}"
+							echo "catch: projectName=${projectName}"
+							echo "catch: currentResult=${currentResult}"
 							emailext subject: '$DEFAULT_SUBJECT',
 								body: '$DEFAULT_CONTENT',
 								recipientProviders: [
@@ -166,8 +166,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
 	catchError {
 		def currentResult = currentBuild.currentResult
-		echo "projectName=${projectName}"
-		echo "currentResult=${currentResult}"
+		echo "catchError: projectName=${projectName}"
+		echo "catchError: currentResult=${currentResult}"
 		if (currentBuild.currentResult == 'FAILURE') { // Other values: SUCCESS, UNSTABLE
 			emailext subject: '$DEFAULT_SUBJECT',
 				body: '$DEFAULT_CONTENT',
