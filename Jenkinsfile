@@ -92,6 +92,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 							echo "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 							sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 						} catch(e) {
+							// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
 							def currentResult = currentBuild.currentResult
 							echo "catch: projectName=${projectName}"
 							echo "catch: currentResult=${currentResult}"
@@ -161,23 +162,5 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		// 	$class: 'JUnitResultArchiver',
 		// 	testResults: '**/target/surefire-reports/TEST-*.xml'
 		// ])
-	}
-
-	// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
-	catchError {
-		def currentResult = currentBuild.currentResult
-		echo "catchError: projectName=${projectName}"
-		echo "catchError: currentResult=${currentResult}"
-		if (currentBuild.currentResult == 'FAILURE') { // Other values: SUCCESS, UNSTABLE
-			emailext subject: '$DEFAULT_SUBJECT',
-				body: '$DEFAULT_CONTENT',
-				recipientProviders: [
-					[$class: 'CulpritsRecipientProvider'],
-					[$class: 'DevelopersRecipientProvider'],
-					[$class: 'RequesterRecipientProvider']
-				], 
-				replyTo: '$DEFAULT_REPLYTO',
-				to: '$DEFAULT_RECIPIENTS'
-		}
 	}
 }
