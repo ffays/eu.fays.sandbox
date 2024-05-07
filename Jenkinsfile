@@ -88,7 +88,19 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			if(linux.equals(projectBuildOs)) {
 				wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
 					withEnv(['DISPLAY=:9']) {
-						sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
+						try {
+							sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
+						} catch(e) {
+							emailext subject: '$DEFAULT_SUBJECT',
+								body: '$DEFAULT_CONTENT',
+								recipientProviders: [
+									[$class: 'CulpritsRecipientProvider'],
+									[$class: 'DevelopersRecipientProvider'],
+									[$class: 'RequesterRecipientProvider']
+								], 
+								replyTo: '$DEFAULT_REPLYTO',
+								to: '$DEFAULT_RECIPIENTS'
+						}
 					}
 				}
 			} else {
