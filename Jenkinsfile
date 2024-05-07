@@ -145,7 +145,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
-	stage('Post') {
+	catchError {
 		if (currentBuild.currentResult == 'FAILURE') { // Other values: SUCCESS, UNSTABLE
 			emailext subject: '$DEFAULT_SUBJECT',
 				body: '$DEFAULT_CONTENT',
