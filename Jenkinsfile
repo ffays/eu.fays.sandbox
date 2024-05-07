@@ -75,7 +75,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		}
 	}
 
-	stage('Build') {
+
 		if(linux.equals(projectBuildOs)) {
 		    mvnOpts = '-Dproject.build.os=linux -Dproject.build.ws=gtk ' + mvnOpts
 		} else if(macosx.equals(projectBuildOs)) {
@@ -144,22 +144,18 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		// ])
 	}
 
-	// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)	
-	post {
-		always {
-			script {
-				if (currentBuild.currentResult == 'FAILURE') { // Other values: SUCCESS, UNSTABLE
-					emailext subject: '$DEFAULT_SUBJECT',
-						body: '$DEFAULT_CONTENT',
-						recipientProviders: [
-							[$class: 'CulpritsRecipientProvider'],
-							[$class: 'DevelopersRecipientProvider'],
-							[$class: 'RequesterRecipientProvider']
-						], 
-						replyTo: '$DEFAULT_REPLYTO',
-						to: '$DEFAULT_RECIPIENTS'
-				}
-			}
+	// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure	)	
+	stage('Post') {
+		if (currentBuild.currentResult == 'FAILURE') { // Other values: SUCCESS, UNSTABLE
+			emailext subject: '$DEFAULT_SUBJECT',
+				body: '$DEFAULT_CONTENT',
+				recipientProviders: [
+					[$class: 'CulpritsRecipientProvider'],
+					[$class: 'DevelopersRecipientProvider'],
+					[$class: 'RequesterRecipientProvider']
+				], 
+				replyTo: '$DEFAULT_REPLYTO',
+				to: '$DEFAULT_RECIPIENTS'
 		}
 	}
 }
