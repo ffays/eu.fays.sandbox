@@ -5,16 +5,9 @@
 // ["Build Periodically" with a Multi-branch Pipeline in Jenkins](https://stackoverflow.com/questions/39168861/build-periodically-with-a-multi-branch-pipeline-in-jenkins/39172513#39172513)
 
 node {
-	properties(
-		[
-			pipelineTriggers([
-				[
-					$class: 'TimerTrigger',
-					spec: '@midnight'
-				]
-			 ])
-		]
-	)
+	// offline : false if either a Maven plugin version has been modified or the Eclipse RCP target platform has been modified
+	def offline = true
+	def performCheckout = true
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
@@ -26,10 +19,24 @@ node {
 	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
 	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
 	def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
+	def projectBuildWs = win32.equals(projectBuildOs)?'win32':macosx.equals(projectBuildOs)?'cocoa':'gtk'
+	def loggingFormat = '%1$tF %1$tT	%4$s	%3$s	%5$s%6$s%n'
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
-	// --offline : Work offline - remove this option if a Maven plugin version has been modified
-	def mvnOpts = "--offline -f ${projectName}${fileSeparator}pom.xml"
+	def mvnOpts = /-f ${projectName}${fileSeparator}pom.xml -Dproject.build.os=${projectBuildOs} -Dproject.build.ws=${projectBuildWs} -Djava.util.logging.SimpleFormatter.format=$q$loggingFormat$q/
+	if(offline) mvnOpts += ' --offline'
+	if(!projectBuildOs.equals(hostOs)) mvnOpts += ' -DskipTests'
 	def mvnGoals = 'clean verify'
+
+	properties(
+		[
+			pipelineTriggers([
+				[
+					$class: 'TimerTrigger',
+					spec: '@midnight'
+				]
+			 ])
+		]
+	)
 
 	// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
 	def credentialsId
@@ -49,6 +56,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "jenkinsProjectName=${jenkinsProjectName}"
 	echo "hostOs=${hostOs}"
 	echo "projectBuildOs=${projectBuildOs}"
+	echo "projectBuildWs=${projectBuildWs}"
 	echo "jdkHome=${jdkHome}"
 	echo "scmUrl=${scmUrl}"
 
@@ -76,73 +84,61 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Build') {
-		if(linux.equals(projectBuildOs)) {
-			mvnOpts = '-Dproject.build.os=linux -Dproject.build.ws=gtk ' + mvnOpts
-		} else if(macosx.equals(projectBuildOs)) {
-			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
-		} else if(win32.equals(projectBuildOs)) {
-			mvnOpts = '-Dproject.build.os=win32 -Dproject.build.ws=win32 ' + mvnOpts
-		}
-
-		if(linux.equals(hostOs)) {
-			if(linux.equals(projectBuildOs)) {
-				wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
-					withEnv(['DISPLAY=:9']) {
-						try {
+		try {
+			if(linux.equals(hostOs)) {
+				if(linux.equals(projectBuildOs)) {
+					wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
+						withEnv(['DISPLAY=:9']) {
 							echo "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 							sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
-						} catch(e) {
-							// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
-							// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
-							// swaks --to support@example.com --server smtp.gmail.com:587 -tls -a LOGIN					
-							currentBuild.result = 'FAILURE'
-							emailext subject: '$DEFAULT_SUBJECT',
-								body: '$DEFAULT_CONTENT',
-								recipientProviders: [
-									[$class: 'CulpritsRecipientProvider'],
-									[$class: 'DevelopersRecipientProvider'],
-									[$class: 'RequesterRecipientProvider']
-								],
-								replyTo: '$DEFAULT_REPLYTO',
-								to: '$DEFAULT_RECIPIENTS'
-							throw e
-						} finally  {
-							echo "Maven build finished"
 						}
 					}
+				} else {
+					sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 				}
-			} else {
-				mvnOpts = '-DskipTests ' + mvnOpts
+			} else if(macosx.equals(hostOs)) {
+				env.MAVEN_OPTS = '-XstartOnFirstThread'
+				mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
 				sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
+			} else if(win32.equals(hostOs)) {
+				def userHome = bat(returnStdout: true, script: '@echo %USERPROFILE%').trim()
+				echo 'USERPROFILE=' + '"' + userHome + '"'
+
+				// To avoid whitespace issues in the workspace folder name, a junction (i.e. a symbolic link) has been created on the root folder level:
+				//   mklink /j C:\workspace "C:\Program Files (x86)\Jenkins\workspace"
+				def workspaceFolder = /\workspace/ + pwd().substring(pwd().lastIndexOf(fileSeparator))
+
+				// Maven's global settings may be tweaked in order to avoid to have yet another local repository in the system profile
+				// c.f. "<localRepository>C:\Users\devops\.m2\repository</localRepository>" in "settings.xml"
+				// otherwise the local maven's repository would have been there:
+				//   C:\Windows\System32\config\systemprofile\.m2\repository
+
+				// Maven build
+				// mvnOpts = mvnOpts + / --global-settings C:\Users\devops\.m2\settings.xml/
+				bat(/cd ${workspaceFolder} & mvn ${mvnOpts} ${mvnGoals}/)
 			}
-		} else if(macosx.equals(hostOs)) {
-			if(!macosx.equals(projectBuildOs)) {
-				mvnOpts = '-DskipTests ' + mvnOpts
-			}
-			env.MAVEN_OPTS = '-XstartOnFirstThread'
-			mvnOpts = '-Dproject.build.os=macosx -Dproject.build.ws=cocoa ' + mvnOpts
-			sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
-		} else if(win32.equals(hostOs)) {
-			if(!win32.equals(projectBuildOs)) {
-				mvnOpts = '-DskipTests ' + mvnOpts
-			}
-
-			def userHome = bat(returnStdout: true, script: '@echo %USERPROFILE%').trim()
-			echo 'USERPROFILE=' + '"' + userHome + '"'
-
-			// To avoid whitespace issues in the workspace folder name, a junction (i.e. a symbolic link) has been created on the root folder level:
-			//   mklink /j C:\workspace "C:\Program Files (x86)\Jenkins\workspace"
-			def workspaceFolder = /\workspace/ + pwd().substring(pwd().lastIndexOf(fileSeparator))
-
-			// Maven's global settings may be tweaked in order to avoid to have yet another local repository in the system profile
-			// c.f. "<localRepository>C:\Users\devops\.m2\repository</localRepository>" in "settings.xml"
-			// otherwise the local maven's repository would have been there:
-			//   C:\Windows\System32\config\systemprofile\.m2\repository
-
-			// Maven build
-			// mvnOpts = mvnOpts + / --global-settings C:\Users\devops\.m2\settings.xml/
-			bat(/cd ${workspaceFolder} & mvn ${mvnOpts} ${mvnGoals}/)
+		} catch(e) {
+			// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
+			// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
+			// swaks --to support@example.com --server smtp.gmail.com:587 -tls -a LOGIN					
+			currentBuild.result = 'FAILURE'
+			emailext subject: '$DEFAULT_SUBJECT',
+				body: '$DEFAULT_CONTENT',
+				recipientProviders: [
+					[$class: 'CulpritsRecipientProvider'],
+					[$class: 'DevelopersRecipientProvider'],
+					[$class: 'RequesterRecipientProvider']
+				],
+				replyTo: '$DEFAULT_REPLYTO',
+				to: '$DEFAULT_RECIPIENTS'
+			throw e
+		} finally  {
+			echo "Maven build finished"
 		}
+		
+	}
+	
+	stage('Archiver') {
 		def commitHash = null
 		if(scmVars != null) {
 			commitHash = scmVars.GIT_COMMIT
@@ -161,6 +157,6 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		// step([
 		// 	$class: 'JUnitResultArchiver',
 		// 	testResults: '**/target/surefire-reports/TEST-*.xml'
-		// ])
+		// ])	
 	}
 }
