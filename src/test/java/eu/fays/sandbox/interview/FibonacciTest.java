@@ -25,7 +25,7 @@ public class FibonacciTest {
 			Arguments.of(4, Arrays.asList(new Integer[] {1, 1, 2, 3 })),
 			Arguments.of(5, Arrays.asList(new Integer[] {1, 1, 2, 3, 5 })),
 			Arguments.of(6, Arrays.asList(new Integer[] {1, 1, 2, 3, 5, 8 })),
-			Arguments.of(7, Arrays.asList(new Integer[] {1, 1, 2, 3, 5, 8, 14 }))
+			Arguments.of(7, Arrays.asList(new Integer[] {1, 1, 2, 3, 5, 8, 13 }))
 		);
 		// @formatter:on		
 	}
