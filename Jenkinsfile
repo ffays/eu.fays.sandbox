@@ -21,6 +21,7 @@ node {
 	def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
 	def projectBuildWs = win32.equals(projectBuildOs)?'win32':macosx.equals(projectBuildOs)?'cocoa':'gtk'
 	def loggingFormat = '%1$tF %1$tT	%4$s	%3$s	%5$s%6$s%n'
+	def q = isUnix()?"'":'"'
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
 	def mvnOpts = /-f ${projectName}${fileSeparator}pom.xml -Dproject.build.os=${projectBuildOs} -Dproject.build.ws=${projectBuildWs} -Djava.util.logging.SimpleFormatter.format=$q$loggingFormat$q/
 	if(offline) mvnOpts += ' --offline'
