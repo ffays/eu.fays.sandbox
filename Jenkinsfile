@@ -99,9 +99,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 							emailext subject: '$DEFAULT_SUBJECT',
 								body: '$DEFAULT_CONTENT',
 								recipientProviders: [
-									[$class: 'CulpritsRecipientProvider'],
-									[$class: 'DevelopersRecipientProvider'],
-									[$class: 'RequesterRecipientProvider']
+									[$class: 'CulpritsRecipientProvider']
 								], 
 								replyTo: '$DEFAULT_REPLYTO',
 								to: '$DEFAULT_RECIPIENTS'
