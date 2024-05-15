@@ -160,4 +160,14 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		// 	testResults: '**/target/surefire-reports/TEST-*.xml'
 		// ])	
 	}
+
+	stage('Email') {
+		emailext subject: '$DEFAULT_SUBJECT',
+			body: '$DEFAULT_CONTENT',
+			recipientProviders: [
+				[$class: 'RequesterRecipientProvider']
+			],
+			replyTo: '$DEFAULT_REPLYTO',
+			to: '$DEFAULT_RECIPIENTS'
+	}
 }
