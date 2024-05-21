@@ -131,7 +131,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 					[$class: 'RequesterRecipientProvider']
 				],
 				replyTo: '$DEFAULT_REPLYTO',
-				to: '$DEFAULT_RECIPIENTS'
+				to: '$DEFAULT_RECIPIENTS',
+				attachmentsPattern: '**/junit-noframes.html'
 			throw e
 		} finally  {
 			echo "Maven build finished"
