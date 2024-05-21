@@ -119,7 +119,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 				bat(/cd ${workspaceFolder} & mvn ${mvnOpts} ${mvnGoals}/)
 			}
 		} catch(e) {
-			sh "'${mvnExe}' surefire-report:report"
+			sh "'${mvnExe}' -f ${projectName}${fileSeparator}pom.xml surefire-report:report"
 			// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
 			// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
 			// swaks --to support@example.com --server smtp.gmail.com:587 -tls -a LOGIN					
