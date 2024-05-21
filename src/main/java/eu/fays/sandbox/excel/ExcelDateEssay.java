@@ -27,8 +27,8 @@ public class ExcelDateEssay {
 		// ... an non-existing day because 1900 is not a leap year,
 		// therefore, starting from the 61st day after the Epoch, this non-existing day has to be skipped.
 
-		// 1 day == 24h * 60m * 60s * 1000ms == 84_400_000 ms
-		final LocalDateTime result = excelEpoch.plus(new Double((excelDate - (excelDate >= 61d ? 1d : 0d)) * 86_400_000d).longValue(), ChronoUnit.MILLIS);
+		// 1 day == 24h * 60m * 60s * 1000ms == 84_400_000 ms		
+		final LocalDateTime result = excelEpoch.plus(Double.valueOf((excelDate - (excelDate >= 61d ? 1d : 0d)) * 86_400_000d).longValue(), ChronoUnit.MILLIS);
 
 		return result;
 	}
