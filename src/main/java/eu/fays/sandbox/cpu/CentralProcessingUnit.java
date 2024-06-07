@@ -15,10 +15,13 @@ public enum CentralProcessingUnit {
 
 	/** Unknown  */
 	UNKNOWN( 1, "Unknown"),
+
 	/** Apple M3 Max */
 	APPLE_M3_MAX ( 5095, "Apple M3 Max"),
+
 	/** Intel i5-4460 */
 	INTEL_I5_4460( 1856, "Intel(R) Core(TM) i5-4460 CPU @ 3.20GHz"),
+
 	/** Intel Core i7-3770 */
 	INTEL_I7_3770( 1700, "Intel(R) Core(TM) i7-3770 CPU @ 3.40GHz");
 
@@ -31,7 +34,7 @@ public enum CentralProcessingUnit {
 	 * <pre>
 	 */
 	public final int sciMark2Score;
-	
+
 	/** 
 	 * Central Processing Unit name.<br>
 	 * <br>
@@ -50,10 +53,8 @@ public enum CentralProcessingUnit {
 	 * @return the enumerated value matching the given label
 	 */
 	public static CentralProcessingUnit safeValueOfLabel(final String label) {
-		final String l0 = label.replaceAll("\\s","");
 		for(final CentralProcessingUnit cpu : values()) {
-			final String l1 = cpu.label.replaceAll("\\s","");
-			if(l0.equalsIgnoreCase(l1)) {
+			if(cpu.label.equals(label)) {
 				return cpu;
 			}
 		}
@@ -65,19 +66,19 @@ public enum CentralProcessingUnit {
 	 * @return the CPU model name
 	 */
 	public static String getCentralProcessingUnitName() {
-		
-		String cpuName = System.getProperty("cpu.name");
-		
+		String cpuName = System.getProperty("cpu.name");		
+
 		if(cpuName == null) {
 			final String osName = System.getProperty("os.name", "Unknown");
 			
 			try {
 				if(osName.startsWith("Windows")) {
-					final Process process = new ProcessBuilder("wmic", "cpu", "get", "name").start();
+					final Process process = new ProcessBuilder("WMIC.exe", "cpu", "get", "name").start();
 					process.waitFor();
 					try (final InputStream is = process.getInputStream(); final InputStreamReader isr = new InputStreamReader(is); final BufferedReader br = new BufferedReader(isr);) {
 						br.readLine();
-						cpuName = br.readLine();
+						br.readLine();
+						cpuName = br.readLine().trim().replaceAll("\\s+", " ");
 					}
 				} else if (osName.startsWith("Linux")) {
 					try (final FileReader fr = new FileReader(new File("/proc/cpuinfo")); final BufferedReader br = new BufferedReader(fr);) {
@@ -110,7 +111,7 @@ public enum CentralProcessingUnit {
 
 		return cpuName;
 	}
-	
+
 	/**
 	 * Constructor
 	 * @param sciMark2Score <a href="https://math.nist.gov/scimark2/">SciMark 2</a> composite score
