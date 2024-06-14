@@ -120,7 +120,9 @@ $bd  = [System.Convert]::FromBase64String($b64);
 				// mvnOpts = mvnOpts + / --global-settings C:\Users\devops\.m2\settings.xml/
 				bat(/cd ${workspaceFolder} & mvn ${mvnOpts} ${mvnGoals}/)
 			}
+			echo "Maven build finished"
 		} catch(e) {
+			echo "Maven build failed"
 			sh "'${mvnExe}' -f ${projectName}${fileSeparator}pom.xml surefire-report:report"
 			// [Send an email on Jenkins pipeline failure](https://stackoverflow.com/questions/39720225/send-an-email-on-jenkins-pipeline-failure)
 			// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
@@ -140,12 +142,13 @@ $bd  = [System.Convert]::FromBase64String($b64);
 
 			throw e
 		} finally  {
-			echo "Maven build finished"
+			echo "Build finalizer"
 		}
-		
+		echo "Build end"
 	}
 	
 	stage('Archiver') {
+		echo "Archiver begin"
 		def commitHash = null
 		if(scmVars != null) {
 			commitHash = scmVars.GIT_COMMIT
@@ -164,10 +167,12 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		// step([
 		// 	$class: 'JUnitResultArchiver',
 		// 	testResults: '**/target/surefire-reports/TEST-*.xml'
-		// ])	
+		// ])
+		echo "Archiver end"
 	}
 
 	stage('Email') {
+		echo "Not sending an e-mail notification."
 //		emailext subject: '$DEFAULT_SUBJECT',
 //			body: '$DEFAULT_CONTENT',
 //			recipientProviders: [
@@ -175,7 +180,5 @@ $bd  = [System.Convert]::FromBase64String($b64);
 //			],
 //			replyTo: '$DEFAULT_REPLYTO',
 //			to: '$DEFAULT_RECIPIENTS'
-
-		echo "Not sending an e-mail notification."
 	}
 }
