@@ -167,7 +167,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Email') {
-		if(sendEmail) {}
+		if(sendEmail) {
 			emailext subject: '$DEFAULT_SUBJECT',
 				body: '$DEFAULT_CONTENT',
 				recipientProviders: [
