@@ -8,6 +8,7 @@ node {
 	// offline : false if either a Maven plugin version has been modified or the Eclipse RCP target platform has been modified
 	def offline = true
 	def performCheckout = true
+	def sendEmail = false
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
@@ -28,6 +29,7 @@ node {
 	if(!projectBuildOs.equals(hostOs)) mvnOpts += ' -DskipTests'
 	def mvnGoals = 'clean verify'
 
+/*
 	properties(
 		[
 			pipelineTriggers([
@@ -38,6 +40,7 @@ node {
 			 ])
 		]
 	)
+*/
 
 	// credentialsId: it is the MD5 fingerprint of the ssh key, e.g. ssh-keygen -E md5 -l -f ~/.ssh/id_rsa.pub
 	def credentialsId
@@ -86,7 +89,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 
 	stage('Build') {
 		try {
-			if(linux.equals(hostOs)) {
+			if(	.equals(hostOs)) {
 				if(linux.equals(projectBuildOs)) {
 					wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
 						withEnv(['DISPLAY=:9']) {
@@ -164,12 +167,14 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Email') {
-		emailext subject: '$DEFAULT_SUBJECT',
-			body: '$DEFAULT_CONTENT',
-			recipientProviders: [
-				[$class: 'RequesterRecipientProvider']
-			],
-			replyTo: '$DEFAULT_REPLYTO',
-			to: '$DEFAULT_RECIPIENTS'
+		if(sendEmail) {}
+			emailext subject: '$DEFAULT_SUBJECT',
+				body: '$DEFAULT_CONTENT',
+				recipientProviders: [
+					[$class: 'RequesterRecipientProvider']
+				],
+				replyTo: '$DEFAULT_REPLYTO',
+				to: '$DEFAULT_RECIPIENTS'
+		}
 	}
 }
