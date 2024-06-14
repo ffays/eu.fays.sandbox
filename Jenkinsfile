@@ -127,16 +127,18 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
 			// swaks --to support@example.com --server smtp.gmail.com:587 -tls -a LOGIN					
 			currentBuild.result = 'FAILURE'
-			emailext subject: '$DEFAULT_SUBJECT',
-				body: '$DEFAULT_CONTENT',
-				recipientProviders: [
-					[$class: 'CulpritsRecipientProvider'],
-					[$class: 'DevelopersRecipientProvider'],
-					[$class: 'RequesterRecipientProvider']
-				],
-				replyTo: '$DEFAULT_REPLYTO',
-				to: '$DEFAULT_RECIPIENTS',
-				attachmentsPattern: '**/surefire-report.html'
+			if(sendEmail) {			
+				emailext subject: '$DEFAULT_SUBJECT',
+					body: '$DEFAULT_CONTENT',
+					recipientProviders: [
+						[$class: 'CulpritsRecipientProvider'],
+						[$class: 'DevelopersRecipientProvider'],
+						[$class: 'RequesterRecipientProvider']
+					],
+					replyTo: '$DEFAULT_REPLYTO',
+					to: '$DEFAULT_RECIPIENTS',
+					attachmentsPattern: '**/surefire-report.html'
+			}
 			throw e
 		} finally  {
 			echo "Maven build finished"
