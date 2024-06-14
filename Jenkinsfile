@@ -8,7 +8,7 @@ node {
 	// offline : false if either a Maven plugin version has been modified or the Eclipse RCP target platform has been modified
 	def offline = true
 	def performCheckout = true
-	def sendEmail = false
+	def sendEmailNotification = { -> false }
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
@@ -127,7 +127,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
 			// swaks --to support@example.com --server smtp.gmail.com:587 -tls -a LOGIN					
 			currentBuild.result = 'FAILURE'
-			if(sendEmail) {			
+			if(sendEmailNotification) {			
 				emailext subject: '$DEFAULT_SUBJECT',
 					body: '$DEFAULT_CONTENT',
 					recipientProviders: [
@@ -169,7 +169,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Email') {
-		if(sendEmail) {
+		if(sendEmailNotification) {
 			emailext subject: '$DEFAULT_SUBJECT',
 				body: '$DEFAULT_CONTENT',
 				recipientProviders: [
