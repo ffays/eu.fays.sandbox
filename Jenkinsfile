@@ -8,7 +8,6 @@ node {
 	// offline : false if either a Maven plugin version has been modified or the Eclipse RCP target platform has been modified
 	def offline = true
 	def performCheckout = true
-	def sendEmailNotification = { -> false }
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
@@ -127,18 +126,18 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			// [Google account : Less secure app access : Allow less secure apps](https://myaccount.google.com/lesssecureapps)
 			// swaks --to support@example.com --server smtp.gmail.com:587 -tls -a LOGIN					
 			currentBuild.result = 'FAILURE'
-			if(sendEmailNotification) {			
-				emailext subject: '$DEFAULT_SUBJECT',
-					body: '$DEFAULT_CONTENT',
-					recipientProviders: [
-						[$class: 'CulpritsRecipientProvider'],
-						[$class: 'DevelopersRecipientProvider'],
-						[$class: 'RequesterRecipientProvider']
-					],
-					replyTo: '$DEFAULT_REPLYTO',
-					to: '$DEFAULT_RECIPIENTS',
-					attachmentsPattern: '**/surefire-report.html'
-			}
+/*			
+			emailext subject: '$DEFAULT_SUBJECT',
+				body: '$DEFAULT_CONTENT',
+				recipientProviders: [
+					[$class: 'CulpritsRecipientProvider'],
+					[$class: 'DevelopersRecipientProvider'],
+					[$class: 'RequesterRecipientProvider']
+				],
+				replyTo: '$DEFAULT_REPLYTO',
+				to: '$DEFAULT_RECIPIENTS',
+				attachmentsPattern: '**/surefire-report.html'
+*/
 			throw e
 		} finally  {
 			echo "Maven build finished"
@@ -169,16 +168,15 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	}
 
 	stage('Email') {
-		if(sendEmailNotification) {
-			emailext subject: '$DEFAULT_SUBJECT',
-				body: '$DEFAULT_CONTENT',
-				recipientProviders: [
-					[$class: 'RequesterRecipientProvider']
-				],
-				replyTo: '$DEFAULT_REPLYTO',
-				to: '$DEFAULT_RECIPIENTS'
-		} else {
-			echo "Not sending an e-mail notification."
-		}
+/*	
+		emailext subject: '$DEFAULT_SUBJECT',
+			body: '$DEFAULT_CONTENT',
+			recipientProviders: [
+				[$class: 'RequesterRecipientProvider']
+			],
+			replyTo: '$DEFAULT_REPLYTO',
+			to: '$DEFAULT_RECIPIENTS'
+*/
+		echo "Not sending an e-mail notification."
 	}
 }
