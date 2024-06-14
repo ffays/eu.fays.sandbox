@@ -89,7 +89,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 
 	stage('Build') {
 		try {
-			if(	.equals(hostOs)) {
+			if(linux..equals(hostOs)) {
 				if(linux.equals(projectBuildOs)) {
 					wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
 						withEnv(['DISPLAY=:9']) {
