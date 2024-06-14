@@ -177,6 +177,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 				],
 				replyTo: '$DEFAULT_REPLYTO',
 				to: '$DEFAULT_RECIPIENTS'
+		} else {
+			echo "Not sending an e-mail notification."
 		}
 	}
 }
