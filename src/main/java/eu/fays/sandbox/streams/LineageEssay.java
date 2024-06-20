@@ -5,9 +5,13 @@ import java.util.TreeSet;
 
 public class LineageEssay {
 
+	@SuppressWarnings("nls")
 	public static void main(String[] args) {
-		System.out.println(getLineage(TreeSet.class));
+		getLineage(TreeSet.class).stream().forEach(c -> System.out.println(c));
+		System.out.println("-".repeat(72));
 		new LineageIterator(TreeSet.class).stream().forEach(c -> System.out.println(c));
+		System.out.println("-".repeat(72));
+		new ElementIterator<Class<?>>(TreeSet.class, Class::getSuperclass).stream().forEach(c -> System.out.println(c));
 	}
 	
 	/**
