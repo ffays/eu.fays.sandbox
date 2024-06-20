@@ -7,6 +7,7 @@ public class LineageEssay {
 
 	public static void main(String[] args) {
 		System.out.println(getLineage(TreeSet.class));
+		new LineageIterator(TreeSet.class).stream().forEach(c -> System.out.println(c));
 	}
 	
 	/**
@@ -22,4 +23,5 @@ public class LineageEssay {
 		
 		return result;
 	}
+
 }
