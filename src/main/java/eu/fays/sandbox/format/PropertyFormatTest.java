@@ -33,7 +33,7 @@ public class PropertyFormatTest {
 		final DateTimeFormatter dateTimeFormatter = ofLocalizedDateTime(SHORT, SHORT);
 		final String timestamp = dateTimeFormatter.format(LocalDateTime.of(2001, 12, 31, 23, 59, 59));
 //		final boolean isMonthDayFormat = timestamp.startsWith("12");
-		final boolean is12HFormat = timestamp.endsWith("PM");
+		final boolean is12HFormat = timestamp.matches(".*\\p{Alpha}+.*");
 		final char decimalSeparator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 
 		// @formatter:off
