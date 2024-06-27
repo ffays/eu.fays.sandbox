@@ -1,15 +1,19 @@
 package eu.fays.sandbox.format;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.time.temporal.ChronoUnit.YEARS;
+
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings("nls")
@@ -49,41 +53,32 @@ public enum PropertyFormat {
 	public static final DecimalFormat DECIMAL_FORMAT_ONE_DIGIT = new DecimalFormat(DECIMAL_FORMAT_ONE_DIGIT_PATTERN);
 
 	/** Timestamp format */
-	public static final DateTimeFormatter LOCAL_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+	public static final DateTimeFormatter LOCAL_DATE_TIME_FORMAT = ofPattern("dd-MM-yyyy HH:mm:ss");
 
-	/** Time origin: 1st January of current year */
-	private static final ZonedDateTime TIME_ORIGIN = ZonedDateTime.of(ZonedDateTime.now().getYear(), 1, 1, 0, 0, 0, 0, ZoneOffset.systemDefault());
+	/** Time origin: 1st January of 2001 */
+	public static final ZonedDateTime TIME_ORIGIN = ZonedDateTime.of(2001, 1, 1, 0, 0, 0, 0, ZoneOffset.systemDefault());
 
 	/** Origin time-stamp in seconds */
-	private static final long T0 = ZonedDateTime.of(TIME_ORIGIN.getYear() + 1, 1, 1, 0, 0, 0, 0, TIME_ORIGIN.getZone()).toEpochSecond();
+	public static final long T0 = ZonedDateTime.of(TIME_ORIGIN.getYear() + 1, 1, 1, 0, 0, 0, 0, TIME_ORIGIN.getZone()).toEpochSecond();
 	
 	/** Number of seconds to next new Year, expressed in seconds. */
-	private static final long _secondsToNewYear = ZonedDateTime.of(TIME_ORIGIN.getYear() + 1, 1, 1, 0, 0, 0, 0, TIME_ORIGIN.getZone()).toEpochSecond() - TIME_ORIGIN.toEpochSecond();
-
-	/** Short date time format without year - international */
-	public static final String DATE_TIME_SHORT_SECONDS_DM_PATTERN = "dd/MM HH:mm:ss";
-
-	/** Long date time format with year - international */
-	public static final String DATE_TIME_LONG_SECONDS_DM_PATTERN = "dd/MM/YY HH:mm:ss";
-	
-	/** Short date time format without year - US */
-	public static final String DATE_TIME_SHORT_SECONDS_MD_PATTERN = "MM/dd hh:mm:ss a"; //$NON-NLS-1$
-
-	/** Long date time format with year - US */
-	public static final String DATE_TIME_LONG_SECONDS_MD_PATTERN = "MM/dd/YY hh:mm:ss a"; //$NON-NLS-1$
+	public static final long SECONDS_TO_NEW_YEAR = Duration.between(TIME_ORIGIN, TIME_ORIGIN.plus(1, YEARS)).toSeconds();
 
 	/** Short date time format without year */
-	public static final SimpleDateFormat SHORT_TIME_FORMAT = isMonthDayFormat()?new SimpleDateFormat(DATE_TIME_SHORT_SECONDS_MD_PATTERN):new SimpleDateFormat(DATE_TIME_SHORT_SECONDS_DM_PATTERN);
+	
+	
+			
+	public static final DateTimeFormatter SHORT_TIME_FORMAT = isMonthDayFormat()?is12HoursFormat()?ofPattern("MM/dd hh:mm:ss a"):ofPattern("dd/MM HH:mm:ss"):is12HoursFormat()?ofPattern("MM/dd hh:mm:ss a"):ofPattern("dd/MM HH:mm:ss");
 	
 	/** Long date time format with year */
-	public static final SimpleDateFormat LONG_TIME_FORMAT = isMonthDayFormat()?new SimpleDateFormat(DATE_TIME_LONG_SECONDS_MD_PATTERN):new SimpleDateFormat(DATE_TIME_SHORT_SECONDS_DM_PATTERN);
+	public static final DateTimeFormatter LONG_TIME_FORMAT = isMonthDayFormat()?is12HoursFormat()?ofPattern("MM/dd/YY hh:mm:ss a"):ofPattern("dd/MM/YY HH:mm:ss"):is12HoursFormat()?ofPattern("MM/dd/YY hh:mm:ss a"):ofPattern("dd/MM/YY HH:mm:ss");
 	
 	/** The date format without year */
-	public static final SimpleDateFormat SHORT_DATE_FORMAT = isMonthDayFormat()?new SimpleDateFormat(DATE_TIME_SHORT_SECONDS_MD_PATTERN) : new SimpleDateFormat(DATE_TIME_SHORT_SECONDS_DM_PATTERN);
+	public static final DateTimeFormatter SHORT_DATE_FORMAT = isMonthDayFormat()?ofPattern("MM/dd"):ofPattern("dd/MM");
 
 	/** The date format with year */
-	public static final SimpleDateFormat LONG_DATE_FORMAT = isMonthDayFormat()?new SimpleDateFormat(DATE_TIME_LONG_SECONDS_MD_PATTERN) : new SimpleDateFormat(DATE_TIME_LONG_SECONDS_DM_PATTERN);
-	
+	public static final DateTimeFormatter LONG_DATE_FORMAT = isMonthDayFormat()?ofPattern("MM/dd/YY"):ofPattern("dd/MM/YY");
+
 	/**
 	 * Converts the given time delta into a duration that can be displayed as a number of hours, minute, seconds
 	 * @param delta the time delta, expressed in seconds
@@ -112,7 +107,7 @@ public enum PropertyFormat {
 		//
 		return result;
 	}
-	
+
 	/**
 	 * Format as string the given value depending of its type
 	 * @param value the value
@@ -155,7 +150,7 @@ public enum PropertyFormat {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Converts the given time into a time stamp that can be displayed in the user interface
 	 * @param time the time, expressed in seconds since time origin
@@ -163,11 +158,11 @@ public enum PropertyFormat {
 	 */
 	public String timeToString(final long time) {
 		final String result;
-		final long time0 = T0 + time;
-		if (time > _secondsToNewYear) {
-			result = LONG_TIME_FORMAT.format(new Date(time0*1000L));
+		final ZonedDateTime zonedDateTime = TIME_ORIGIN.plus(time, SECONDS);
+		if (time >= SECONDS_TO_NEW_YEAR) {
+			result = LONG_TIME_FORMAT.format(zonedDateTime);
 		} else {
-			result = SHORT_TIME_FORMAT.format(new Date(time0*1000L));
+			result = SHORT_TIME_FORMAT.format(zonedDateTime);
 		}
 		//
 		assert result != null;
@@ -175,7 +170,7 @@ public enum PropertyFormat {
 		//
 		return result;
 	}
-	
+
 	/**
 	 * Converts the given time into a date that can be displayed in the user interface
 	 * @param time the time, expressed in seconds since time origin
@@ -183,12 +178,11 @@ public enum PropertyFormat {
 	 */
 	public String dateToString(final long time) {
 		final String result;
-		final long time0 = T0 + time;
-		
-		if (time > _secondsToNewYear) {
-			result = LONG_DATE_FORMAT.format(new Date(time0*1000L));
+		final ZonedDateTime zonedDateTime = TIME_ORIGIN.plus(time, SECONDS);
+		if (time >= SECONDS_TO_NEW_YEAR) {
+			result = LONG_DATE_FORMAT.format(zonedDateTime);
 		} else {
-			result = SHORT_DATE_FORMAT.format(new Date(time0*1000L));
+			result = SHORT_DATE_FORMAT.format(zonedDateTime);
 		}
 		//
 		assert result != null;
@@ -196,17 +190,24 @@ public enum PropertyFormat {
 		//
 		return result;
 	}
-	
+
 	/**
 	 * Returns true if the current Locale requires Months before Days in the date format
 	 * @return true if the current Locale requires Months before Days in the date format
 	 */
 	public static boolean isMonthDayFormat() {
 		final String pattern = new SimpleDateFormat().toLocalizedPattern().toLowerCase();
-		int dIndex = pattern.indexOf("d"); //$NON-NLS-1$
-		int mIndex = pattern.indexOf("m"); //$NON-NLS-1$
+		int dIndex = pattern.indexOf("d");
+		int mIndex = pattern.indexOf("m");
 		return dIndex > -1 && mIndex > -1 && mIndex < dIndex;
 	}
 
-	
+	/**
+	 * Returns true if the current Locale requires AM/PM in the date format
+	 * @return true if the current Locale requires AM/PM in the date format
+	 */
+	public static boolean is12HoursFormat() {
+		final String pattern = new SimpleDateFormat().toLocalizedPattern().toLowerCase();
+		return pattern.endsWith("a");
+	}
 }

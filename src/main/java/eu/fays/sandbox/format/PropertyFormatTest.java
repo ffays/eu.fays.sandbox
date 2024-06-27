@@ -1,5 +1,6 @@
 package eu.fays.sandbox.format;
 
+import static eu.fays.sandbox.format.PropertyFormat.TIME_ORIGIN;
 import static eu.fays.sandbox.format.PropertyFormat.DATE_TIME;
 import static eu.fays.sandbox.format.PropertyFormat.DEFAULT;
 import static eu.fays.sandbox.format.PropertyFormat.DURATION;
@@ -7,10 +8,13 @@ import static eu.fays.sandbox.format.PropertyFormat.FLOAT_LIMITED;
 import static eu.fays.sandbox.format.PropertyFormat.PERCENTAGE;
 import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
 import static java.time.format.FormatStyle.SHORT;
+import static java.time.temporal.ChronoUnit.YEARS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Path;
 import java.text.DecimalFormatSymbols;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
@@ -31,8 +35,12 @@ public class PropertyFormatTest {
 		final Double d10_123456 = Double.valueOf(10.123456d);
 
 		final DateTimeFormatter dateTimeFormatter = ofLocalizedDateTime(SHORT, SHORT);
-		final String timestamp = dateTimeFormatter.format(LocalDateTime.of(2001, 12, 31, 23, 59, 59));
-//		final boolean isMonthDayFormat = timestamp.startsWith("12");
+		final LocalDateTime localDateTime = LocalDateTime.of(2001, 12, 31, 23, 59, 59);
+		final Long yearEndOffset = Duration.between(TIME_ORIGIN, TIME_ORIGIN.plus(1, YEARS).minus(1, SECONDS)).toSeconds();
+		final Long yearBeginOffset = Duration.between(TIME_ORIGIN, TIME_ORIGIN.plus(1, YEARS)).toSeconds(); 
+
+		final String timestamp = dateTimeFormatter.format(localDateTime);
+		final boolean isMonthDayFormat = timestamp.startsWith("12");
 		final boolean is12HFormat = timestamp.matches(".*\\p{Alpha}+.*");
 		final char decimalSeparator = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 
@@ -49,7 +57,9 @@ public class PropertyFormatTest {
 		/*  9 */ Arguments.of(PERCENTAGE, "", null),
 		/* 10 */ Arguments.of(PERCENTAGE, "1000.00%".replace('.', decimalSeparator), d10),
 		/* 11 */ Arguments.of(FLOAT_LIMITED, "", null),
-		/* 12 */ Arguments.of(FLOAT_LIMITED, "10.1".replace('.', decimalSeparator), d10_123456)
+		/* 12 */ Arguments.of(FLOAT_LIMITED, "10.1".replace('.', decimalSeparator), d10_123456),
+		/* 13 */ Arguments.of(DATE_TIME, isMonthDayFormat?is12HFormat?"12/31 11:59:59 PM":"12/31 23:59:59":is12HFormat?"31/12 11:59:59 PM":"31/12 23:59:59", yearEndOffset, true),
+		/* 14 */ Arguments.of(DATE_TIME, is12HFormat?"01/01/02 12:00:00 AM":"01/01/02 00:00:00", yearBeginOffset, true)		
 		);
 		// @formatter:on
 	}
