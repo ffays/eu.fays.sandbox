@@ -85,6 +85,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 				echo "scmVars"
 				print scmVars
 			}
+		} else {
+			echo 'Skipped git checkout'
 		}
 	}
 
