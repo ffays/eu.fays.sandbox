@@ -131,6 +131,14 @@ public class DateFormatLocaleEssay {
 			final LocalDateTime localDateTime = LocalDateTime.parse(formatted, formatter);
 			System.out.println();
 		}
+		
+		// ZonedDateTime
+		{
+			final ZonedDateTime now = ZonedDateTime.now();
+			System.out.println(now.getClass().getSimpleName());
+			System.out.println(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz").format(now)); // HTTP Header "Expires" format
+			System.out.println();
+		}
 
 		// Date
 		{
