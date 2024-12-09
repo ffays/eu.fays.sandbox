@@ -22,11 +22,11 @@ public class OrganizationallyUniqueIdentifierLookup {
 		// Wireshark manufacturer database
 		final URL url = new URL("https://www.wireshark.org/download/automated/data/manuf.gz");
 		final HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-		final TreeMap<Long,String> lookup = new TreeMap<>();
+		final TreeMap<Integer,String> lookup = new TreeMap<>();
 		try(final InputStream is = connection.getInputStream(); final GZIPInputStream gzis = new GZIPInputStream(is); final InputStreamReader isr = new InputStreamReader(gzis, UTF_8); final BufferedReader reader = new BufferedReader(isr)) {
 			for (String l = reader.readLine(); l != null; l = reader.readLine()) {
 				if(!l.isEmpty() && l.charAt(0) != '#') {
-					long oui = 0L;
+					int oui = 0;
 					for(int i=0; i<6; i++) {
 						char c = l.charAt(7 - i - (i>>1));
 						long v = c & 0xF;
@@ -57,7 +57,7 @@ public class OrganizationallyUniqueIdentifierLookup {
 		for (final Long mac : macs) {
 			final String s = Long.toHexString(mac);
 			System.out.print("000000000000".substring(s.length()) + s.toUpperCase());
-			final Long oui = mac >> 24;
+			final int oui = (int)(mac >> 24);
 			if(lookup.containsKey(oui)) {
 				System.out.print('\t');				
 				System.out.print(lookup.get(oui));
