@@ -10,6 +10,7 @@ import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -41,6 +42,7 @@ public class OrganizationallyUniqueIdentifierLookup {
 		}
 
 		final Enumeration<NetworkInterface> e = getNetworkInterfaces();
+		final TreeSet<Long> macs = new TreeSet<>();
 		while(e.hasMoreElements()) {
 			final NetworkInterface ni = e.nextElement();
 			final byte[] ha = ni.getHardwareAddress();
@@ -48,15 +50,20 @@ public class OrganizationallyUniqueIdentifierLookup {
 				final byte[] ha8 = new byte[8];
 				arraycopy(ha, 0, ha8, 2, ha.length);
 				final Long mac = wrap(ha8).getLong();
-				System.out.print(Long.toHexString(mac));
-				
-				final Long oui = mac >> 24;
-				if(lookup.containsKey(oui)) {
-					System.out.print('\t');
-					System.out.println(lookup.get(oui));
-				}
-				System.out.println();
+				macs.add(mac);
 			}
 		}
+		
+		for (final Long mac : macs) {
+			final String s = Long.toHexString(mac);
+			System.out.print("000000000000".substring(s.length()) + s.toUpperCase());
+			final Long oui = mac >> 24;
+			if(lookup.containsKey(oui)) {
+				System.out.print('\t');				
+				System.out.print(lookup.get(oui));
+			}
+			System.out.println();			
+		}
+		System.out.flush();
 	}
 }
