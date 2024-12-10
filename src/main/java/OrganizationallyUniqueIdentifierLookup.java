@@ -35,7 +35,7 @@ public class OrganizationallyUniqueIdentifierLookup {
 						}
 						oui += v << (i << 2);
 					}
-					final String manufacturer = l.substring(l.lastIndexOf('\t'));
+					final String manufacturer = l.substring(l.lastIndexOf('\t')+1);
 					lookup.put(oui, manufacturer);
 				}
 			}
