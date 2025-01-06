@@ -22,7 +22,7 @@ public class UUIDEssay {
 		long leastSignificantBits = bi.longValue();
 		long mostSignificantBits = bi.shiftRight(64).longValue();
 
-		mostSignificantBits &= 0xfffffffffffff0ffL; // Clear version
+		mostSignificantBits &= 0xffffffffffff0fffL; // Clear version
 		mostSignificantBits |= 0x0000000000004000L; // Set to version 4
 		leastSignificantBits &= 0x3fffffffffffffffL; // Clear variant
 		leastSignificantBits |= 0x8000000000000000L; // Set to IETF variant
