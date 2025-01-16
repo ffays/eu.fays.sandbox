@@ -6,6 +6,7 @@ handlers=java.util.logging.ConsoleHandler
 .level=FINE
 java.util.logging.ConsoleHandler.level=FINE
 java.util.logging.SimpleFormatter.format=%1$tF %1$tT\t%4$s\t%3$s\t%5$s%6$s%n
+java.lang.ProcessBuilder.level=INFO
 
 */
 
