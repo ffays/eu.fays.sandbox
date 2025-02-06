@@ -1,3 +1,5 @@
+// Jenkins Multibranch Pipeline item name: sb-win32-win32-x86_64
+// Max folder name length with branch name: 32
 // [Pipeline: Basic Steps](https://jenkins.io/doc/pipeline/steps/workflow-basic-steps/)
 // [Pipeline Syntax](https://jenkins.io/doc/book/pipeline/syntax/)
 // [Pipeline Steps Reference](https://jenkins.io/doc/pipeline/steps/)
@@ -34,7 +36,6 @@ node {
 	def mvnGoals = 'clean verify'
 
 	def multiArchList = [
-		win32 +'/'+win32+'/'+aarch64,
 		win32 +'/'+win32+'/'+x86_64,
 		macosx+'/'+cocoa+'/'+aarch64,
 		macosx+'/'+cocoa+'/'+x86_64,
@@ -79,8 +80,8 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "projectBuildOs=${projectBuildOs}"
 	echo "projectBuildWs=${projectBuildWs}"
 	echo "projectBuildArch=${projectBuildArch}"
-	echo "mvnOpts=${mvnOpts}"
 	echo "displayName=${displayName}"
+	echo "mvnOpts=${mvnOpts}"
 	echo "scmUrl=${scmUrl}"
 	echo "mvnOpts=${mvnOpts}"
 
@@ -116,7 +117,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			if(linux.equals(hostOs)) {
 				if(linux.equals(projectBuildOs)) {
 					wrap([$class: 'Xvfb', displayName: displayName, screen: '1920x1080x24']) {
-						withEnv(['DISPLAY=:9']) {
+						withEnv(['DISPLAY=:'+displayName]) {
 							echo "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 							sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 						}
