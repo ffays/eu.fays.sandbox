@@ -34,14 +34,14 @@ node {
 	def mvnGoals = 'clean verify'
 
 	def multiArchList = [
-		java.nio.file.Path.of(win32, win32, aarch64),
-		java.nio.file.Path.of(win32, win32, x86_64),
-		java.nio.file.Path.of(macosx, cocoa, aarch64),
-		java.nio.file.Path.of(macosx, cocoa, x86_64),
-		java.nio.file.Path.of(linux, gtk, aarch64),
-		java.nio.file.Path.of(linux, gtk, x86_64)
+		win32 +'/'+win32+'/'+aarch64,
+		win32 +'/'+win32+'/'+x86_64,
+		macosx+'/'+cocoa+'/'+aarch64,
+		macosx+'/'+cocoa+'/'+x86_64,
+		linux +'/'+gtk  +'/'+aarch64,
+		linux +'/'+gtk  +'/'+x86_64
 	]
-	def currentArch = java.nio.file.Path.of(projectBuildOs, projectBuildWs, projectBuildArch)
+	def currentArch = projectBuildOs+'/'+projectBuildWs+'/'+projectBuildArch
 	def displayName = multiArchList.indexOf(currentArch) + 1
 	
 /*
