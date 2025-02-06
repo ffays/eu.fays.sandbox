@@ -36,7 +36,7 @@ node {
 	if(!projectBuildOs.equals(hostOs)) mvnOpts += ' -DskipTests'
 	def mvnGoals = 'clean verify'
 
-	def multiArchList = [Path.of(win32, win32, aarch64), Path.of(win32, win32, x86_64, Path.of(macosx, cocoa, aarch64), Path.of(macosx, cocoa, x86_64), Path.of(linux, gtk, aarch64), Path.of(linux, gtk, x86_64)]
+	def multiArchList = [Path.of(win32, win32, aarch64), Path.of(win32, win32, x86_64), Path.of(macosx, cocoa, aarch64), Path.of(macosx, cocoa, x86_64), Path.of(linux, gtk, aarch64), Path.of(linux, gtk, x86_64)]
 	def currentArch = Path.of(projectBuildOs, projectBuildWs, projectBuildArch)
 	def displayName = multiArchList.indexOf(currentArch) + 1
 	
