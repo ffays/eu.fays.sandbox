@@ -10,6 +10,9 @@ node {
 	def performCheckout = true
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
+	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
+	def gtk = 'gtk', cocoa = 'cocoa' /* ,win32 = 'win32' */ // supported Window Systems
+	def x86_64 = 'x86_64', aarch64 = 'aarch64'                 // supported CPU architectures
 	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
 	def hostOs = isUnix()?sh(returnStdout: true, script: 'uname').trim().toLowerCase().replace("darwin", macosx):win32
 	def mvnHome = tool 'M3'
@@ -18,8 +21,13 @@ node {
 	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
 	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
 	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
-	def projectBuildOs = jenkinsProjectName.substring(jenkinsProjectName.lastIndexOf('-')+1) // one of: linux,macosx,win32
-	def projectBuildWs = win32.equals(projectBuildOs)?'win32':macosx.equals(projectBuildOs)?'cocoa':'gtk'
+	def uname = isUnix()?sh(returnStdout: true, script: 'uname').trim().toLowerCase():win32
+	def hostOs = isUnix()?uname.replace("darwin", macosx):win32
+	def hostWs = isUnix()?uname.replace("darwin", cocoa).replace("linux", gtk):win32
+	def hostArch = isUnix()?sh(returnStdout: true, script: 'uname -m').trim().replace("arm64", aarch64):x86_64	
+	def projectBuildOs   = jenkinsProjectName.split('-')[1] // one of: linux,macosx,win32
+	def projectBuildWs   = jenkinsProjectName.split('-')[2] // one of: gtk,cocoa,win32
+	def projectBuildArch = jenkinsProjectName.split('-')[3] // one of: x86_64,aarch64
 	def loggingFormat = '%1$tF %1$tT	%4$s	%3$s	%5$s%6$s%n'
 	def q = isUnix()?"'":'"'
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
@@ -28,6 +36,10 @@ node {
 	if(!projectBuildOs.equals(hostOs)) mvnOpts += ' -DskipTests'
 	def mvnGoals = 'clean verify'
 
+	def multiArchList = [Path.of(win32, win32, aarch64), Path.of(win32, win32, x86_64, Path.of(macosx, cocoa, aarch64, Path.of(macosx, cocoa, x86_64), Path.of(linux, gtk, aarch64), Path.of(linux, gtk, x86_64)]
+	def currentArch = Path.of(projectBuildOs, projectBuildWs, projectBuildArch)
+	def displayName = multiArchList.indexOf(currentArch) + 1
+	
 /*
 	properties(
 		[
@@ -58,10 +70,14 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "projectName=${projectName}"
 	echo "jenkinsProjectName=${jenkinsProjectName}"
 	echo "hostOs=${hostOs}"
+	echo "hostWs=${hostWs}"
+	echo "hostArch=${hostArch}"
 	echo "projectBuildOs=${projectBuildOs}"
 	echo "projectBuildWs=${projectBuildWs}"
+	echo "projectBuildArch=${projectBuildArch}"
 	echo "jdkHome=${jdkHome}"
 	echo "scmUrl=${scmUrl}"
+	echo "mvnOpts=${mvnOpts}"
 
 	env.JAVA_HOME = jdkHome
 	env.PROJECT_NAME = projectName
@@ -94,7 +110,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		try {
 			if(linux.equals(hostOs)) {
 				if(linux.equals(projectBuildOs)) {
-					wrap([$class: 'Xvfb', displayName: 9, screen: '1920x1080x24']) {
+					wrap([$class: 'Xvfb', displayName: displayName, screen: '1920x1080x24']) {
 						withEnv(['DISPLAY=:9']) {
 							echo "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
 							sh "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
