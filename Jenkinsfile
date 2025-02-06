@@ -10,7 +10,6 @@ node {
 	def performCheckout = true
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
-	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	def gtk = 'gtk', cocoa = 'cocoa' /* ,win32 = 'win32' */ // supported Window Systems
 	def x86_64 = 'x86_64', aarch64 = 'aarch64'                 // supported CPU architectures
 	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
