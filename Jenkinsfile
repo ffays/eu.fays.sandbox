@@ -12,8 +12,6 @@ node {
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	def gtk = 'gtk', cocoa = 'cocoa' /* ,win32 = 'win32' */ // supported Window Systems
 	def x86_64 = 'x86_64', aarch64 = 'aarch64'                 // supported CPU architectures
-	//def hostOs = System.getProperty('os.name').replace(' ','').toLowerCase().replaceAll('win\\p{Alnum}*',win32)
-	def hostOs = isUnix()?sh(returnStdout: true, script: 'uname').trim().toLowerCase().replace("darwin", macosx):win32
 	def mvnHome = tool 'M3'
 	def jdkHome = tool 'JDK17'
 	def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
