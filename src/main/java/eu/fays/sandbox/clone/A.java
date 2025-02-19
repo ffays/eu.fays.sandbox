@@ -3,7 +3,7 @@ package eu.fays.sandbox.clone;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class A {
+public abstract class A implements Cloneable {
 
 	private Integer number;
 	

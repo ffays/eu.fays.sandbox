@@ -5,7 +5,7 @@ import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.List;
 
-public class B extends A implements Cloneable {
+public class B extends A  {
 
 	private Double decimal;
 	
