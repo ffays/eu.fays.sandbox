@@ -1,39 +1,46 @@
 package eu.fays.sandbox.clone;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class A implements Cloneable {
+public abstract class A implements Cloneable {
 
-	public Integer i;
-	public String s;
-	public ArrayList<String> l;
+	private Integer number;
+	
+	private String text;
 
-	public A() {
+	private ArrayList<String> list = new ArrayList<>();
+
+	public A(final int number, final String string, final List<String> list) {
+		this.number = number;
+		this.text = string;
+		this.list.addAll(list);
+	}
+	
+	public Integer getNumber() {
+		return number;
 	}
 
-	public A(final int i, final String s, final ArrayList<String> l) {
-		this.i = i;
-		this.s = s;
-		this.l = l;
+	public void setNumber(Integer number) {
+		this.number = number;
 	}
 
-	@Override
-	public String toString() {
-		return "{a:" + i + ", b:" + s + ", l:" + l + "}";
+	public String getText() {
+		return text;
 	}
 
-	/**
-	 * Deep clone
-	 * @return deep clone
-	 */
-	@SuppressWarnings("unchecked")
-	public A copy() {
-		try {
-			final A result = (A) clone();
-			result.l = (ArrayList<String>) l.clone();
-			return result;
-		} catch (CloneNotSupportedException e) {
-			throw new RuntimeException(e);
-		}
+	public void setText(String text) {
+		this.text = text;
 	}
-}
+
+	public ArrayList<String> getList() {
+		return list;
+	}
+
+	public void setList(ArrayList<String> list) {
+		this.list = list;
+	}
+
+	final void add(final String value) {
+		list.add(value);
+	}}
