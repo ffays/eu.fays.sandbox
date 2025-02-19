@@ -4,23 +4,28 @@ import java.util.ArrayList;
 
 public class A implements Cloneable {
 
-	public Integer a;
-	public String b;
+	public Integer i;
+	public String s;
 	public ArrayList<String> l;
-	
-	public A() {}
 
-	public A(int a, String b, ArrayList<String> l) {
-		this.a = a;
-		this.b = b;
+	public A() {
+	}
+
+	public A(final int i, final String s, final ArrayList<String> l) {
+		this.i = i;
+		this.s = s;
 		this.l = l;
 	}
 
 	@Override
 	public String toString() {
-		return "[a: " + a + ",b: " + b + ",l: " + l + "]";
+		return "{a:" + i + ", b:" + s + ", l:" + l + "}";
 	}
-	
+
+	/**
+	 * Deep clone
+	 * @return deep clone
+	 */
 	@SuppressWarnings("unchecked")
 	public A copy() {
 		try {
@@ -31,6 +36,4 @@ public class A implements Cloneable {
 			throw new RuntimeException(e);
 		}
 	}
-	
-
 }
