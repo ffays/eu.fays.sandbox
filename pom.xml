@@ -91,6 +91,46 @@
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
 							<target>
+								<!-- host.os -->
+								<condition property="host.os" value="macosx">
+									<and>
+										<not>
+											<isset property="host.os" />
+										</not>
+										<os name="mac os x"/>
+									</and>
+								</condition>
+								<condition property="host.os" value="linux">
+									<and>
+										<not>
+											<isset property="host.os" />
+										</not>
+										<os name="linux"/>
+									</and>
+								</condition>
+								<condition property="host.os" value="win32">
+									<and>
+										<not>
+											<isset property="host.os" />
+										</not>
+										<os family="windows"/>
+									</and>
+								</condition>
+								<!-- host.arch -->
+								<condition property="host.arch" value="x86_64">
+									<and>
+										<not>
+											<isset property="host.arch" />
+										</not>
+										<equals arg1="${os.arch}" arg2="amd64"/>
+									</and>
+								</condition>
+								<condition property="host.arch" value="${os.arch}">
+									<not>
+										<isset property="host.arch" />
+									</not>
+								</condition>
+
 								<!-- project.build.os -->
 								<condition property="project.build.os" value="macosx">
 									<and>
@@ -160,22 +200,23 @@
 								<echo level="info" message="project.build.arch=${project.build.arch}" />
 								<!-- project.build.os.matches.host.os -->
 								<condition property="project.build.os.matches.host.os" value="true">
-									<or>
-										<and>
-											<equals arg1="${project.build.os}" arg2="macosx"/>
-											<os name="mac os x"/>
-										</and>
-										<and>
-											<equals arg1="${project.build.os}" arg2="linux"/>
-											<os name="linux"/>
-										</and>
-										<and>
-											<equals arg1="${project.build.os}" arg2="win32"/>
-											<os family="windows"/>
-										</and>
-									</or>
+									<equals arg1="${project.build.os}" arg2="${host.os}"/>
 								</condition>
+								<!-- project.build.arch.matches.host.arch -->
+								<condition property="project.build.arch.matches.host.arch" value="true">
+									<equals arg1="${project.build.arch}" arg2="${host.arch}"/>
+								</condition>
+								<!-- project.build.os.matches.host.os -->
+								<condition property="project.build.platform.matches.host.platform" value="true">
+									<and>
+										<equals arg1="${project.build.os.matches.host.os}" arg2="true"/>
+										<equals arg1="${project.build.arch.matches.host.arch}" arg2="true"/>
+									</and>
+								</condition>
+								
 								<echo level="info" message="project.build.os.matches.host.os=${project.build.os.matches.host.os}" />
+								<echo level="info" message="project.build.arch.matches.host.arch=${project.build.arch.matches.host.arch}" />
+								<echo level="info" message="project.build.platform.matches.host.platform=${project.build.platform.matches.host.platform}" />
 								<!--
 								<echoproperties/>
 								-->
