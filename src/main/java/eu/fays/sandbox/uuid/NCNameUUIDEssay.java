@@ -30,7 +30,7 @@ public class NCNameUUIDEssay {
 //		for(int i=0; i<n; i++) {
 			UUID uuid = UUID.randomUUID();
 			long msb = uuid.getMostSignificantBits();
-			if((msb  & -0x6000000000000000L) == -0x6000000000000000L || (msb  & -0x4000000000000000L) == -0x4000000000000000L) {
+			if((msb  & -0x6000000000000000L) == -0x6000000000000000L /* 0xA000000000000000 1010 */ || (msb  & -0x4000000000000000L) == -0x4000000000000000L /* 0xC000000000000000 1100 */) {
 				// do nothing
 			} else {
 				msb = msb & 0x0FFFFFFFFFFFFFFFL | MASKS[RANDOM.nextInt(6 /* MASKS.length */)];
