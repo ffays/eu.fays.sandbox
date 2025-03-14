@@ -26,20 +26,21 @@ public class NCNameUUIDEssay {
 	 */
 	public static void main(String[] args) {
 //		int[] stats = new int[6];
-//		final int n = 10000;
+//		final int n = 10000000;
 //		for(int i=0; i<n; i++) {
 			UUID uuid = UUID.randomUUID();
 			long msb = uuid.getMostSignificantBits();
 			if((msb  & -0x6000000000000000L) == -0x6000000000000000L /* 0xA000000000000000 1010 */ || (msb  & -0x4000000000000000L) == -0x4000000000000000L /* 0xC000000000000000 1100 */) {
 				// do nothing
 			} else {
-				msb = msb & 0x0FFFFFFFFFFFFFFFL | MASKS[RANDOM.nextInt(6 /* MASKS.length */)];
+				msb = msb & 0x0FFFFFFFFFFFFFFFL | MASKS[RANDOM.nextInt(6 /* MASKS.length */)]; // [A-F]: 16.666%
+//				msb = msb | (RANDOM.nextBoolean()?-0x6000000000000000L:-0x4000000000000000L); // [A-D]: 15.625%, [E-F]: 18.75%
 				uuid = new UUID(msb, uuid.getLeastSignificantBits());
 			}
 			assert Character.isAlphabetic(uuid.toString().charAt(0));
 			LOGGER.info(uuid.toString());
 //			stats[uuid.toString().charAt(0) - 'a']++;
 //		}
-//		for(int i=0; i<stats.length; i++) LOGGER.info(java.text.MessageFormat.format("{0}: {1,number,#0.00}%", String.valueOf(Character.toChars('A'+i)), 100F*(float)stats[i]/(float)n));
+//		for(int i=0; i<stats.length; i++) LOGGER.info(java.text.MessageFormat.format("{0}: {1,number,#0.000}%", String.valueOf(Character.toChars('A'+i)), 100F*(float)stats[i]/(float)n));
 	}
 }
