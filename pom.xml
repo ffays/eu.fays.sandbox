@@ -237,10 +237,17 @@
 						</manifest>
 						<manifestEntries>
 							<Implementation-Version>${project.version}.${buildNumber}</Implementation-Version>
-							<Java-VM-Version>${java.vm.version} (${java.vm.vendor})</Java-VM-Version>
-							<Software-Version>${project.version}</Software-Version>
 							<Built-By>${user.name}</Built-By>
 							<Built-Date>${timestamp}</Built-Date>
+							<Java-Version>${java.version}</Java-Version>
+							<Java-Vendor>${java.vendor}</Java-Vendor>
+							<Java-VM-Version>${java.vm.version} (${java.vm.vendor})</Java-VM-Version>
+							<Os-Name>${os.name}</Os-Name>
+							<Os-Arch>${os.arch}</Os-Arch>
+							<Os-Version>${os.version}</Os-Version>
+		                    <Scm-Url>${project.scm.url}</Scm-Url>
+		                    <Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Software-Version>${project.version}</Software-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>
