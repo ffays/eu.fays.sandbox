@@ -9,7 +9,7 @@
 node {
 	// offline : false if either a Maven plugin version has been modified or the Eclipse RCP target platform has been modified
 	def offline = true
-	def performCheckout = true
+	def performClone = true
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	def gtk = 'gtk', cocoa = 'cocoa' /* ,win32 = 'win32' */ // supported Window Systems
@@ -18,7 +18,7 @@ node {
 	def jdkHome = tool 'JDK17'
 	def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
 	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
-	def projectName = scmUrl.substring(scmUrl.lastIndexOf('/')+1, scmUrl.lastIndexOf('.'))
+	def projectName = 'eu.fays.sandbox'
 	def jenkinsProjectName = (env.JOB_NAME.tokenize('/') as String[])[0]
 	def uname = isUnix()?sh(returnStdout: true, script: 'uname').trim().toLowerCase():win32
 	def hostOs = isUnix()?uname.replace("darwin", macosx):win32
@@ -99,8 +99,16 @@ $bd  = [System.Convert]::FromBase64String($b64);
 */
 
 	def scmVars // Map keys: GIT_BRANCH, GIT_COMMIT, GIT_PREVIOUS_COMMIT, GIT_PREVIOUS_SUCCESSFUL_COMMIT, GIT_URL	
-	stage('Checkout') {
-		if(performCheckout) {
+	stage('Clone') {
+		// mkdir ~/git-bare
+		// cd ~/git-bare
+		// git clone --mirror git@github.com:ffays/eu.fays.sandbox.git
+		// git --git-dir=$(getent passwd $USER | cut -d: -f6)/git-bare/eu.fays.sandbox.git remote update	
+
+		if(performClone) {
+			if(scmUrl.charAt(0) == '/') {
+				sh " git --git-dir=$HOME/git-bare/$projectName.git remote update"
+			}
 			deleteDir()
 			dir(env.PROJECT_NAME) {
 				scmVars  = checkout scm
@@ -208,3 +216,4 @@ $bd  = [System.Convert]::FromBase64String($b64);
 //			to: '$DEFAULT_RECIPIENTS'
 	}
 }
+
