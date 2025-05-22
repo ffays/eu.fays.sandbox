@@ -107,7 +107,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 
 		if(performClone) {
 			if(scmUrl.charAt(0) == '/') {
-				sh "git --git-dir=$HOME/git-bare/$projectName.git remote update"
+				sh "git --git-dir=$HOME/git-bare/${projectName}.git remote update"
 			}
 			deleteDir()
 			dir(env.PROJECT_NAME) {
