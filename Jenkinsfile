@@ -111,7 +111,7 @@ $bd  = [System.Convert]::FromBase64String($b64);
 			}
 			deleteDir()
 			dir(env.PROJECT_NAME) {
-				scmVars  = checkout scm
+				scmVars = checkout scm
 				echo "scmVars"
 				print scmVars
 			}
