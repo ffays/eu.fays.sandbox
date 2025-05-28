@@ -43,7 +43,6 @@ node {
 		linux +'/'+gtk  +'/'+x86_64
 	]
 	def currentArch = projectBuildOs+'/'+projectBuildWs+'/'+projectBuildArch
-	def displayName = multiArchList.indexOf(currentArch) + 1
 	
 /*
 	properties(
@@ -80,7 +79,6 @@ $bd  = [System.Convert]::FromBase64String($b64);
 	echo "projectBuildOs=${projectBuildOs}"
 	echo "projectBuildWs=${projectBuildWs}"
 	echo "projectBuildArch=${projectBuildArch}"
-	echo "displayName=${displayName}"
 	echo "mvnOpts=${mvnOpts}"
 	echo "scmUrl=${scmUrl}"
 	echo "mvnOpts=${mvnOpts}"
@@ -124,6 +122,14 @@ $bd  = [System.Convert]::FromBase64String($b64);
 		try {
 			if(linux.equals(hostOs)) {
 				if(linux.equals(projectBuildOs)) {
+					def displayName = 0
+					for(int i = 1; i < 10 && displayName == 0; i++) {
+						def returnStatus = sh script: "xdpyinfo -display :$i >/dev/null 2>&1", returnStatus: true
+						if(returnStatus == 1) {
+							displayName = i;
+						}
+					}
+					echo "displayName=${displayName}"
 					wrap([$class: 'Xvfb', displayName: displayName, screen: '1920x1080x24']) {
 						withEnv(['DISPLAY=:'+displayName]) {
 							echo "'${mvnExe}' ${mvnOpts} ${mvnGoals}"
