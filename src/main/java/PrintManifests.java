@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -64,108 +65,119 @@ public class PrintManifests {
 			columns = null;
 		}
 		
+		final PathMatcher filter = root.getFileSystem().getPathMatcher("glob:**.{jar,war,zip}");
+		final Predicate<? super Path> zipFilePredicate = p -> filter.matches(p) || "bundleFile".equals(p.getFileName().toString());
+		final Predicate<? super Path> manifestFilePredicate = p -> "MANIFEST.MF".equals(p.getFileName().toString());
+		
 		try (final Stream<Path> stream = walk(root)) {
-			final PathMatcher filter = root.getFileSystem().getPathMatcher("glob:**.{jar,war,zip}");
-			final List<Path> paths = stream.filter(p -> filter.matches(p) || "bundleFile".equals(p.getFileName().toString())).collect(toList());
+			final List<Path> paths = stream.filter(p -> zipFilePredicate.test(p) || manifestFilePredicate.test(p)).collect(toList());
 			for(final Path path : paths) {
-				try (final InputStream fis = newInputStream(path); final ZipInputStream zis = new ZipInputStream(fis)) {
-					ZipEntry zipEntry = zis.getNextEntry();
-					Properties pluginProperties = null;
-					Manifest manifest = null;
-					String licenseText = null;
-					while (zipEntry != null) {
-						if("plugin.properties".equals(zipEntry.getName())) {
-							pluginProperties = new Properties();
-							pluginProperties.load(zis);
-						} else if ("META-INF/MANIFEST.MF".equals(zipEntry.getName())) {
-							manifest = new Manifest(zis);
-						} else if ("about.html".equals(zipEntry.getName()) || "LICENSE".equals(zipEntry.getName())) {
-							final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-							zis.transferTo(baos);
-							licenseText = baos.toString();
+				Manifest manifest = null;
+				String licenseText = null;
+				Properties pluginProperties = null;
+				
+				if(zipFilePredicate.test(path)) {
+					try (final InputStream is = newInputStream(path); final ZipInputStream zis = new ZipInputStream(is)) {
+						ZipEntry zipEntry = zis.getNextEntry();
+						while (zipEntry != null) {
+							if("plugin.properties".equals(zipEntry.getName())) {
+								pluginProperties = new Properties();
+								pluginProperties.load(zis);
+							} else if ("META-INF/MANIFEST.MF".equals(zipEntry.getName())) {
+								manifest = new Manifest(zis);
+							} else if ("about.html".equals(zipEntry.getName()) || "LICENSE".equals(zipEntry.getName())) {
+								final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+								zis.transferTo(baos);
+								licenseText = baos.toString();
+							}
+							zipEntry = zis.getNextEntry();
 						}
-						zipEntry = zis.getNextEntry();
 					}
-					if(manifest != null) {
-						final Attributes mainAttributes = manifest.getMainAttributes();						
-						
-						// License
-						String bundleLicense = mainAttributes.getValue("Bundle-License");
-						final String[] licenseInformation;
-						if(bundleLicense != null) {
-							licenseInformation = getLicenseInformationFromBundleVersion(bundleLicense);
-						} else  if(licenseText != null) {
-							licenseInformation = getLicenseInformationFromText(licenseText);
-						} else {
-							licenseInformation = new String[4];
+				} else if (manifestFilePredicate.test(path)) {
+					try (final InputStream is = newInputStream(path)) {
+						manifest = new Manifest(is);
+					}
+				}
+
+				if(manifest != null) {
+					final Attributes mainAttributes = manifest.getMainAttributes();						
+					
+					// License
+					String bundleLicense = mainAttributes.getValue("Bundle-License");
+					final String[] licenseInformation;
+					if(bundleLicense != null) {
+						licenseInformation = getLicenseInformationFromBundleVersion(bundleLicense);
+					} else  if(licenseText != null) {
+						licenseInformation = getLicenseInformationFromText(licenseText);
+					} else {
+						licenseInformation = new String[4];
+					}
+					
+					final String license = licenseInformation[0];
+					final String licenseVersion = licenseInformation[1];
+					final String licenseUrl =  licenseInformation[2];
+					
+					if(bundleLicense == null) {
+						if(licenseUrl != null) {
+							mainAttributes.putValue("Bundle-License", licenseUrl);
+						} else if (licenseInformation[3] != null){
+							mainAttributes.putValue("Bundle-License", licenseInformation[3]);
 						}
-						
-						final String license = licenseInformation[0];
-						final String licenseVersion = licenseInformation[1];
-						final String licenseUrl =  licenseInformation[2];
-						
-						if(bundleLicense == null) {
-							if(licenseUrl != null) {
-								mainAttributes.putValue("Bundle-License", licenseUrl);
-							} else if (licenseInformation[3] != null){
-								mainAttributes.putValue("Bundle-License", licenseInformation[3]);
+					}
+					
+					if(license != null) {
+						mainAttributes.putValue("License", license);
+					}
+
+					if(license != null) {
+						mainAttributes.putValue("License-Version", licenseVersion);
+					}
+
+					if(licenseUrl != null) {
+						mainAttributes.putValue("License-URL", licenseUrl);
+					}
+					
+					if(exportColumns) {
+						boolean flag = false;
+						final Map<String, String> map = new LinkedHashMap<>();
+						for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
+							final String key = entry.getKey().toString();
+							String value = (String) entry.getValue();
+							if(value != null) {
+								if("Bundle-SymbolicName".equals(key) && value.indexOf(';') != -1) {
+									value = value.substring(0, value.indexOf(';'));
+								}
+								map.put(key, value);
 							}
 						}
 						
-						if(license != null) {
-							mainAttributes.putValue("License", license);
+						map.put("File", path.toString());
+						map.put("File-Name", path.getFileName().toString());
+						if((!map.containsKey("Bundle-SymbolicName") || map.get("Bundle-SymbolicName").isEmpty()) && map.containsKey("Automatic-Module-Name")) {
+							map.put("Bundle-SymbolicName", map.get("Automatic-Module-Name"));
 						}
 
-						if(license != null) {
-							mainAttributes.putValue("License-Version", licenseVersion);
-						}
-
-						if(licenseUrl != null) {
-							mainAttributes.putValue("License-URL", licenseUrl);
-						}
-						
-						if(exportColumns) {
-							boolean flag = false;
-							final Map<String, String> map = new LinkedHashMap<>();
-							for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
-								final String key = entry.getKey().toString();
-								String value = (String) entry.getValue();
-								if(value != null) {
-									if("Bundle-SymbolicName".equals(key) && value.indexOf(';') != -1) {
-										value = value.substring(0, value.indexOf(';'));
-									}
-									map.put(key, value);
-								}
+						for(final String column : columns) {
+							if(flag) {
+								System.out.print('\t');
+							} else {
+								flag = true;
 							}
 							
-							map.put("File", path.toString());
-							map.put("File-Name", path.getFileName().toString());
-							if((!map.containsKey("Bundle-SymbolicName") || map.get("Bundle-SymbolicName").isEmpty()) && map.containsKey("Automatic-Module-Name")) {
-								map.put("Bundle-SymbolicName", map.get("Automatic-Module-Name"));
+							if(map.containsKey(column)) {
+								System.out.print(map.get(column));
 							}
-
-							for(final String column : columns) {
-								if(flag) {
-									System.out.print('\t');
-								} else {
-									flag = true;
-								}
-								
-								if(map.containsKey(column)) {
-									System.out.print(map.get(column));
-								}
+						}
+						System.out.println();
+					} else {
+						System.out.println("Dash=--------------------------------------------------------------------------------");
+						System.out.println(format("File={0}",path.toString()));
+						for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
+							String value = (String) entry.getValue();
+							if(value != null && value.startsWith("%") && pluginProperties != null && pluginProperties.containsKey(value.substring(1))) {
+								value = (String) pluginProperties.get(value.substring(1));
 							}
-							System.out.println();
-						} else {
-							System.out.println("Dash=--------------------------------------------------------------------------------");
-							System.out.println(format("File={0}",path.toString()));
-							for (final Entry<Object, Object> entry : mainAttributes.entrySet()) {
-								String value = (String) entry.getValue();
-								if(value != null && value.startsWith("%") && pluginProperties != null && pluginProperties.containsKey(value.substring(1))) {
-									value = (String) pluginProperties.get(value.substring(1));
-								}
-								System.out.println(format("{0}={1}", entry.getKey(), value));
-							}
+							System.out.println(format("{0}={1}", entry.getKey(), value));
 						}
 					}
 				}
