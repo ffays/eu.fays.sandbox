@@ -37,6 +37,19 @@ import javax.net.ssl.X509TrustManager;
 // -Durl=https://github.com -ea -Djava.util.logging.SimpleFormatter.format="%5$s%6$s%n"
 
 // -Djava.util.logging.SimpleFormatter.format="%1$tFT%1$tT,%1$tL	%4$s	%3$s	%5$s%6$s%n"
+
+// -Djavax.net.debug=all
+// -Djavax.net.debug=ssl:handshake
+// -Djdk.tls.client.SignatureSchemes=RSASSA-PSS ???
+// -Djdk.httpclient.allowRestrictedHeaders=Host
+// -Djdk.tls.client.protocols=TLSv1.3
+// -Dhttps.protocols=TLSv1.3
+// https://datatracker.ietf.org/doc/html/rfc8017#section-9
+// https://docs.oracle.com/en/java/javase/21/security/java-secure-socket-extension-jsse-reference-guide.html
+// https://docs.oracle.com/en/java/javase/21/docs/specs/security/standard-names.html
+// https://docs.oracle.com/en/java/javase/21/core/java-networking.html
+// https://docs.oracle.com/en/java/javase/21/docs/api/java.net.http/module-summary.html
+
 @SuppressWarnings("nls")
 public class DisplayWebCertificate {
 	
