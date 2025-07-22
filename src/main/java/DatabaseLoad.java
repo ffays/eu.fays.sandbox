@@ -276,6 +276,8 @@ public class DatabaseLoad {
 													pstmt.setString(c, data);
 												} else if (sqlType == INTEGER) {
 													pstmt.setInt(c, Integer.parseInt(data));
+												} else if (sqlType == BIGINT) {
+													pstmt.setLong(c, Long.parseLong(data));
 												} else if (sqlType == DOUBLE) {
 													pstmt.setDouble(c, DECIMAL_FORMAT.parse(data).doubleValue());
 												} else if (sqlType == FLOAT) {
@@ -300,7 +302,7 @@ public class DatabaseLoad {
 													} else {
 														pstmt.setObject(c, data);
 													}
-												} else if (sqlType == BIGINT || sqlType == DECIMAL || sqlType == NUMERIC) {
+												} else if (sqlType == DECIMAL || sqlType == NUMERIC) {
 													pstmt.setBigDecimal(c, (BigDecimal) BIG_DECIMAL_FORMAT.parse(data));
 												} else if (sqlType == TINYINT) {
 													pstmt.setByte(c, (byte)Integer.parseInt(data));
@@ -402,9 +404,9 @@ public class DatabaseLoad {
 				} else if (sqlType == FLOAT) {
 					final Float value = DECIMAL_FORMAT.parse(data).floatValue();
 					result.append(value);
-				} else if (sqlType == INTEGER || sqlType == SMALLINT || sqlType == TINYINT) {
+				} else if (sqlType == INTEGER || sqlType == SMALLINT || sqlType == TINYINT || sqlType == BIGINT) {
 					result.append(data);
-				} else if (sqlType == BIGINT || sqlType == DECIMAL || sqlType == NUMERIC) {
+				} else if (sqlType == DECIMAL || sqlType == NUMERIC) {
 					final BigDecimal value = (BigDecimal) BIG_DECIMAL_FORMAT.parse(data);
 					result.append(value);
 				} else if (sqlType == BOOLEAN) {
