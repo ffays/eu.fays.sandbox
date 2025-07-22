@@ -11,6 +11,7 @@ import static java.sql.Types.FLOAT;
 import static java.sql.Types.INTEGER;
 import static java.sql.Types.LONGVARCHAR;
 import static java.sql.Types.NUMERIC;
+import static java.sql.Types.NVARCHAR;
 import static java.sql.Types.SMALLINT;
 import static java.sql.Types.TIME;
 import static java.sql.Types.TIMESTAMP;
@@ -263,7 +264,7 @@ public class DatabaseLoad {
 												final int sqlType = sqlTypes[c-1];
 												if (data.isEmpty() && sqlNullables[c-1]) {
 													pstmt.setNull(c, sqlType);
-												} else if (sqlType == VARCHAR || sqlType == CHAR || sqlType == LONGVARCHAR) {
+												} else if (sqlType == VARCHAR || sqlType == NVARCHAR || sqlType == CHAR || sqlType == LONGVARCHAR) {
 													pstmt.setString(c, data);
 												} else if (sqlType == INTEGER) {
 													pstmt.setInt(c, Integer.parseInt(data));
