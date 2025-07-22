@@ -39,9 +39,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -78,13 +76,6 @@ public class DatabaseLoad {
 	private static final String DRY_RUN_PARAMETER_NAME = "dryRun";
 	private static final String BATCH_PARAMETER_NAME = "batch";
 	private static final String ON_ERROR_CONTINUE_PARAMETER_NAME = "onErrorContinue";
-
-	private static final DecimalFormat DECIMAL_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
-	private static final DecimalFormat BIG_DECIMAL_FORMAT = (DecimalFormat) NumberFormat.getNumberInstance(java.util.Locale.getDefault());
-	
-	static {
-		BIG_DECIMAL_FORMAT.setParseBigDecimal(true);
-	}
 
 	/**
 	 * Usage: java -Durl=&lt;jdbcConnectionString&gt; -Duser=&lt;user&gt; -Dpassword=&lt;password&gt; DatabaseLoad &ltfile1&gt; &ltfile2&gt; ...<br>
@@ -279,16 +270,16 @@ public class DatabaseLoad {
 												} else if (sqlType == BIGINT) {
 													pstmt.setLong(c, Long.parseLong(data));
 												} else if (sqlType == DOUBLE) {
-													pstmt.setDouble(c, DECIMAL_FORMAT.parse(data).doubleValue());
+													pstmt.setDouble(c, Double.parseDouble(data));
 												} else if (sqlType == FLOAT) {
-													pstmt.setFloat(c, DECIMAL_FORMAT.parse(data).floatValue());
+													pstmt.setFloat(c, Float.parseFloat(data));
 												} else if (sqlType == SMALLINT) {
 													pstmt.setShort(c, Short.parseShort(data));
 												} else if (sqlType == BOOLEAN || sqlType == BIT) {
 													pstmt.setBoolean(c, "1".equals(data) || Boolean.valueOf(data));
 												} else if (sqlType == TIMESTAMP || sqlType == DATE || sqlType == TIME) {
 													if(excelDate) {
-														final LocalDateTime localDateTime = toLocalDateTime(DECIMAL_FORMAT.parse(data).doubleValue());
+														final LocalDateTime localDateTime = toLocalDateTime(Double.parseDouble(data));
 														if(sqlType == TIMESTAMP) {
 															final Timestamp timestamp = Timestamp.valueOf(localDateTime);
 															pstmt.setTimestamp(c, timestamp);
@@ -303,7 +294,7 @@ public class DatabaseLoad {
 														pstmt.setObject(c, data);
 													}
 												} else if (sqlType == DECIMAL || sqlType == NUMERIC) {
-													pstmt.setBigDecimal(c, (BigDecimal) BIG_DECIMAL_FORMAT.parse(data));
+													pstmt.setBigDecimal(c, new BigDecimal(data));
 												} else if (sqlType == TINYINT) {
 													pstmt.setByte(c, (byte)Integer.parseInt(data));
 												} else if (sqlType == BINARY && "UUID".equals(sqlTypeNames[c-1])) {
@@ -399,15 +390,15 @@ public class DatabaseLoad {
 				if (data.isEmpty()) {
 					result.append("NULL");
 				} else if (sqlType == DOUBLE) {
-					final Double value = DECIMAL_FORMAT.parse(data).doubleValue();
+					final Double value = Double.parseDouble(data);
 					result.append(value);
 				} else if (sqlType == FLOAT) {
-					final Float value = DECIMAL_FORMAT.parse(data).floatValue();
+					final Float value = Float.parseFloat(data);
 					result.append(value);
 				} else if (sqlType == INTEGER || sqlType == SMALLINT || sqlType == TINYINT || sqlType == BIGINT) {
 					result.append(data);
 				} else if (sqlType == DECIMAL || sqlType == NUMERIC) {
-					final BigDecimal value = (BigDecimal) BIG_DECIMAL_FORMAT.parse(data);
+					final BigDecimal value = new BigDecimal(data);
 					result.append(value);
 				} else if (sqlType == BOOLEAN) {
 					final Boolean value = "1".equals(data) || Boolean.valueOf(data);
@@ -418,7 +409,7 @@ public class DatabaseLoad {
 				} else {
 					final String value;
 					if (sqlType == TIMESTAMP && excelDate) {
-						final LocalDateTime localDateTime = toLocalDateTime(DECIMAL_FORMAT.parse(data).doubleValue());
+						final LocalDateTime localDateTime = toLocalDateTime(Double.parseDouble(data));
 						value = localDateTime.toString();
 					} else {
 						value = data.replaceAll("'", "''"); 
