@@ -12,22 +12,22 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>dd MMM yyyy HH:mm:ss</maven.build.timestamp.format>
-		<adoptium.jre.x64.windows.zip>OpenJDK17U-jre_x64_windows_hotspot_17.0.11_9.zip</adoptium.jre.x64.windows.zip>
-		<adoptium.jre.folder.name>jdk-17.0.11+9-jre</adoptium.jre.folder.name>
+		<adoptium.jre.x64.windows.zip>OpenJDK17U-jre_x64_windows_hotspot_21.0.8+9.zip</adoptium.jre.x64.windows.zip>
+		<adoptium.jre.folder.name>jdk-21.0.8+9-jre</adoptium.jre.folder.name>
 	<!--  
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
 	-->
-		<junit.version>5.10.3</junit.version>
+		<junit.version>5.13.4</junit.version>
 		<maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
-		<maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-		<maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
-		<buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
+		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+		<maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+		<buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
 	</properties>
 	
 	<scm>
