@@ -29,6 +29,10 @@ public class Tail {
 
 	/** Standard logger */
 	private static final Logger LOGGER = Logger.getLogger(Tail.class.getName());
+	
+	/** File system changes pooling time-out in millisecond */
+	private static final long POOLING_TIMEOUT = 20L;
+
 	/**
 	 * Tails a file
 	 * @param args args[0] : input file
@@ -82,7 +86,7 @@ public class Tail {
 
 				boolean found = false;
 				while(!found && !Files.exists(lookupPath)) {
-					final WatchKey key = service.poll(100L, MILLISECONDS);
+					final WatchKey key = service.poll(POOLING_TIMEOUT, MILLISECONDS);
 
 					if (key != null) {
 						for (final WatchEvent<?> watchEvent : key.pollEvents()) {
@@ -121,7 +125,7 @@ public class Tail {
 
 			boolean exit = false;
 			while(Files.exists(file) && !exit) {
-				final WatchKey key = service.poll(100L, MILLISECONDS);
+				final WatchKey key = service.poll(POOLING_TIMEOUT, MILLISECONDS);
 
 				if (key != null) {
 					for (final WatchEvent<?> watchEvent : key.pollEvents()) {
