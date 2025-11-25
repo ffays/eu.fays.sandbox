@@ -37,13 +37,16 @@ public class Tail {
 		}
 
 		final Path file = Paths.get(args[0]);
-		for(;;) {
+		for (int loop = 0;; loop++) {
 			monitorFileCreation(file);
+			if(loop > 0) {
+				out.print("\033[2J"); // Clear screen
+			}
 			long size = readFile(file);
 			monitorFileChange(file, size);
 		}
 	}
-	
+
 	static void monitorFileCreation(final Path file) throws IOException, InterruptedException {
 		if(Files.exists(file)) {
 			return;
@@ -59,16 +62,16 @@ public class Tail {
 		}
 
 		final FileSystem fs = file.getFileSystem();
-		
+
 		try (final WatchService service = fs.newWatchService()) {
 			final WatchEvent.Kind<?>[] events = { ENTRY_CREATE };
 
 			while(!paths.isEmpty()) {
 				final Path lookupPath = paths.pop();
 				final Path parentFolder = lookupPath.getParent();
-				
+
 				parentFolder.register(service, events);
-				
+
 				boolean found = false;
 				while(!found) {
 					final WatchKey key = service.poll(100L, MILLISECONDS);
@@ -90,7 +93,7 @@ public class Tail {
 			}
 		}
 	}
-	
+
 	static long readFile(final Path file) throws IOException {
 		final byte[] buffer = Files.readAllBytes(file);
 		out.write(buffer);
@@ -138,6 +141,7 @@ public class Tail {
 			}
 		}
 	}
+
 	/**
 	 * Reads from the given file, the given count of bytes, starting at the given offset
 	 * @param file the file to be read
