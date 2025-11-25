@@ -1,22 +1,23 @@
-import static java.lang.Math.min;
 import static java.lang.System.out;
 import static java.nio.file.Files.size;
 import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import static java.util.Arrays.copyOfRange;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayDeque;
 
 /**
  * Tail 
@@ -30,36 +31,82 @@ public class Tail {
 	 */
 	public static void main(final String[] args) throws Exception {
 
+		if(args.length == 0) {
+			out.print("Usage: tail <filename>");
+			return;
+		}
+
 		final Path file = Paths.get(args[0]);
-		final Path dir = file.getParent();
-		final FileSystem fs = file.getFileSystem();
-		long size = size(file);
+		for(;;) {
+			monitorFileCreation(file);
+			long size = readFile(file);
+			monitorFileChange(file, size);
+		}
+	}
+	
+	static void monitorFileCreation(final Path file) throws IOException, InterruptedException {
+		if(Files.exists(file)) {
+			return;
+		}
 
-		// tail (first read)
+		final ArrayDeque<Path> paths = new ArrayDeque<>();
 		{
-			final long count = min(5000L, size);
-			final long offset = size - count;
-			final byte[] buffer = read(file, offset, (int) count);
-
-			if (buffer.length > 0) {
-				byte[] buffer1 = buffer;
-				for (int i = 0; i < buffer.length; i++) {
-					if (buffer[i] == '\n') {
-						buffer1 = copyOfRange(buffer, i + 1, buffer.length);
-						break;
-					}
-				}
-				out.write(buffer1);
-				out.flush();
+			Path lookupPath = file;
+			while(!Files.exists(lookupPath)) {
+				paths.push(lookupPath);
+				lookupPath = lookupPath.getParent();
 			}
 		}
 
-		// tail -f
+		final FileSystem fs = file.getFileSystem();
+		
+		try (final WatchService service = fs.newWatchService()) {
+			final WatchEvent.Kind<?>[] events = { ENTRY_CREATE };
+
+			while(!paths.isEmpty()) {
+				final Path lookupPath = paths.pop();
+				final Path parentFolder = lookupPath.getParent();
+				
+				parentFolder.register(service, events);
+				
+				boolean found = false;
+				while(!found) {
+					final WatchKey key = service.poll(100L, MILLISECONDS);
+
+					if (key != null) {
+						for (final WatchEvent<?> watchEvent : key.pollEvents()) {
+							final Kind<?> kind = watchEvent.kind();
+							@SuppressWarnings("unchecked")
+							final Path path = ((WatchEvent<Path>) watchEvent).context();
+							if (path.equals(lookupPath.getFileName())) {
+								if (kind == ENTRY_CREATE) {
+									found = true;
+								}
+							}
+						}
+						key.reset();
+					}
+				}
+			}
+		}
+	}
+	
+	static long readFile(final Path file) throws IOException {
+		final byte[] buffer = Files.readAllBytes(file);
+		out.write(buffer);
+		out.flush();
+		return buffer.length;
+	}
+
+	static void monitorFileChange(final Path file, long size) throws IOException, InterruptedException {
+		final Path dir = file.getParent();
+		final FileSystem fs = file.getFileSystem();
+
 		try (final WatchService service = fs.newWatchService()) {
 			final WatchEvent.Kind<?>[] events = { ENTRY_MODIFY, ENTRY_DELETE };
 			dir.register(service, events);
 
-			for (;;) {
+			while(Files.exists(file)) {
 				final WatchKey key = service.poll(100L, MILLISECONDS);
 
 				if (key != null) {
@@ -69,7 +116,7 @@ public class Tail {
 						final Path path = ((WatchEvent<Path>) watchEvent).context();
 						if (path.equals(file.getFileName())) {
 							if (kind == ENTRY_DELETE) {
-								System.exit(0);
+								return;
 							}
 
 							if (kind == ENTRY_MODIFY) {
@@ -91,7 +138,6 @@ public class Tail {
 			}
 		}
 	}
-
 	/**
 	 * Reads from the given file, the given count of bytes, starting at the given offset
 	 * @param file the file to be read
