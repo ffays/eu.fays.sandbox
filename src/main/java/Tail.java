@@ -17,13 +17,18 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayDeque;
+import java.util.logging.Logger;
 
 /**
  * Tail 
  */
 public class Tail {
 
+	/** Standard logger */
+	private static final Logger LOGGER = Logger.getLogger(Tail.class.getName());
 	/**
 	 * Tails a file
 	 * @param args args[0] : input file
@@ -37,10 +42,11 @@ public class Tail {
 		}
 
 		final Path file = Paths.get(args[0]);
-		for (int loop = 0;; loop++) {
+		for (int loop = 1;; loop++) {
 			monitorFileCreation(file);
-			if(loop > 0) {
+			if(loop > 1) {
 				out.print("\033[2J"); // Clear screen
+				LOGGER.fine("Loop #" + loop);
 			}
 			long size = readFile(file);
 			monitorFileChange(file, size);
@@ -56,6 +62,7 @@ public class Tail {
 		{
 			Path lookupPath = file;
 			while(!Files.exists(lookupPath)) {
+				LOGGER.fine("Missing: " + lookupPath);
 				paths.push(lookupPath);
 				lookupPath = lookupPath.getParent();
 			}
@@ -68,12 +75,13 @@ public class Tail {
 
 			while(!paths.isEmpty()) {
 				final Path lookupPath = paths.pop();
+				LOGGER.fine("Looking: " + lookupPath);
 				final Path parentFolder = lookupPath.getParent();
 
 				parentFolder.register(service, events);
 
 				boolean found = false;
-				while(!found) {
+				while(!found && !Files.exists(lookupPath)) {
 					final WatchKey key = service.poll(100L, MILLISECONDS);
 
 					if (key != null) {
@@ -83,6 +91,7 @@ public class Tail {
 							final Path path = ((WatchEvent<Path>) watchEvent).context();
 							if (path.equals(lookupPath.getFileName())) {
 								if (kind == ENTRY_CREATE) {
+									LOGGER.fine("" + kind + ": " + path);
 									found = true;
 								}
 							}
@@ -95,6 +104,7 @@ public class Tail {
 	}
 
 	static long readFile(final Path file) throws IOException {
+		LOGGER.fine("Reading: " + file);
 		final byte[] buffer = Files.readAllBytes(file);
 		out.write(buffer);
 		out.flush();
@@ -104,12 +114,13 @@ public class Tail {
 	static void monitorFileChange(final Path file, long size) throws IOException, InterruptedException {
 		final Path dir = file.getParent();
 		final FileSystem fs = file.getFileSystem();
-
+		final FileTime creationTime0 = Files.readAttributes(file, BasicFileAttributes.class).creationTime();
 		try (final WatchService service = fs.newWatchService()) {
 			final WatchEvent.Kind<?>[] events = { ENTRY_MODIFY, ENTRY_DELETE };
 			dir.register(service, events);
 
-			while(Files.exists(file)) {
+			boolean exit = false;
+			while(Files.exists(file) && !exit) {
 				final WatchKey key = service.poll(100L, MILLISECONDS);
 
 				if (key != null) {
@@ -119,19 +130,26 @@ public class Tail {
 						final Path path = ((WatchEvent<Path>) watchEvent).context();
 						if (path.equals(file.getFileName())) {
 							if (kind == ENTRY_DELETE) {
-								return;
-							}
+								LOGGER.fine("" + kind + ": " + path);
+								exit = true; // File has been deleted
+							} else if (kind == ENTRY_MODIFY) {
+								LOGGER.fine("" + kind + ": " + path);
+								final FileTime creationTime1 = Files.readAttributes(file, BasicFileAttributes.class).creationTime();
 
-							if (kind == ENTRY_MODIFY) {
-								final long newSize = size(file);
-								final long delta = newSize - size;
-								if (delta > 0L) {
-									final byte[] buffer = read(file, size, (int) delta);
-									if (buffer.length > 0) {
-										out.write(buffer);
-										out.flush();
+								if(creationTime0.equals(creationTime1)) {
+									final long newSize = size(file);
+									final long delta = newSize - size;
+									if (delta > 0L) {
+										final byte[] buffer = read(file, size, (int) delta);
+										if (buffer.length > 0) {
+											out.write(buffer);
+											out.flush();
+										}
+										size = newSize;
 									}
-									size = newSize;
+								} else {
+									LOGGER.fine("Recreated: " + path);
+									exit = true; // Meanwhile the file has been re-created
 								}
 							}
 						}
