@@ -10,6 +10,7 @@ node {
 	// offline : false if either a Maven plugin version has been modified or the Eclipse RCP target platform has been modified
 	def offline = false
 	def performClone = true
+	def skipTests = false // !projectBuildOs.equals(hostOs)
 
 	def linux = 'linux', macosx = 'macosx', win32 = 'win32' // supported OSes
 	def gtk = 'gtk', cocoa = 'cocoa' /* ,win32 = 'win32' */ // supported Window Systems
@@ -32,7 +33,7 @@ node {
 	def mvnExe  = "${mvnHome}${fileSeparator}bin${fileSeparator}mvn"
 	def mvnOpts = /-f ${projectName}${fileSeparator}pom.xml -Dproject.build.os=${projectBuildOs} -Dproject.build.ws=${projectBuildWs} -Djava.util.logging.SimpleFormatter.format=$q$loggingFormat$q/
 	if(offline) mvnOpts += ' --offline'
-	if(!projectBuildOs.equals(hostOs)) mvnOpts += ' -DskipTests'
+	if(skipTests) mvnOpts += ' -DskipTests'
 	def mvnGoals = 'clean verify'
 
 	def multiArchList = [
