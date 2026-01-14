@@ -23,10 +23,10 @@
 	<!--  
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
 	-->
-		<junit.version>5.13.4</junit.version>
-		<maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+		<junit.version>5.14.2</junit.version>
+		<maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
 		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
-		<maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+		<maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
 		<buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
 	</properties>
 	
@@ -253,6 +253,7 @@
 				</configuration>
     		</plugin>
 			<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-plugin-api -->
+			<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/buildnumber-maven-plugin -->
 			<plugin>
 				<!-- plugin used to extract the git hash and store it in ${buildNumber} -->
 				<groupId>org.codehaus.mojo</groupId>
