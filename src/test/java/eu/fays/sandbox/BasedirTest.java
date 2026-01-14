@@ -1,7 +1,6 @@
 package eu.fays.sandbox;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -32,7 +31,7 @@ public class BasedirTest {
 	@MethodSource("data")
 	public void basedirTest(final String property, final Path path) {
 		final String value = System.getProperty(property);
-		assertNull(value);
+		assertNotNull(value);
 		assertTrue(Files.exists(path));
 		assertTrue(Files.isDirectory(path));
 	}
