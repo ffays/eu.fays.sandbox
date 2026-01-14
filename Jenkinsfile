@@ -15,7 +15,7 @@ node {
 	def gtk = 'gtk', cocoa = 'cocoa' /* ,win32 = 'win32' */ // supported Window Systems
 	def x86_64 = 'x86_64', aarch64 = 'aarch64'                 // supported CPU architectures
 	def mvnHome = tool 'M3'
-	def jdkHome = tool 'JDK17'
+	def jdkHome = tool 'JDK21'
 	def fileSeparator = isUnix()?"/":"\\" // System.getProperty('file.separator')
 	def scmUrl = scm.getUserRemoteConfigs()[0].getUrl()
 	def projectName = 'eu.fays.sandbox'
