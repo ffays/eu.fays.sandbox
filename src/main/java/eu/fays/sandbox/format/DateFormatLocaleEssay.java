@@ -83,7 +83,7 @@ public class DateFormatLocaleEssay {
 				Locale.setDefault(locale);
 				final DateTimeFormatter dateTimeFormatter = ofLocalizedDateTime(SHORT, SHORT);
 				final LocalDateTime ldt = LocalDateTime.of(2001, 12, 31, 23, 59);
-				System.out.println(format("{0}: {1} ''{2}''" ,locale.getClass().getSimpleName(), locale.toString(), dateTimeFormatter.format(ldt)));
+				System.out.println(format("{0}: {1} ''{2}'' {3,number,#.##}" ,locale.getClass().getSimpleName(), locale.toString(), dateTimeFormatter.format(ldt), Math.PI));
 			}
 			Locale.setDefault(defaultLocale);
 			System.out.println();
