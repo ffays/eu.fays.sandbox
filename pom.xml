@@ -20,9 +20,6 @@
 		<maven.build.timestamp.format>dd MMM yyyy HH:mm:ss</maven.build.timestamp.format>
 		<adoptium.jre.x64.windows.zip>OpenJDK17U-jre_x64_windows_hotspot_21.0.8+9.zip</adoptium.jre.x64.windows.zip>
 		<adoptium.jre.folder.name>jdk-21.0.8+9-jre</adoptium.jre.folder.name>
-	<!--  
-		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
-	-->
 		<junit.version>5.14.2</junit.version>
 		<maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
 		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
@@ -236,7 +233,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>					
+			</plugin>
 			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -257,13 +254,13 @@
 							<Os-Name>${os.name}</Os-Name>
 							<Os-Arch>${os.arch}</Os-Arch>
 							<Os-Version>${os.version}</Os-Version>
-		                    <Scm-Url>${project.scm.url}</Scm-Url>
-		                    <Scm-Connection>${project.scm.connection}</Scm-Connection>
+							<Scm-Url>${project.scm.url}</Scm-Url>
+							<Scm-Connection>${project.scm.connection}</Scm-Connection>
 							<Software-Version>${project.version}</Software-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>
-    		</plugin>
+			</plugin>
 			<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-plugin-api -->
 			<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/buildnumber-maven-plugin -->
 			<plugin>
@@ -291,6 +288,21 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
 				<version>${maven-surefire-plugin.version}</version>
+				<dependencies>
+					<!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+					<dependency>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+						<version>1.3.5</version>
+					</dependency>
+					<!-- Source: https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-velocity -->
+					<dependency>
+						<groupId>org.codehaus.plexus</groupId>
+						<artifactId>plexus-velocity</artifactId>
+						<version>2.3.0</version>
+						<scope>compile</scope>
+					</dependency>
+				</dependencies>
 				<executions>
 					<execution>
 						<phase>test</phase>
@@ -334,7 +346,7 @@
 										<move file="${project.build.directory}/${adoptium.jre.folder.name}" tofile="${project.build.directory}/jre"/>
 									</target>
 								</configuration>
-							</execution>					
+							</execution>
 						</executions>
 					</plugin>
 				</plugins>
@@ -343,9 +355,31 @@
 	</profiles>
 <description><![CDATA[
 # Regular build
-mvn -Djava.util.logging.config.file=logging.properties clean package || mvn surefire-report:report
+mvn -Djava.util.logging.config.file=logging.properties clean package
+
+# Execute tests and produce test report
+mvn surefire-report:report
+
+# Only produce test report
+mvn surefire-report:report-only
+
+# [Maven Surefire Report Plugin](https://maven.apache.org/surefire/maven-surefire-report-plugin/)
 
 # Print dependency tree
 mvn dependency:tree -Dverbose
+
+#
+# Quick fix for "[FATAL] Non-parseable POM"
+#
+
+# Windows (Powershell)
+Get-ChildItem -Recurse $HOME\.m2\repository\*.pom | ? { Select-String -Pattern '<?xml version="1.0" encoding="ISO-8859-1"?>' -SimpleMatch -List -Path $_ } | % { (Get-Content $_) -ireplace [regex]::Escape('<?xml version="1.0" encoding="ISO-8859-1"?>'), '<?xml version="1.0"?>' | Set-Content $_ }
+
+# Linux
+find $HOME/.m2/repository -type f -name '*.pom' -exec grep -li '<?xml version="1.0" encoding="ISO-8859-1"?>' {} \; | xargs sed -i 's|<?xml version="1.0" encoding="ISO-8859-1"?>|<?xml version="1.0"?>|i'
+
+# Mac OS
+find $HOME/.m2/repository -type f -name '*.pom' -exec grep -li '<?xml version="1.0" encoding="ISO-8859-1"?>' {} \; | xargs sed -i '' 's|<?xml version="1.0" encoding="ISO-8859-1"?>|<?xml version="1.0"?>|i'
+
 ]]></description>	
 </project>
