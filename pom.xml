@@ -4,10 +4,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-
 	<groupId>eu.fays</groupId>
 	<artifactId>eu.fays.sandbox</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
@@ -25,6 +24,8 @@
 		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
 		<maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
 		<buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
+		<maven-site-plugin.version>3.21.0</maven-site-plugin.version>
+		<maven-release-plugin>3.3.1</maven-release-plugin>
 	</properties>
 	
 	<scm>
@@ -311,13 +312,71 @@
 						</goals>
 					</execution>
 				</executions>
+				<!-- https://maven.apache.org/surefire/maven-surefire-report-plugin/report-mojo.html -->
 				<configuration>
 					<linkXRef>false</linkXRef>
 				</configuration>
 			</plugin>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-site-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>${maven-site-plugin.version}</version>
+			</plugin>
+			<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-release-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${maven-release-plugin}</version>
+				<executions>
+					<execution>
+						<id>execute-prepare</id>
+						<goals>
+							<goal>prepare</goal>
+						</goals>
+						<!-- https://maven.apache.org/maven-release/maven-release-plugin/prepare-mojo.html -->
+						<configuration>
+							<arguments>-Pant-archive-test-report</arguments>
+							<preparationProfiles>ant-archive-test-report</preparationProfiles>
+							<mavenExecutorId>forked-path</mavenExecutorId>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
+		<profile>
+			<id>ant-archive-test-report</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>archive-test-report</id>
+								<phase>site</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<echoproperties/>
+										<zip destfile="${project.build.directory}/${project.name}-${project.version}-${buildNumber}-test-report.zip">
+											<zipfileset dir="${project.build.directory}">
+												<include name="reports/**" />
+											</zipfileset>
+										</zip>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>unzip-adoptium-jre-x64-windows</id>
 			<activation>
