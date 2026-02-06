@@ -376,10 +376,10 @@ mvn dependency:tree -Dverbose
 Get-ChildItem -Recurse $HOME\.m2\repository\*.pom | ? { Select-String -Pattern '<?xml version="1.0" encoding="ISO-8859-1"?>' -SimpleMatch -List -Path $_ } | % { (Get-Content $_) -ireplace [regex]::Escape('<?xml version="1.0" encoding="ISO-8859-1"?>'), '<?xml version="1.0"?>' | Set-Content $_ }
 
 # Linux
-find $HOME/.m2/repository -type f -name '*.pom' -exec grep -li '<?xml version="1.0" encoding="ISO-8859-1"?>' {} \; | xargs sed -i 's|<?xml version="1.0" encoding="ISO-8859-1"?>|<?xml version="1.0"?>|i'
+find $HOME/.m2/repository -type f -name '*.pom' -exec grep -li '<?xml version="1.0" encoding="ISO-8859-1"?>' {} \; | xargs sed -i '1 s|<?xml version="1.0" encoding="ISO-8859-1"?>|<?xml version="1.0"?>|i'
 
 # Mac OS
-find $HOME/.m2/repository -type f -name '*.pom' -exec grep -li '<?xml version="1.0" encoding="ISO-8859-1"?>' {} \; | xargs sed -i '' 's|<?xml version="1.0" encoding="ISO-8859-1"?>|<?xml version="1.0"?>|i'
+find $HOME/.m2/repository -type f -name '*.pom' -exec grep -li '<?xml version="1.0" encoding="ISO-8859-1"?>' {} \; | xargs sed -i '' '1 s|<?xml version="1.0" encoding="ISO-8859-1"?>|<?xml version="1.0"?>|i'
 
 ]]></description>	
 </project>
