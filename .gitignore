@@ -13,9 +13,11 @@ hs_err_pid*
 
 # Mac OS X Files
 .DS_Store
+
+# Custom
 /target/
 /build/
 /.gradle/
 books.xml
-
 /bin/
+release.properties
