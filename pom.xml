@@ -358,12 +358,18 @@
 						<executions>
 							<execution>
 								<id>ant-archive-test-report-only</id>
-								<phase>generate-resources</phase>
+								<phase>validate</phase>
 								<goals>
 									<goal>run</goal>
 								</goals>
 								<configuration>
 									<target>
+										<dirname property="project.basedir" file="${ant.file}"/>
+										<exec executable="git" outputproperty="buildNumber">
+											<arg value="log" />
+											<arg value="-1" />
+											<arg value="--format=format:%H" />
+										</exec>									
 										<zip destfile="${project.build.directory}/${project.name}-${project.version}-${buildNumber}-test-report.zip">
 											<zipfileset dir="${project.build.directory}">
 												<include name="reports/**" />
@@ -423,7 +429,7 @@ mvn surefire-report:report
 mvn surefire-report:report-only
 
 # Archive test report
-mvn -Parchive-test-report-only generate-resources
+mvn -Parchive-test-report-only validate
 
 # Print dependency tree
 mvn dependency:tree -Dverbose
