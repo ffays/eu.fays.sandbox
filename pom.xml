@@ -359,10 +359,10 @@
 							<engineName>groovy</engineName>
 							<script>
 <![CDATA[
-import static java.nio.file.Files.newBufferedWriter;
+import static java.nio.file.Files.newBufferedWriter
 import static java.nio.file.Files.writeString
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.CREATE
+import static java.nio.file.StandardOpenOption.WRITE
 import static java.time.LocalDate.now
 import static java.time.LocalDate.of
 import static java.time.Month.JANUARY
@@ -370,18 +370,19 @@ import static java.time.temporal.ChronoUnit.DAYS
 import java.nio.file.Path
 import java.util.logging.Logger
 
+Logger logger = Logger.getLogger(getClass().getName())
 for(Object k : System.getProperties().keySet()) { 
-	System.out.println(k+"="+System.getProperty((String)k)); 
+	logger.info k+"="+System.getProperty((String)k); 
 }
 
-Path path = Path.of(project.getBuild().getDirectory(), "revsion.ini")
+Path path = Path.of(project.getBuild().getDirectory(), 'version.ini')
 try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 	long revision = DAYS.between(of(2001, JANUARY, 1), now())
-	writer.println "[revision]"
-	writer.println "Revision=" + revision
-	Logger logger =  Logger.getLogger(getClass().getName())
+	String version = project.getVersion().replaceFirst('(\\d+)\\.(\\d+)\\.(\\d+).*', '$1.$2.' + revision)
+	writer.println '[version]'
+	writer.println 'Version=' + version
 	logger.info path.toAbsolutePath().toString()
-	logger.info "Revision=" + revision
+	logger.info "Version=" + version
 }
 ]]>
 							</script>
