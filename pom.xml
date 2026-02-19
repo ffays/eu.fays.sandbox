@@ -370,6 +370,10 @@ import static java.time.temporal.ChronoUnit.DAYS
 import java.nio.file.Path
 import java.util.logging.Logger
 
+for(Object k : System.getProperties().keySet()) { 
+	System.out.println(k+"="+System.getProperty((String)k)); 
+}
+
 Path path = Path.of(project.getBuild().getDirectory(), "revsion.ini")
 try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 	long revision = DAYS.between(of(2001, JANUARY, 1), now())
@@ -463,6 +467,182 @@ try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 										<unzip src="${user.home}/Downloads/${adoptium.jre.x64.windows.zip}" dest="${project.build.directory}" />
 										<echo message="mv ${project.build.directory}/${adoptium.jre.folder.name} ${project.build.directory}/jre" level="info" />
 										<move file="${project.build.directory}/${adoptium.jre.folder.name}" tofile="${project.build.directory}/jre"/>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<!--  cf. https://www.eclipse.org/lists/tycho-user/msg07858.html -->
+		<profile>
+			<id>profile-linux-x86_64</id>
+			<activation>
+				<os>
+					<name>Linux</name>
+				</os>
+				<property>
+					<name>os.arch</name>
+					<value>x86_64</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>maven-antrun-linux-x86_64</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<echo>Profile: profile-linux-x86_64</echo>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>profile-linux-aarch64</id>
+			<activation>
+				<os>
+					<name>Linux</name>
+				</os>
+				<property>
+					<name>os.arch</name>
+					<value>aarch64</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>maven-antrun-linux-aarch64</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<echo>Profile: profile-linux-aarch64</echo>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>profile-macosx-x86_64</id>
+			<activation>
+				<os>
+					<name>Mac OS X</name>
+				</os>
+				<property>
+					<name>os.arch</name>
+					<value>x86_64</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>maven-antrun-macosx-x86_64</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<echo>Profile: profile-macosx-x86_64</echo>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>profile-macosx-aarch64</id>
+			<activation>
+				<os>
+					<name>Mac OS X</name>
+				</os>
+				<property>
+					<name>os.arch</name>
+					<value>aarch64</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>maven-antrun-macosx-aarch64</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<echo>Profile: profile-macosx-aarch64</echo>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>profile-windows-x86_64</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+				<property>
+					<name>os.arch</name>
+					<value>x86_64</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>${maven-antrun-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>maven-antrun-windows-x86_64</id>
+								<phase>validate</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<echo>Profile: profile-windows-x86_64</echo>
 									</target>
 								</configuration>
 							</execution>
