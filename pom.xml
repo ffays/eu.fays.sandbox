@@ -25,6 +25,10 @@
 		<maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
 		<buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
 		<maven-site-plugin.version>3.21.0</maven-site-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-scripting-plugin -->
+		<maven-scripting-plugin.version>3.1.0</maven-scripting-plugin.version>
+		<!-- https://mvnrepository.com/artifact/org.apache.groovy/groovy-jsr223 -->
+		<groovy-jsr223.version>5.0.4</groovy-jsr223.version>
 	</properties>
 
 	<scm>
@@ -343,10 +347,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-scripting-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>${maven-scripting-plugin.version}</version>
 				<executions>
 					<execution>
-						<id>calculate-days</id>
+						<id>generate-revision.ini</id>
 						<phase>initialize</phase>
 						<goals>
 							<goal>eval</goal>
@@ -366,7 +370,7 @@ import static java.time.temporal.ChronoUnit.DAYS
 import java.nio.file.Path
 import java.util.logging.Logger
 
-Path path = Path.of("revsion.ini")
+Path path = Path.of(project.getBuild().getDirectory(), "revsion.ini")
 try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 	long revision = DAYS.between(of(2001, JANUARY, 1), now())
 	writer.println "[revision]"
@@ -385,7 +389,7 @@ try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 					<dependency>
 						<groupId>org.apache.groovy</groupId>
 						<artifactId>groovy-jsr223</artifactId>
-						<version>5.0.4</version>
+						<version>${groovy-jsr223.version}</version>
 					</dependency>
 				</dependencies>
 			</plugin>
