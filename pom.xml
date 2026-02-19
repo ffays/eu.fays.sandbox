@@ -369,8 +369,8 @@ import java.util.logging.Logger
 Path path = Path.of("revsion.ini")
 try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 	long revision = DAYS.between(of(2001, JANUARY, 1), now())
-	writer.println("[revision]")
-	writer.println("Revision=" + revision)
+	writer.println "[revision]"
+	writer.println "Revision=" + revision
 	Logger logger =  Logger.getLogger(getClass().getName())
 	logger.info path.toAbsolutePath().toString()
 	logger.info "Revision=" + revision
