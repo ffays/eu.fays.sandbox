@@ -21,3 +21,4 @@ hs_err_pid*
 books.xml
 /bin/
 release.properties
+/revsion.ini

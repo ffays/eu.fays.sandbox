@@ -26,7 +26,7 @@
 		<buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
 		<maven-site-plugin.version>3.21.0</maven-site-plugin.version>
 	</properties>
-	
+
 	<scm>
 		<connection>scm:git://github.com:ffays/eu.fays.sandbox.git</connection>
 		<url>https://github.com/ffays/eu.fays.sandbox</url>
@@ -41,7 +41,7 @@
 		</repository>
 	</repositories>
 	-->
-	
+
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
 		<dependency>
@@ -339,6 +339,56 @@
 				<artifactId>maven-site-plugin</artifactId>
 				<version>${maven-site-plugin.version}</version>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-scripting-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>calculate-days</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>eval</goal>
+						</goals>
+						<configuration>
+							<engineName>groovy</engineName>
+							<script>
+<![CDATA[
+import static java.nio.file.Files.newBufferedWriter;
+import static java.nio.file.Files.writeString
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static java.time.LocalDate.now
+import static java.time.LocalDate.of
+import static java.time.Month.JANUARY
+import static java.time.temporal.ChronoUnit.DAYS
+import java.nio.file.Path
+import java.util.logging.Logger
+
+Path path = Path.of("revsion.ini")
+try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
+	long revision = DAYS.between(of(2001, JANUARY, 1), now())
+	writer.println("[revision]")
+	writer.println("Revision=" + revision)
+	Logger logger =  Logger.getLogger(getClass().getName())
+	logger.info path.toAbsolutePath().toString()
+	logger.info "Revision=" + revision
+}
+]]>
+							</script>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<!-- Required Script Engine for Groovy -->
+					<dependency>
+						<groupId>org.apache.groovy</groupId>
+						<artifactId>groovy-jsr223</artifactId>
+						<version>5.0.4</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
@@ -369,7 +419,7 @@
 											<arg value="log" />
 											<arg value="-1" />
 											<arg value="--format=format:%H" />
-										</exec>									
+										</exec>
 										<zip destfile="${project.build.directory}/${project.name}-${project.version}-${buildNumber}-test-report.zip">
 											<zipfileset dir="${project.build.directory}">
 												<include name="reports/**" />
@@ -382,7 +432,7 @@
 					</plugin>
 				</plugins>
 			</build>
-		</profile>		
+		</profile>
 		<profile>
 			<id>unzip-adoptium-jre-x64-windows</id>
 			<activation>
