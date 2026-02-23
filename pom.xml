@@ -619,6 +619,7 @@ try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 			<activation>
 				<os>
 					<family>Windows</family>
+					<arch>x86_64</arch>
 				</os>
 			</activation>
 			<build>
