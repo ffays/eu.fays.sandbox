@@ -483,7 +483,7 @@ try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 			<activation>
 				<os>
 					<name>Linux</name>
-					<arch>x86_64</arch>
+					<arch>amd64</arch>
 				</os>
 			</activation>
 			<build>
@@ -547,7 +547,7 @@ try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 			<activation>
 				<os>
 					<name>Mac OS X</name>
-					<arch>x86_64</arch>
+					<arch>amd64</arch>
 				</os>
 			</activation>
 			<build>
@@ -611,7 +611,7 @@ try (BufferedWriter writer = newBufferedWriter(path, CREATE, WRITE)) {
 			<activation>
 				<os>
 					<family>Windows</family>
-					<arch>x86_64</arch>
+					<arch>amd64</arch>
 				</os>
 			</activation>
 			<build>
