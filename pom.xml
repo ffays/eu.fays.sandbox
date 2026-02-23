@@ -19,7 +19,7 @@
 		<maven.build.timestamp.format>dd MMM yyyy HH:mm:ss</maven.build.timestamp.format>
 		<adoptium.jre.x64.windows.zip>OpenJDK17U-jre_x64_windows_hotspot_21.0.8+9.zip</adoptium.jre.x64.windows.zip>
 		<adoptium.jre.folder.name>jdk-21.0.8+9-jre</adoptium.jre.folder.name>
-		<junit.version>5.14.2</junit.version>
+		<junit.version>5.14.3</junit.version>
 		<maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
 		<maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
 		<maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>

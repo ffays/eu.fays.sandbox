@@ -1,4 +1,4 @@
-package eu.fays.sandbox.text;
+package eu.fays.sandbox;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
