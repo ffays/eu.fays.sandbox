@@ -3,6 +3,7 @@ package eu.fays.sandbox.format;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 import static java.text.MessageFormat.format;
+import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofLocalizedDateTime;
 import static java.time.format.FormatStyle.SHORT;
 import static java.util.Collections.unmodifiableMap;
@@ -128,6 +129,7 @@ public class DateFormatLocaleEssay {
 			System.out.println(formatted);
 			System.out.println(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(now));
 			System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(now));
+			System.out.println(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH\u00F7mm\u00F7ss").format(now()));
 			final LocalDateTime localDateTime = LocalDateTime.parse(formatted, formatter);
 			System.out.println();
 		}
