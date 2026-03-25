@@ -53,6 +53,7 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 				executorService.awaitTermination(5L, SECONDS);
 			} catch (final InterruptedException e) {
 				// Do nothing
+				executorService.shutdownNow();
 			}
 		}
 	}
@@ -64,7 +65,8 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 	private void dump() {
 		assert recording != null;
 		try {
-			final String filename = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH\u00F7mm\u00F7ss'.jfr'").format(now());
+			final String format = executorService !=null ? "yyyy-MM-dd_HH\u00F7mm\u00F7ss'-final.jfr'":"yyyy-MM-dd_HH\u00F7mm\u00F7ss'.jfr'";
+			final String filename = DateTimeFormatter.ofPattern(format).format(now());
 			final Path path = Paths.get(filename);
 			recording.dump(path);
 			recording.stop();
