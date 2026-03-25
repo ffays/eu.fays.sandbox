@@ -19,6 +19,24 @@ import java.util.logging.Logger;
 
 import jdk.jfr.Recording;
 
+/**
+ * Profiler relying on Java Flight Recorder.<br>
+ * <br>
+ * VM Args:<br>
+ * <br>
+ * <code>-XX:StartFlightRecording=disk=true,maxage=5m,dumponexit=true,filename=java-flight-record.jfr</code><br>
+ * <code>-XX:FlightRecorderOptions=stackdepth=128</code><br>
+ * <code>-XX:+HeapDumpOnOutOfMemoryError</code><br>
+ * <code>-XX:HeapDumpPath=./heap-dump.hprof</code><br>
+ * <code>-Djava.util.logging.SimpleFormatter.format='%1$tFT%1$tT,%1$tL	%4$s	%3$s	%5$s%6$s%n'</code><br>
+ */
+/*
+-XX:StartFlightRecording=disk=true,maxage=5m,dumponexit=true,filename=java-flight-record.jfr
+-XX:FlightRecorderOptions=stackdepth=128
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:HeapDumpPath=./heap-dump.hprof
+-Djava.util.logging.SimpleFormatter.format='%1$tFT%1$tT,%1$tL	%4$s	%3$s	%5$s%6$s%n'
+*/
 public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFactory {
 
 	/** Standard logger */
