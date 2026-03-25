@@ -82,7 +82,7 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 				if(!executorService.awaitTermination(5L, SECONDS)) {
 					executorService.shutdownNow();
 					if(!executorService.awaitTermination(5L, SECONDS)) {
-						LOGGER.log(SEVERE, "Profiler didn't stop gracefully!", new Throwable().fillInStackTrace());
+						LOGGER.log(SEVERE, "Profiler didn't gracefully stop!", new Throwable().fillInStackTrace());
 					}
 				}
 			} catch (final InterruptedException e) {
