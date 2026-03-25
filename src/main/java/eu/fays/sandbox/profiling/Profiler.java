@@ -48,6 +48,11 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 	/** Recording of the profiler */
 	private Recording recording = null;
 
+	/**
+	 * Main
+	 * @param args unused
+	 * @throws InterruptedException in case of unexpected error
+	 */
 	public static void main(String[] args) throws InterruptedException {
 		LOGGER.info("Starting");
 		new Profiler(3L, SECONDS);
