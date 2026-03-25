@@ -1,4 +1,4 @@
-package eu.fays.sandbox.profilng;
+package eu.fays.sandbox.profiling;
 
 import static java.time.LocalDateTime.now;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
