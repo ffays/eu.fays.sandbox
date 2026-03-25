@@ -4,6 +4,8 @@ import static java.time.LocalDateTime.now;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.SEVERE;
+import static jdk.jfr.RecordingState.CLOSED;
+import static jdk.jfr.RecordingState.STOPPED;
 
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -44,10 +46,10 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 		dump();
 		if(executorService == null) {
 			// Periodic run
-			recordingReference.set(new Recording());
 			final Recording recording = recordingReference.get();
-			assert recording != null;
-			recording.start();
+			recording.stop();
+			recording.close();
+			recordingReference.set(newRecording());
 		} else {
 			// Shutdown Hook 
 			try {
@@ -61,6 +63,26 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 		}
 	}
 
+	
+	/**
+	 * Creates and start a new recording
+	 * @return the new recording 
+	 * @throws IOException in case of unexpected error
+	 */
+	private Recording newRecording() {
+		final Recording result = new Recording();
+		final String filename = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH\u00F7mm\u00F7ss'.jfr'").format(now());
+		final Path path = Paths.get(filename);
+		result.setDumpOnExit(true);
+		try {
+			result.setDestination(path);
+		} catch (final IOException e) {
+			LOGGER.log(SEVERE, e.getMessage(), e);
+		}
+		result.start();
+		return result;
+	}
+	
 	/**
 	 * Dump the recording to the file system and stop it.
 	 */
@@ -68,12 +90,16 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 		try {
 			final Recording recording = recordingReference.get();
 			assert recording != null;
-			final String format = executorService !=null ? "yyyy-MM-dd_HH\u00F7mm\u00F7ss'-final.jfr'":"yyyy-MM-dd_HH\u00F7mm\u00F7ss'.jfr'";
-			final String filename = DateTimeFormatter.ofPattern(format).format(now());
-			final Path path = Paths.get(filename);
-			recording.stop();
-			recording.dump(path);
-			recording.close();
+			if(recording.getState() != STOPPED) {
+				recording.stop();
+			}
+			if(recording.getState() != CLOSED) {
+				final String format = executorService !=null ? "yyyy-MM-dd_HH\u00F7mm\u00F7ss'-final.jfr'":"yyyy-MM-dd_HH\u00F7mm\u00F7ss'.jfr'";
+				final String filename = DateTimeFormatter.ofPattern(format).format(now());
+				final Path path = Paths.get(filename);
+				recording.dump(path);
+				recording.close();
+			}
 		} catch (final IOException e) {
 			LOGGER.log(SEVERE, e.getMessage(), e);
 		}
@@ -90,11 +116,8 @@ public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFacto
 		assert unit != null;
 		//
 		this.executorService = null;
-		this.recordingReference = new AtomicReference<>(new Recording());
+		this.recordingReference = new AtomicReference<>(newRecording());
 		//
-		
-		final Recording recording = recordingReference.get();
-		recording.start();
 		
 		final Profiler threadFactory = new Profiler(); // as both Thread Factory and Uncaught Exception Handler
 		final ScheduledExecutorService executorService = newSingleThreadScheduledExecutor(threadFactory);  
