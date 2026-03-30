@@ -37,6 +37,7 @@ import jdk.jfr.Recording;
 -XX:HeapDumpPath=./heap-dump.hprof
 -Djava.util.logging.SimpleFormatter.format='%1$tFT%1$tT,%1$tL	%4$s	%3$s	%5$s%6$s%n'
 */
+// jcmd (Get-Process -Name "javaw").Id JFR.dump "filename=$(Get-Date -Format "yyyy-MM-dd_HH$([char]0x00F7)mm$([char]0x00F7)ss").jfr"
 public class Profiler implements Runnable, UncaughtExceptionHandler, ThreadFactory {
 
 	/** Standard logger */
