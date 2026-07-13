@@ -3,7 +3,7 @@ package eu.fays.sandbox.record;
 import java.util.List;
 
 /**
- * @param firstname Firs tName
+ * @param firstname First Name
  * @param lastname Last Name
  */
 public record User(String firstname, String lastname) {
