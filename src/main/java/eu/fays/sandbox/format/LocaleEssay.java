@@ -29,9 +29,7 @@ public class LocaleEssay {
 	public static void logLocale() {
 		try {
 			final Locale locale = Locale.getDefault();
-			locale.toLanguageTag();
-
-			Method[] methods = Locale.class.getMethods();
+			final Method[] methods = Locale.class.getMethods();
 			sort(methods, (a, b) -> a.getName().compareTo(b.getName()));
 			for (final Method m : methods) {
 				final int mod = m.getModifiers();
